@@ -1,0 +1,68 @@
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+const { Schema } = mongoose;
+
+const UserSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address']
+    },
+    password: { type: String, required: true, minlength: 8, select: false },
+
+    // Email verification (OTP)
+    verified: { type: Boolean, default: false },
+    emailVerifyOTP: { type: String, select: false },
+    emailVerifyExpires: { type: Date, select: false },
+
+    // Password reset
+    passwordResetToken: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
+
+    // Onboarding + profile
+    onboarded: { type: Boolean, default: false },
+    role: { type: String, enum: ['learn', 'teach', 'both', null], default: null },
+    interests: { type: [String], default: [] },
+    goal: { type: String, enum: ['casual', 'regular', 'intense', null], default: null },
+    bio: { type: String, default: '', trim: true },
+    avatar: { type: String, default: '' },
+    skillsOffered: { type: [String], default: [] },
+    skillsWanted: { type: [String], default: [] },
+
+    // Saved skills (Wishlist page)
+    wishlist: { type: [String], default: [] }
+  },
+  { timestamps: true }
+);
+
+UserSchema.pre('save', async function hashPassword(next) {
+  if (!this.isModified('password')) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+UserSchema.methods.comparePassword = function comparePassword(candidate) {
+  return bcrypt.compare(candidate, this.password);
+};
+
+// Never expose sensitive/internal fields, even if a route forgets to .select() them out
+UserSchema.set('toJSON', {
+  transform: (_doc, ret) => {
+    delete ret.password;
+    delete ret.emailVerifyOTP;
+    delete ret.emailVerifyExpires;
+    delete ret.passwordResetToken;
+    delete ret.passwordResetExpires;
+    delete ret.__v;
+    return ret;
+  }
+});
+
+export default mongoose.model('User', UserSchema);
