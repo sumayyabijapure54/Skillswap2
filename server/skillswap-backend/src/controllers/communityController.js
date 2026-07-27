@@ -42,10 +42,10 @@ export async function listPosts(req, res, next) {
   }
 }
 
-// POST /api/community  { text, tags? }  (protected)
+// POST /api/community  { text, tags?, type?, category?, title? }  (protected)
 export async function createPost(req, res, next) {
   try {
-    const { text, tags } = req.body;
+    const { text, tags, type, category, title } = req.body;
     if (!text || !text.trim()) {
       return res.status(400).json({ message: 'text is required' });
     }
@@ -55,7 +55,10 @@ export async function createPost(req, res, next) {
       authorName: req.user.name,
       authorInitials: initialsOf(req.user.name) || 'ME',
       text: text.trim(),
-      tags: Array.isArray(tags) ? tags.filter(Boolean) : []
+      tags: Array.isArray(tags) ? tags.filter(Boolean) : [],
+      type: type === 'request' ? 'request' : 'offer',
+      category: category || '',
+      title: title || ''
     });
 
     res.status(201).json({ post: post.toJSON({ viewerId: req.user._id }) });

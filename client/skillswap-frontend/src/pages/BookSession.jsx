@@ -9,7 +9,7 @@ export default function BookSession(){
       <div className="mentor-grid">
         {mentors.map(m=>(
           <div className="mentor-card" key={m.id}>
-            <div className="mentor-top"><div className="mentor-badge">${m.rate}/session</div><div className="mentor-avatar">{m.initials}</div></div>
+            <div className="mentor-top"><div className="mentor-badge">${m.rate}/session</div><div className="mentor-avatar">{m.avatar ? <img src={m.avatar} alt={m.name} /> : m.initials}</div></div>
             <div className="mentor-body">
               <b>{m.name}</b>
               <div className="role">{m.role}</div>

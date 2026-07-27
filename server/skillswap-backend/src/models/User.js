@@ -38,6 +38,12 @@ const UserSchema = new Schema(
     // Saved skills (Wishlist page)
     wishlist: { type: [String], default: [] },
 
+    // Platform administration — deliberately separate from the onboarding
+    // `role` above (learn/teach/both is "what this person does on
+    // SkillSwap"; isAdmin is "can this person moderate SkillSwap").
+    isAdmin: { type: Boolean, default: false },
+    status: { type: String, enum: ['active', 'suspended'], default: 'active' },
+
     // Wallet balance in whole currency units (dollars). Every new account
     // starts with a $50 welcome credit, matching the frontend mock's seed
     // state — see Transaction for the ledger of how the balance got here.

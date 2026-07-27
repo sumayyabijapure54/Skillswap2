@@ -64,7 +64,7 @@ export default function Home(){
         <div className="skills-grid">
           {categories.map(c=>(
             <TiltCard as={Link} to={`/explore?cat=${c.key}`} className="skill-tile" key={c.key}>
-              <div className="ic">{c.icon}</div>
+              <div className="skill-tile-photo" style={{backgroundImage:`url(${c.image})`}}><div className="ic">{c.icon}</div></div>
               <b>{c.label}</b>
               <span>{skills.filter(s=>s.category===c.key).length}+ Skills</span>
             </TiltCard>
@@ -77,7 +77,7 @@ export default function Home(){
         <div className="mentor-grid">
           {mentors.slice(0,4).map(m=>(
             <TiltCard as={Link} to={`/mentor/${m.id}`} className="mentor-card" key={m.id} style={{textDecoration:'none', color:'inherit'}}>
-              <div className="mentor-top"><div className="mentor-badge">Top Mentor</div><div className="mentor-avatar">{m.initials}</div></div>
+              <div className="mentor-top"><div className="mentor-badge">Top Mentor</div><div className="mentor-avatar">{m.avatar ? <img src={m.avatar} alt={m.name} /> : m.initials}</div></div>
               <div className="mentor-body">
                 <b>{m.name}</b>
                 <div className="role">{m.role}</div>
@@ -130,9 +130,9 @@ export default function Home(){
         <div className="three-col">
           <div className="col-card">
             <h3>Active Community</h3><div className="desc">See what's happening</div>
-            <div className="feed-item"><div className="dot">M</div><p><b>Maria</b> learned Figma from Alex<br /><span>2 hours ago</span></p></div>
-            <div className="feed-item"><div className="dot">J</div><p><b>James</b> taught JavaScript to Priya<br /><span>5 hours ago</span></p></div>
-            <div className="feed-item"><div className="dot">S</div><p><b>Sophia &amp; Daniel</b> are learning Photoshop together<br /><span>1 day ago</span></p></div>
+            <div className="feed-item"><div className="dot"><img src="https://i.pravatar.cc/80?img=32" alt="Maria" /></div><p><b>Maria</b> learned Figma from Alex<br /><span>2 hours ago</span></p></div>
+            <div className="feed-item"><div className="dot"><img src="https://i.pravatar.cc/80?img=51" alt="James" /></div><p><b>James</b> taught JavaScript to Priya<br /><span>5 hours ago</span></p></div>
+            <div className="feed-item"><div className="dot"><img src="https://i.pravatar.cc/80?img=41" alt="Sophia" /></div><p><b>Sophia &amp; Daniel</b> are learning Photoshop together<br /><span>1 day ago</span></p></div>
           </div>
           <div className="col-card">
             <h3>What Our Community Says</h3><div className="desc">Real stories, real growth</div>

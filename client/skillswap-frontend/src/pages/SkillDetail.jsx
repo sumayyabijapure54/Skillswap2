@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { categories, getSkillById } from '../data/skills.js';
+import { getMentorById } from '../data/mentors.js';
 import { useUser } from '../context/UserContext.jsx';
 import ComingSoon from './ComingSoon.jsx';
 
@@ -15,6 +16,7 @@ export default function SkillDetail(){
   }
 
   const cat = categories.find(c=>c.key===skill.category);
+  const fullMentor = getMentorById(skill.mentor.id);
   const saved = wishlist.includes(skill.id);
 
   const onSaveClick = ()=>{
@@ -50,7 +52,7 @@ export default function SkillDetail(){
 
         <div className="skill-side">
           <Link to={`/mentor/${skill.mentor.id}`} className="mentor-mini" style={{textDecoration:'none', color:'inherit'}}>
-            <div className="av">{skill.mentor.initials}</div>
+            <div className="av">{fullMentor?.avatar ? <img src={fullMentor.avatar} alt={skill.mentor.name} /> : skill.mentor.initials}</div>
             <div>
               <b>{skill.mentor.name}</b>
               <span>{skill.mentor.role}</span>

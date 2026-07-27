@@ -73,8 +73,29 @@ All responses are JSON. Base path: `/api/skills`.
 | GET    | `/api/health`                 | Liveness check → `{ status: "ok" }` |
 | GET    | `/api/skills`                 | List skills, with filtering/search/sort (see below) |
 | GET    | `/api/skills/:id`              | One skill by slug, e.g. `/api/skills/react-fundamentals` |
+| GET    | `/api/skills/:id/full`         | Same skill, plus its 10 most recent reviews, `reviewsTotal`, and (if authenticated) `reviewableBooking` — a completed booking of yours for this skill you haven't reviewed yet, or `null` |
 | GET    | `/api/skills/meta/categories`  | Category list with live per-category counts |
 | GET    | `/api/skills/meta/levels`      | `["Beginner", "Intermediate", "Advanced"]` |
+| POST   | `/api/skills` | Create a new skill listing (protected) — see "Posting a skill" below |
+| PATCH  | `/api/skills/:id` | Edit `title/description/duration/prerequisites/tags/lessons` (protected, mentor only) → `{ skill }` |
+| DELETE | `/api/skills/:id` | Delete it — cancels its future bookings, clears related progress/wishlist/reviews (protected, mentor only) → `{ message }` |
+
+### Posting a skill
+
+```
+POST /api/skills
+Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{ "title": "...", "category": "programming", "level": "Beginner", "description": "...",
+  "duration": "4 hours", "mentorRole": "...", "prerequisites": [], "tags": [], "lessons": [] }
+```
+→ `201 { skill }`. The slug (`id`) is generated from `title`; the caller
+becomes `skill.mentorUser` and `skill.mentor` is filled in from their own
+name automatically — there's no separate "claim" step for a skill you just
+created yourself (claiming, below, is only for the 8 seeded skills that
+started with no real account attached). `category` must be one of the
+values from `/api/skills/meta/categories` and `level` one of `/api/skills/meta/levels`.
 
 ### `GET /api/skills` query params
 
@@ -107,9 +128,11 @@ subsequent requests.
 
 | Method | Route             | Auth required | Description |
 |--------|-------------------|:---:|---|
-| POST   | `/api/auth/signup` | No | Create an account → `{ token, user }` |
-| POST   | `/api/auth/login`  | No | Log in → `{ token, user }` |
+| POST   | `/api/auth/signup` | No | Create an account → `{ token, refreshToken, user }` |
+| POST   | `/api/auth/login`  | No | Log in → `{ token, refreshToken, user }` |
 | GET    | `/api/auth/me`     | Yes | Returns the logged-in user → `{ user }` |
+| POST   | `/api/auth/refresh` | No | `{ refreshToken }` → rotates it and issues a new pair → `{ token, refreshToken }`. `401` if invalid/expired/reused, `403` if the account is suspended. |
+| POST   | `/api/auth/logout` | Yes | `{ refreshToken? }` → revokes that one session, or every session for the account if omitted → `{ message }` |
 
 **Signup**
 ```
@@ -118,11 +141,12 @@ Content-Type: application/json
 
 { "name": "Alex Johnson", "email": "alex@example.com", "password": "at least 8 chars" }
 ```
-→ `201 { "token": "<jwt>", "user": { ..., "verified": false, "onboarded": false } }`
+→ `201 { "token": "<jwt>", "refreshToken": "<opaque token>", "user": { ..., "verified": false, "onboarded": false } }`
 Also sends a 6-digit OTP to the user's email (or logs it to the console in
 dev mode — see "Email" below). Returns `409` if the email is already
 registered, `400` if a field is missing or the password is under 8
-characters.
+characters. If the email is in the server's `ADMIN_EMAILS` env var, the new
+account is created with `isAdmin: true`.
 
 **Login**
 ```
@@ -131,7 +155,8 @@ Content-Type: application/json
 
 { "email": "alex@example.com", "password": "at least 8 chars" }
 ```
-→ `200 { "token": "<jwt>", "user": { ... } }`, or `401` on bad credentials.
+→ `200 { "token": "<jwt>", "refreshToken": "<opaque token>", "user": { ... } }`,
+or `401` on bad credentials, `403` if the account has been suspended.
 Login succeeds even if `verified` is still `false` — it's the frontend's job
 to route an unverified user back to `/verify-email`.
 
@@ -183,8 +208,12 @@ Content-Type: application/json
 → `200 { "message": "Password updated — you can now log in" }`, or `400` if
 the token is invalid/expired.
 
-Access tokens expire after `JWT_EXPIRES_IN` (default `7d`). There's no
-refresh-token flow — once expired, the user logs in again.
+Access tokens expire after `JWT_EXPIRES_IN` (default `7d`). Refresh tokens
+(opaque, stored hashed in `RefreshToken`, 30-day expiry) let a client get a
+new access token without forcing a re-login — `POST /api/auth/refresh`
+rotates them (the old one is deleted, a new one issued), so a leaked and
+reused refresh token is invalidated the moment the real client uses it
+again.
 
 ## Profile & onboarding API
 
@@ -205,9 +234,10 @@ Base path: `/api/progress`. All protected.
 
 | Method | Route | Description |
 |---|---|---|
-| GET | `/api/progress` | `{ enrolled: [{ skillId, completedLessons: [1,2,...], enrolledAt }] }` for the current user |
+| GET | `/api/progress` | `{ enrolled: [{ skillId, completedLessons: [1,2,...], quizScores: {"6": {score,total}, ...}, enrolledAt }] }` for the current user |
 | POST | `/api/progress/:skillId/enroll` | Enrolls (idempotent) → `{ entry }` |
-| POST | `/api/progress/:skillId/lessons/:lessonId/complete` | Marks a lesson done, auto-enrolling if needed → `{ entry }` |
+| POST | `/api/progress/:skillId/lessons/:lessonId/complete` | Marks a lesson done, auto-enrolling if needed. If this was the skill's last lesson, also issues a certificate → `{ entry, certificate }` (`certificate` is `null` unless just earned) |
+| POST | `/api/progress/:skillId/lessons/:lessonId/quiz` | `{ score, total }` → records/overwrites that lesson's quiz result, auto-enrolling if needed → `{ entry }`. `quizScores` is keyed by lesson id (as a string, since object keys always are). |
 
 ## Wishlist API
 
@@ -318,6 +348,52 @@ as a `Transaction` — the ledger `PaymentHistory.jsx` and the Wallet page's
 | GET | `/api/wallet/transactions?page=&limit=` | — | Full ledger, newest first → `{ transactions: [...], page, limit, total, totalPages }`. Each transaction has `type` (`topup`\|`session_payment`\|`refund`), a signed `amount`, `method`, `description`, and `booking` (id or null). |
 | POST | `/api/wallet/topup` | `{ amount, method? }` | Card top-up (method defaults to `"card"`) → `201 { wallet: { balance }, transaction }` |
 
+## Mentor applications API
+
+Base path: `/api/mentor-applications`. How a learner asks to become a
+mentor for a skill they don't already have a listing for — distinct from
+`POST /api/skills` (which just posts the listing directly). Approval
+doesn't auto-create the skill; it just clears the way for the user to post
+it themselves.
+
+| Method | Route | Auth | Body | Description |
+|---|---|:---:|---|---|
+| POST | `/api/mentor-applications` | Protected | `{ skillTitle, category, bio }` | Submit one → `201 { application }`. `409` if you already have a pending application. |
+| GET | `/api/mentor-applications?status=&page=&limit=` | Admin | — | List/filter → `{ applications: [...], page, limit, total, totalPages }` |
+| PATCH | `/api/mentor-applications/:id/approve` | Admin | — | → `{ application }`. Sets the applicant's `role` to `"teach"` (or `"both"` if they were `"learn"`) and notifies them. `400` if already reviewed. |
+| PATCH | `/api/mentor-applications/:id/reject` | Admin | — | → `{ application }`. Notifies them. `400` if already reviewed. |
+
+## Reports API
+
+Base path: `/api/reports`. Lets any signed-in user flag a message, skill
+listing, review, community post, or another user for moderator attention;
+admins work the resulting queue.
+
+| Method | Route | Auth | Body | Description |
+|---|---|:---:|---|---|
+| POST | `/api/reports` | Protected | `{ type, targetId?, reportedUserName, reason }` | File one → `201 { report }`. `type` is one of `message\|skill_post\|review\|community_post\|user`. `targetId` isn't validated against the source collection — a report should still be filable even if the content is deleted before a moderator looks at it. |
+| GET | `/api/reports?status=&page=&limit=` | Admin | — | List/filter (`status` is `open`\|`resolved`) → `{ reports: [...], page, limit, total, totalPages }` |
+| PATCH | `/api/reports/:id/resolve` | Admin | — | Marks it resolved → `{ report }` |
+
+## Admin API
+
+Base path: `/api/admin`. Every route requires `isAdmin: true` on the
+requesting user (`403` otherwise). There's no signup flow for becoming an
+admin — either your email is in the `ADMIN_EMAILS` env var at the moment
+you sign up, or an existing admin promotes you via `make-admin` below.
+
+| Method | Route | Body | Description |
+|---|---|---|---|
+| GET | `/api/admin/users?role=&status=&q=&page=&limit=` | — | List/search users → `{ users: [...], page, limit, total, totalPages }`. `q` matches name or email. |
+| PATCH | `/api/admin/users/:id/suspend` | — | Blocks login and immediately invalidates existing sessions/refresh tokens → `{ user }`. `400` if you try to suspend yourself. |
+| PATCH | `/api/admin/users/:id/reinstate` | — | → `{ user }` |
+| PATCH | `/api/admin/users/:id/make-admin` | — | Grants `isAdmin` → `{ user }` |
+| PATCH | `/api/admin/users/:id/revoke-admin` | — | Revokes it → `{ user }`. `400` if you try to revoke your own. |
+
+A suspended user gets `403 { message: "This account has been suspended" }`
+on login, on `/api/auth/refresh`, and on every protected route thereafter —
+not just a silently-issued token that fails later.
+
 ## Email
 
 Set `SMTP_HOST` (and `SMTP_USER`/`SMTP_PASS` if required) in `.env` to send
@@ -365,12 +441,19 @@ For the category checkboxes/counts in `Explore.jsx`'s filter panel, fetch
 `/api/skills/meta/categories` once on mount instead of importing `categories`
 from the mock data file — each entry now includes a live `count` field.
 
-### Auth, profile, progress, wishlist, notifications
+### Auth, profile, progress, wishlist, notifications, wallet, bookings, reviews, certificates, community
 
-All of this is already wired up in the `skillswap-frontend` project you have
-— `UserContext.jsx` calls every endpoint documented below via a small
-`src/lib/api.js` fetch helper, and the token is kept in `localStorage`. See
-that project's README for what changed on the frontend side.
+**Not wired up yet.** The `skillswap-frontend` project as currently shipped
+still runs entirely on mock data — `UserContext.jsx` and `CommunityContext.jsx`
+read/write `localStorage` and never call this API. Every endpoint above is
+ready and waiting; connecting the two is the remaining work. The shape of
+this backend's responses (`user`, `enrolled`, `wishlist`, `notifications`,
+`bookings`, `wallet`, `transactions`, etc.) was deliberately kept close to
+what those contexts already produce from mock data, so the rewrite is
+mostly: add a `src/lib/api.js` fetch helper, keep the JWT in `localStorage`
+instead of the whole app state, and swap each context function's body from
+a `setState` mutation to an `await fetch(...)` call plus a `setState` from
+the response.
 
 Once you're ready for real API calls in development, consider moving the
 base URL (`http://localhost:5000`) into a Vite env var (`VITE_API_URL`) so it
@@ -394,15 +477,20 @@ skillswap-backend/
       Certificate.js                 Auto-issued on 100% skill completion
       CommunityPost.js                Skill-exchange offers/requests
       Message.js                      Direct messages (realtime via Socket.io)
+      MentorApplication.js            "Become a mentor" requests, reviewed by an admin
+      Report.js                       User-filed moderation reports, reviewed by an admin
     controllers/
-      skillsController.js        list/detail/meta route handlers
-      authController.js          signup/login/me/verify/resend/forgot/reset
+      skillsController.js        list/detail/full/meta/create/update/delete route handlers
+      authController.js          signup/login/refresh/logout/me/verify/resend/forgot/reset
       usersController.js         profile update + onboarding
-      progressController.js       list/enroll/complete-lesson
+      progressController.js       list/enroll/complete-lesson/record-quiz-score
       wishlistController.js       toggle
       notificationsController.js  list/mark-read/mark-all-read
       bookingsController.js       create/checkout/list/cancel(+refund)/mentor earnings
       walletController.js          balance/transactions/top-up
+      mentorApplicationsController.js  submit/list/approve/reject
+      reportsController.js             create/list/resolve
+      adminController.js               list-users/suspend/reinstate/make-admin/revoke-admin
     routes/                       one router per resource above
     middleware/
       errorHandler.js             404 + central error handler (incl. duplicate-key/validation messages)
@@ -426,6 +514,9 @@ skillswap-backend/
 - CORS is restricted to `CLIENT_ORIGIN` in `.env` (defaults to the Vite dev
   server at `http://localhost:5173`). Add your deployed frontend's origin
   there (comma-separated for multiple origins) before deploying.
-- Lesson-completion state in `LessonPlayer.jsx` stays as local `useState` for
-  now — persisting it needs a `Progress` model tied to a logged-in user,
-  which depends on the Phase 2 auth system per the frontend README.
+- Lesson-completion and quiz-score state has a real, per-user `Progress`
+  model behind it (`/api/progress/...`, above) — `LessonPlayer.jsx`'s
+  current local `useState` just hasn't been swapped over to call it yet.
+- The very first admin account(s) come from `ADMIN_EMAILS` in `.env`,
+  checked once at signup — see the Admin API section above for promoting
+  anyone after that.

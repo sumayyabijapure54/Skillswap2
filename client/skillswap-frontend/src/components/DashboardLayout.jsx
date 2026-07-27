@@ -38,6 +38,7 @@ export default function DashboardLayout({ title, subtitle, children }){
   const { profile, logOut } = useUser();
   const initials = (profile.name || 'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const isMentor = profile.role === 'teach' || profile.role === 'both';
+  const [navOpen, setNavOpen] = React.useState(false);
 
   const isAdmin = profile.role === 'admin';
 
@@ -51,7 +52,12 @@ export default function DashboardLayout({ title, subtitle, children }){
 
   return (
     <div className="dash-shell">
-      <aside className="dash-sidebar">
+      <button className="dash-mobile-toggle" onClick={()=>setNavOpen(o=>!o)}>
+        <span className="ic">☰</span> {title || 'Menu'}
+        <span className="chev">{navOpen ? '▲' : '▼'}</span>
+      </button>
+
+      <aside className={`dash-sidebar ${navOpen ? 'open' : ''}`}>
         <div className="dash-user">
           <div className="dash-user-av">{initials}</div>
           <div>
@@ -64,7 +70,7 @@ export default function DashboardLayout({ title, subtitle, children }){
             <div className="dash-nav-group" key={gi}>
               {group.section && <div className="dash-nav-label">{group.section}</div>}
               {group.items.map(item=>(
-                <NavLink to={item.to} key={item.to} className={({isActive})=>`dash-nav-link ${isActive?'active':''}`}>
+                <NavLink to={item.to} key={item.to} onClick={()=>setNavOpen(false)} className={({isActive})=>`dash-nav-link ${isActive?'active':''}`}>
                   <span className="ic">{item.icon}</span>{item.label}
                 </NavLink>
               ))}

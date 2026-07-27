@@ -18,6 +18,9 @@ export async function requireAuth(req, res, next) {
     if (!user) {
       return res.status(401).json({ message: 'Not authorized — user no longer exists' });
     }
+    if (user.status === 'suspended') {
+      return res.status(403).json({ message: 'This account has been suspended' });
+    }
 
     req.user = user;
     next();
@@ -27,6 +30,14 @@ export async function requireAuth(req, res, next) {
     }
     return res.status(401).json({ message: 'Not authorized — invalid token' });
   }
+}
+
+// Chain after requireAuth on any /api/admin/* (or other admin-only) route.
+export function requireAdmin(req, res, next) {
+  if (!req.user?.isAdmin) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  next();
 }
 
 // Same idea as requireAuth, but for public routes that just want to know

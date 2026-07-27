@@ -57,7 +57,7 @@ export default function Messages(){
             const last = c.messages[c.messages.length-1];
             return (
               <div key={c.id} className={`chat-list-item ${active?.id===c.id?'active':''}`} onClick={()=>setActiveId(c.id)}>
-                <div className="dash-user-av" style={{width:'36px', height:'36px', fontSize:'12px'}}>{m?.initials}</div>
+                <div className="dash-user-av" style={{width:'36px', height:'36px', fontSize:'12px'}}>{m?.avatar ? <img src={m.avatar} alt={m.name} /> : m?.initials}</div>
                 <div className="chat-list-info">
                   <b>{m?.name || 'Member'}</b>
                   <span>{last ? last.text.slice(0,38)+(last.text.length>38?'…':'') : 'No messages yet'}</span>
@@ -71,7 +71,7 @@ export default function Messages(){
           {active ? (
             <>
               <div className="chat-pane-head">
-                <div className="dash-user-av" style={{width:'34px', height:'34px', fontSize:'12px'}}>{activeMentor?.initials}</div>
+                <div className="dash-user-av" style={{width:'34px', height:'34px', fontSize:'12px'}}>{activeMentor?.avatar ? <img src={activeMentor.avatar} alt={activeMentor.name} /> : activeMentor?.initials}</div>
                 <div>
                   <b style={{fontSize:'13.5px'}}>{activeMentor?.name || 'Member'}</b>
                   <div style={{fontSize:'11px', color:'var(--muted)'}}>{activeMentor?.role}</div>

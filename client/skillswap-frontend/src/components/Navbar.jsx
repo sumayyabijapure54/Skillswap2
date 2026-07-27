@@ -43,7 +43,7 @@ export default function Navbar(){
 
       {authed ? (
         <div className="nav-right">
-          <button className="icon-btn" onClick={()=>navigate('/explore')} aria-label="Search">⌕</button>
+          <button className="icon-btn" onClick={()=>navigate('/search')} aria-label="Search">⌕</button>
           <Link to="/notifications" className="icon-btn" style={{position:'relative'}} aria-label="Notifications">
             🔔
             {unread>0 && <span className="nav-badge">{unread}</span>}
@@ -69,7 +69,7 @@ export default function Navbar(){
         </div>
       ) : (
         <div className="nav-right">
-          <button className="icon-btn" onClick={()=>navigate('/explore')} aria-label="Search">⌕</button>
+          <button className="icon-btn" onClick={()=>navigate('/search')} aria-label="Search">⌕</button>
           <Link to="/login" className="btn-outline">Log in</Link>
           <Link to="/signup" className="btn-solid">Join Now</Link>
         </div>

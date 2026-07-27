@@ -57,7 +57,8 @@ export default function LessonPlayer(){
           </div>
         )}
 
-        <div className="video-frame">
+        <div className="video-frame" style={{backgroundImage:`url(https://picsum.photos/seed/${skill.id}/900/506)`, backgroundSize:'cover', backgroundPosition:'center'}}>
+          <div className="video-frame-scrim"></div>
           <div className="playbtn">▶</div>
           <div className="bar"><i style={{width: lesson.type==='Quiz' ? '0%' : '38%'}}></i></div>
         </div>

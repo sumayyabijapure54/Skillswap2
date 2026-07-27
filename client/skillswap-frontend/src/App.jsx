@@ -11,6 +11,10 @@ import SkillDetail from './pages/SkillDetail.jsx';
 import LessonPlayer from './pages/LessonPlayer.jsx';
 import Legal from './pages/Legal.jsx';
 import Help from './pages/Help.jsx';
+import About from './pages/About.jsx';
+import Contact from './pages/Contact.jsx';
+import Pricing from './pages/Pricing.jsx';
+import Search from './pages/Search.jsx';
 import SignUp from './pages/SignUp.jsx';
 import Login from './pages/Login.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
@@ -38,6 +42,7 @@ import PaymentHistory from './pages/PaymentHistory.jsx';
 import Certificates from './pages/Certificates.jsx';
 import CertificateDetail from './pages/CertificateDetail.jsx';
 import MentorDashboard from './pages/MentorDashboard.jsx';
+import AccountSettings from './pages/AccountSettings.jsx';
 import Recommendations from './pages/Recommendations.jsx';
 import RequireAdmin from './components/RequireAdmin.jsx';
 import AdminOverview from './pages/admin/AdminOverview.jsx';
@@ -53,7 +58,8 @@ const NO_FOOTER_EXACT = [
   '/signup', '/login', '/forgot-password', '/reset-password', '/verify-email', '/onboarding',
   '/dashboard', '/my-learning', '/learning-history', '/wishlist', '/profile', '/notifications',
   '/post-skill', '/community', '/messages', '/book-session', '/sessions', '/reviews',
-  '/checkout', '/wallet', '/payments', '/certificates', '/mentor-dashboard', '/recommendations'
+  '/checkout', '/wallet', '/payments', '/certificates', '/mentor-dashboard', '/recommendations',
+  '/account-settings'
 ];
 const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/certificate/', '/admin'];
 
@@ -80,6 +86,10 @@ export default function App(){
         <Route path="/mentor/:id" element={<MentorProfile />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/help" element={<Help />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -108,6 +118,7 @@ export default function App(){
         <Route path="/certificate/:skillId" element={<RequireAuth><CertificateDetail /></RequireAuth>} />
         <Route path="/mentor-dashboard" element={<RequireAuth><MentorDashboard /></RequireAuth>} />
         <Route path="/recommendations" element={<RequireAuth><Recommendations /></RequireAuth>} />
+        <Route path="/account-settings" element={<RequireAuth><AccountSettings /></RequireAuth>} />
 
         <Route path="/admin" element={<RequireAdmin><AdminOverview /></RequireAdmin>} />
         <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />

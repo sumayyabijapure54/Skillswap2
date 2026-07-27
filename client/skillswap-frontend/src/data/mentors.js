@@ -6,6 +6,7 @@
 export const mentors = [
   {
     id: 'alex-johnson', name: 'Alex Johnson', initials: 'AJ', role: 'Full Stack Developer',
+    avatar: 'https://i.pravatar.cc/300?img=12',
     rating: 4.9, reviews: 320, students: 3120,
     location: 'Austin, TX', timezone: 'GMT-5', responseTime: 'Usually replies within 2 hours',
     rate: 35,
@@ -23,6 +24,7 @@ export const mentors = [
   },
   {
     id: 'sarah-williams', name: 'Sarah Williams', initials: 'SW', role: 'UI/UX Designer',
+    avatar: 'https://i.pravatar.cc/300?img=47',
     rating: 4.8, reviews: 280, students: 2210,
     location: 'Toronto, ON', timezone: 'GMT-4', responseTime: 'Usually replies within 4 hours',
     rate: 30,
@@ -40,6 +42,7 @@ export const mentors = [
   },
   {
     id: 'david-smith', name: 'David Smith', initials: 'DS', role: 'Digital Marketer',
+    avatar: 'https://i.pravatar.cc/300?img=13',
     rating: 4.9, reviews: 410, students: 4100,
     location: 'London, UK', timezone: 'GMT+0', responseTime: 'Usually replies within 3 hours',
     rate: 28,
@@ -55,6 +58,7 @@ export const mentors = [
   },
   {
     id: 'emma-brown', name: 'Emma Brown', initials: 'EB', role: 'English Tutor',
+    avatar: 'https://i.pravatar.cc/300?img=45',
     rating: 4.8, reviews: 220, students: 1980,
     location: 'Manchester, UK', timezone: 'GMT+0', responseTime: 'Usually replies within 6 hours',
     rate: 22,
@@ -70,6 +74,7 @@ export const mentors = [
   },
   {
     id: 'james-carter', name: 'James Carter', initials: 'JC', role: 'Music Producer',
+    avatar: 'https://i.pravatar.cc/300?img=51',
     rating: 4.7, reviews: 165, students: 1540,
     location: 'Atlanta, GA', timezone: 'GMT-5', responseTime: 'Usually replies within 1 day',
     rate: 25,
@@ -85,6 +90,7 @@ export const mentors = [
   },
   {
     id: 'maria-lopez', name: 'Maria Lopez', initials: 'ML', role: 'Portrait Photographer',
+    avatar: 'https://i.pravatar.cc/300?img=32',
     rating: 4.8, reviews: 140, students: 1120,
     location: 'Barcelona, Spain', timezone: 'GMT+1', responseTime: 'Usually replies within 5 hours',
     rate: 27,
@@ -100,6 +106,7 @@ export const mentors = [
   },
   {
     id: 'priya-sharma', name: 'Priya Sharma', initials: 'PS', role: 'Home Baker & Instructor',
+    avatar: 'https://i.pravatar.cc/300?img=44',
     rating: 4.9, reviews: 305, students: 2670,
     location: 'Mumbai, India', timezone: 'GMT+5:30', responseTime: 'Usually replies within 3 hours',
     rate: 18,
@@ -115,6 +122,7 @@ export const mentors = [
   },
   {
     id: 'daniel-smith', name: 'Daniel Smith', initials: 'DS', role: 'Certified Trainer',
+    avatar: 'https://i.pravatar.cc/300?img=14',
     rating: 4.7, reviews: 190, students: 1890,
     location: 'Denver, CO', timezone: 'GMT-6', responseTime: 'Usually replies within 4 hours',
     rate: 24,

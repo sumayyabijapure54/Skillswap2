@@ -85,7 +85,10 @@ export const sendMessageSchema = z.object({
 
 export const createPostSchema = z.object({
   text: z.string().trim().min(1, 'text is required').max(2000),
-  tags: z.array(z.string().trim().min(1)).max(10).optional()
+  tags: z.array(z.string().trim().min(1)).max(10).optional(),
+  type: z.enum(['offer', 'request']).optional(),
+  category: z.string().trim().max(50).optional(),
+  title: z.string().trim().max(200).optional()
 });
 
 export const addCommentSchema = z.object({
@@ -119,4 +122,30 @@ export const updateSkillSchema = z.object({
   prerequisites: z.array(z.string().trim().min(1)).max(20).optional(),
   tags: z.array(z.string().trim().min(1)).max(20).optional(),
   lessons: z.array(lessonSchema).max(100).optional()
+});
+
+// --- mentor applications ---
+
+export const submitMentorApplicationSchema = z.object({
+  skillTitle: z.string().trim().min(1, 'skillTitle is required').max(150),
+  category: z.string().trim().min(1, 'category is required'),
+  bio: z.string().trim().min(1, 'bio is required').max(1000)
+});
+
+// --- progress ---
+
+export const recordQuizScoreSchema = z.object({
+  score: z.coerce.number().min(0, 'score must be 0 or more'),
+  total: z.coerce.number().positive('total must be greater than 0')
+}).refine((d) => d.score <= d.total, { message: 'score cannot exceed total', path: ['score'] });
+
+// --- reports ---
+
+export const createReportSchema = z.object({
+  type: z.enum(['message', 'skill_post', 'review', 'community_post', 'user'], {
+    errorMap: () => ({ message: 'type must be one of: message, skill_post, review, community_post, user' })
+  }),
+  targetId: z.string().trim().max(200).optional(),
+  reportedUserName: z.string().trim().min(1, 'reportedUserName is required').max(150),
+  reason: z.string().trim().min(1, 'reason is required').max(1000)
 });

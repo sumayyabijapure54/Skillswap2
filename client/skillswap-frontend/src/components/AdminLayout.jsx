@@ -12,10 +12,16 @@ const NAV = [
 export default function AdminLayout({ title, subtitle, children }) {
   const { profile, logOut } = useUser();
   const initials = (profile.name || 'A').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  const [navOpen, setNavOpen] = React.useState(false);
 
   return (
     <div className="dash-shell">
-      <aside className="dash-sidebar">
+      <button className="dash-mobile-toggle" onClick={()=>setNavOpen(o=>!o)}>
+        <span className="ic">☰</span> {title || 'Admin Menu'}
+        <span className="chev">{navOpen ? '▲' : '▼'}</span>
+      </button>
+
+      <aside className={`dash-sidebar ${navOpen ? 'open' : ''}`}>
         <div className="dash-user">
           <div className="dash-user-av">{initials}</div>
           <div>
@@ -27,14 +33,14 @@ export default function AdminLayout({ title, subtitle, children }) {
           <div className="dash-nav-group">
             <div className="dash-nav-label">Admin</div>
             {NAV.map(item => (
-              <NavLink to={item.to} key={item.to} end={item.end} className={({ isActive }) => `dash-nav-link ${isActive ? 'active' : ''}`}>
+              <NavLink to={item.to} key={item.to} end={item.end} onClick={()=>setNavOpen(false)} className={({ isActive }) => `dash-nav-link ${isActive ? 'active' : ''}`}>
                 <span className="ic">{item.icon}</span>{item.label}
               </NavLink>
             ))}
           </div>
           <div className="dash-nav-group">
             <div className="dash-nav-label">Member view</div>
-            <Link to="/dashboard" className="dash-nav-link"><span className="ic">↩</span>Back to app</Link>
+            <Link to="/dashboard" className="dash-nav-link" onClick={()=>setNavOpen(false)}><span className="ic">↩</span>Back to app</Link>
           </div>
         </nav>
         <button className="dash-logout" onClick={logOut}>⎋ Log out</button>

@@ -15,7 +15,7 @@ export default function Footer(){
           <ul>
             <li><Link to="/explore">Browse Skills</Link></li>
             <li><Link to="/explore">Find Mentors</Link></li>
-            <li><Link to="/pricing">Community</Link></li>
+            <li><Link to="/community">Community</Link></li>
             <li><Link to="/#how">How it Works</Link></li>
           </ul>
         </div>

@@ -24,8 +24,10 @@ import reviewsRoutes from './src/routes/reviewsRoutes.js';
 import messagesRoutes from './src/routes/messagesRoutes.js';
 import certificatesRoutes from './src/routes/certificatesRoutes.js';
 import communityRoutes from './src/routes/communityRoutes.js';
+import adminRoutes from './src/routes/adminRoutes.js';
+import mentorApplicationsRoutes from './src/routes/mentorApplicationsRoutes.js';
+import reportsRoutes from './src/routes/reportsRoutes.js';
 import { notFound, errorHandler } from './src/middleware/errorHandler.js';
-
 
 import dns from 'node:dns';
 
@@ -59,6 +61,9 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/certificates', certificatesRoutes);
 app.use('/api/community', communityRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/mentor-applications', mentorApplicationsRoutes);
+app.use('/api/reports', reportsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

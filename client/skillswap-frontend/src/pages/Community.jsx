@@ -57,7 +57,7 @@ export default function Community(){
               <div className="community-post" key={p.id}>
                 <div className="community-post-head">
                   <div className="feed-item" style={{padding:0, borderBottom:'none'}}>
-                    <div className="dot">{p.author.initials}</div>
+                    <div className="dot">{p.author.avatar ? <img src={p.author.avatar} alt={p.author.name} /> : p.author.initials}</div>
                     <p><b>{p.author.name}</b><br /><span>{relativeTime(p.createdAt)}</span></p>
                   </div>
                   <span className={`post-type-badge ${p.type}`}>{p.type==='offer' ? '🎓 Offering' : '🔍 Looking for'}</span>

@@ -23,7 +23,7 @@ export default function MentorProfile(){
       </div>
 
       <div className="skill-hero" style={{gridTemplateColumns:'auto 1fr 300px', alignItems:'flex-start', gap:'30px'}}>
-        <div className="profile-avatar-big" style={{width:'84px', height:'84px', fontSize:'26px'}}>{mentor.initials}</div>
+        <div className="profile-avatar-big" style={{width:'84px', height:'84px', fontSize:'26px'}}>{mentor.avatar ? <img src={mentor.avatar} alt={mentor.name} /> : mentor.initials}</div>
 
         <div>
           <h1 style={{marginBottom:'6px'}}>{mentor.name}</h1>

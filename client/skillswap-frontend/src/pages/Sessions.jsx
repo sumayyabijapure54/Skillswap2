@@ -22,7 +22,7 @@ export default function Sessions(){
             const mentor = getMentorById(b.mentorId);
             return (
               <div className="learning-row" key={b.id}>
-                <div className="learning-row-icon">{mentor?.initials}</div>
+                <div className="learning-row-icon">{mentor?.avatar ? <img src={mentor.avatar} alt={mentor.name} /> : mentor?.initials}</div>
                 <div className="learning-row-info">
                   <b>{b.sessionType} with {mentor?.name}</b>
                   <span>{b.day}, {b.time} · <span style={{color: b.status==='cancelled' ? 'var(--danger)' : 'var(--accent)'}}>{STATUS_LABEL[b.status]}</span></span>

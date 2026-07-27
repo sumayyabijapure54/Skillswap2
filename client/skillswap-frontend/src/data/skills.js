@@ -1,12 +1,12 @@
 export const categories = [
-  { key:'programming', label:'Programming', icon:'</>' },
-  { key:'design', label:'Design', icon:'🎨' },
-  { key:'languages', label:'Languages', icon:'🌐' },
-  { key:'business', label:'Business', icon:'💼' },
-  { key:'music', label:'Music', icon:'🎵' },
-  { key:'photography', label:'Photography', icon:'📷' },
-  { key:'cooking', label:'Cooking', icon:'🍳' },
-  { key:'fitness', label:'Fitness', icon:'🏋' }
+  { key:'programming', label:'Programming', icon:'</>', image:'https://picsum.photos/seed/programming-skillswap/500/360' },
+  { key:'design', label:'Design', icon:'🎨', image:'https://picsum.photos/seed/design-skillswap/500/360' },
+  { key:'languages', label:'Languages', icon:'🌐', image:'https://picsum.photos/seed/languages-skillswap/500/360' },
+  { key:'business', label:'Business', icon:'💼', image:'https://picsum.photos/seed/business-skillswap/500/360' },
+  { key:'music', label:'Music', icon:'🎵', image:'https://picsum.photos/seed/music-skillswap/500/360' },
+  { key:'photography', label:'Photography', icon:'📷', image:'https://picsum.photos/seed/photography-skillswap/500/360' },
+  { key:'cooking', label:'Cooking', icon:'🍳', image:'https://picsum.photos/seed/cooking-skillswap/500/360' },
+  { key:'fitness', label:'Fitness', icon:'🏋', image:'https://picsum.photos/seed/fitness-skillswap/500/360' }
 ];
 
 export const levels = ['Beginner', 'Intermediate', 'Advanced'];

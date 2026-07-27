@@ -51,7 +51,8 @@ function emptyState(){
     wallet: { balance: 50 },
     transactions: [
       { id:'tx-seed-1', type:'topup', amount:50, method:'card', description:'Welcome bonus credit', createdAt: daysAgo(10) }
-    ]
+    ],
+    settings: { emailNotifs:true, pushNotifs:true, smsNotifs:false, connectedGoogle:false, connectedGithub:false }
   };
 }
 
@@ -232,6 +233,17 @@ export function UserProvider({ children }){
     return id;
   };
 
+  const updateSettings = (patch) => setState(s => ({ ...s, settings:{ ...s.settings, ...patch } }));
+
+  const toggleConnectedAccount = (provider) => setState(s => ({
+    ...s, settings:{ ...s.settings, [`connected${provider}`]: !s.settings[`connected${provider}`] }
+  }));
+
+  // Mock password change — always "succeeds" since there's no real backend yet.
+  const changePassword = () => Promise.resolve({ ok:true });
+
+  const deleteAccount = () => setState(emptyState());
+
   const value = {
     ...state,
     signUp, logIn, verifyEmail, completeOnboarding, logOut,
@@ -239,7 +251,8 @@ export function UserProvider({ children }){
     markNotifRead, markAllNotifsRead,
     getOrCreateConversation, sendMessage,
     bookSession, payAndBookSession, cancelBooking, updateBookingNotes, markBookingCompleted, addReview,
-    topUpWallet
+    topUpWallet,
+    updateSettings, toggleConnectedAccount, changePassword, deleteAccount
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

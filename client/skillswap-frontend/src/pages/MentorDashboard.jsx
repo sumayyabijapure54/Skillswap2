@@ -4,8 +4,8 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 
 const MOCK_UPCOMING = [
-  { student:'Owen Kim', initials:'OK', topic:'React project review', day:'Wed', time:'4:00 PM' },
-  { student:'Ines Vidal', initials:'IV', topic:'Portfolio feedback', day:'Fri', time:'1:00 PM' }
+  { student:'Owen Kim', initials:'OK', avatar:'https://i.pravatar.cc/150?img=53', topic:'React project review', day:'Wed', time:'4:00 PM' },
+  { student:'Ines Vidal', initials:'IV', avatar:'https://i.pravatar.cc/150?img=48', topic:'Portfolio feedback', day:'Fri', time:'1:00 PM' }
 ];
 
 const MOCK_REVIEWS = [
@@ -51,7 +51,7 @@ export default function MentorDashboard(){
         <div className="my-learning-list" style={{marginBottom:'40px'}}>
           {MOCK_UPCOMING.map((s,i)=>(
             <div className="learning-row" key={i}>
-              <div className="learning-row-icon">{s.initials}</div>
+              <div className="learning-row-icon">{s.avatar ? <img src={s.avatar} alt={s.student} /> : s.initials}</div>
               <div className="learning-row-info">
                 <b>{s.topic}</b>
                 <span>with {s.student} · {s.day}, {s.time}</span>

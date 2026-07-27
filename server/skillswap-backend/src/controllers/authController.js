@@ -50,6 +50,17 @@ export async function signup(req, res, next) {
     }
 
     const user = await User.create({ name: name.trim(), email, password });
+
+    // Bootstrap mechanism for the very first admin account(s) — there's no
+    // signup flow for "become an admin", so ADMIN_EMAILS (comma-separated,
+    // set in .env) is checked once at account creation. Anyone made admin
+    // after that is promoted by an existing admin, not through this list.
+    const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+    if (adminEmails.includes(user.email.toLowerCase())) {
+      user.isAdmin = true;
+      await user.save();
+    }
+
     await issueAndSendOTP(user);
     await notifyUser({
       user: user._id,
@@ -73,6 +84,9 @@ export async function login(req, res, next) {
     const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+    if (user.status === 'suspended') {
+      return res.status(403).json({ message: 'This account has been suspended' });
     }
 
     const token = signToken(user);
@@ -106,6 +120,10 @@ export async function refresh(req, res, next) {
     if (!user) {
       await stored.deleteOne();
       return res.status(401).json(invalid);
+    }
+    if (user.status === 'suspended') {
+      await stored.deleteOne();
+      return res.status(403).json({ message: 'This account has been suspended' });
     }
 
     await stored.deleteOne();

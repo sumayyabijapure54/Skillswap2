@@ -63,3 +63,26 @@ export async function completeLesson(req, res, next) {
     next(err);
   }
 }
+
+// POST /api/progress/:skillId/lessons/:lessonId/quiz  { score, total }  (protected)
+// Auto-enrolls if needed, same reasoning as completeLesson — a quiz score
+// shouldn't get silently dropped just because enroll() was never called.
+export async function recordQuizScore(req, res, next) {
+  try {
+    const { skillId, lessonId } = req.params;
+    const { score, total } = req.body;
+
+    const entry = await Progress.findOneAndUpdate(
+      { user: req.user._id, skillId },
+      {
+        $setOnInsert: { user: req.user._id, skillId, completedLessons: [], enrolledAt: new Date() },
+        $set: { [`quizScores.${lessonId}`]: { score, total } }
+      },
+      { new: true, upsert: true }
+    );
+
+    res.json({ entry });
+  } catch (err) {
+    next(err);
+  }
+}

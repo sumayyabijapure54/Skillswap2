@@ -45,7 +45,16 @@ export default function SessionDetail(){
               <VideoCall mentorName={mentor?.name || 'your mentor'} onEnd={()=>setInCall(false)} />
             </div>
           ) : (
-            <div className="video-frame" style={{marginBottom:'20px'}} onClick={()=>setInCall(true)}>
+            <div
+              className="video-frame"
+              style={{
+                marginBottom:'20px',
+                backgroundImage: mentor?.avatar ? `url(${mentor.avatar})` : undefined,
+                backgroundSize:'cover', backgroundPosition:'center'
+              }}
+              onClick={()=>setInCall(true)}
+            >
+              <div className="video-frame-scrim"></div>
               <div className="playbtn">🎥</div>
             </div>
           )}

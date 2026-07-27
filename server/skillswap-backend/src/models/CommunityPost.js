@@ -19,6 +19,15 @@ const CommunityPostSchema = new Schema(
     authorName: { type: String, required: true },
     authorInitials: { type: String, required: true },
 
+    // The frontend's Community Feed / "Post a Skill" flow frames every post
+    // as either offering to teach something or asking to learn something,
+    // with a short title separate from the longer description (`text`) —
+    // these three are optional so the simpler "just post some text" shape
+    // still works for any other caller.
+    type: { type: String, enum: ['offer', 'request'], default: 'offer' },
+    category: { type: String, default: '', trim: true },
+    title: { type: String, default: '', trim: true },
+
     text: { type: String, required: true, trim: true, maxlength: 2000 },
     tags: { type: [String], default: [] },
 

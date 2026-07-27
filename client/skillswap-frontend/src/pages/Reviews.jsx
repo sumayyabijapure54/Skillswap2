@@ -20,7 +20,7 @@ export default function Reviews(){
             const mentor = getMentorById(r.mentorId);
             return (
               <div className="learning-row" key={r.id} style={{alignItems:'flex-start'}}>
-                <div className="learning-row-icon">{mentor?.initials}</div>
+                <div className="learning-row-icon">{mentor?.avatar ? <img src={mentor.avatar} alt={mentor.name} /> : mentor?.initials}</div>
                 <div className="learning-row-info" style={{flex:1}}>
                   <b>{mentor?.name}</b>
                   <div className="star-picker" style={{margin:'4px 0'}}>
