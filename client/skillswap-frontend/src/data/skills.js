@@ -30,7 +30,11 @@ export const skills = [
       { id:3, title:'Props and component composition', duration:'22 min', type:'Video' },
       { id:4, title:'State with useState', duration:'20 min', type:'Video' },
       { id:5, title:'Side effects with useEffect', duration:'24 min', type:'Video' },
-      { id:6, title:'Checkpoint quiz', duration:'10 min', type:'Quiz' },
+      { id:6, title:'Checkpoint quiz', duration:'10 min', type:'Quiz', quiz:[
+        { q:'What does JSX compile down to?', options:['HTML strings','React.createElement() calls','Web Components','CSS-in-JS'], correct:1 },
+        { q:'Which hook lets a component "remember" a value between renders?', options:['useEffect','useContext','useState','useMemo only'], correct:2 },
+        { q:'When does a useEffect with an empty dependency array [] run?', options:['On every render','Only once, after the first render','Never','Only on unmount'], correct:1 }
+      ] },
       { id:7, title:'Building a small project', duration:'34 min', type:'Video' }
     ]
   },
@@ -51,7 +55,11 @@ export const skills = [
       { id:2, title:'Frames, layers, and grids', duration:'16 min', type:'Video' },
       { id:3, title:'Auto layout essentials', duration:'20 min', type:'Video' },
       { id:4, title:'Building a component library', duration:'26 min', type:'Video' },
-      { id:5, title:'Checkpoint quiz', duration:'8 min', type:'Quiz' },
+      { id:5, title:'Checkpoint quiz', duration:'8 min', type:'Quiz', quiz:[
+        { q:'What is Auto Layout used for in Figma?', options:['Adding animations','Making frames resize responsively around their content','Exporting to code','Version history'], correct:1 },
+        { q:'What is the main benefit of building a component library?', options:['It makes files smaller','Consistent, reusable UI pieces across a design','It disables prototyping','It auto-generates copy'], correct:1 },
+        { q:'What does "handoff" typically refer to?', options:['Renaming a file','Passing finished designs to developers with specs/assets','Deleting old versions','Merging two frames'], correct:1 }
+      ] },
       { id:6, title:'Prototyping and handoff', duration:'18 min', type:'Video' }
     ]
   },
@@ -72,7 +80,11 @@ export const skills = [
       { id:2, title:'Keyword research workflow', duration:'22 min', type:'Video' },
       { id:3, title:'On-page optimization', duration:'20 min', type:'Video' },
       { id:4, title:'Reading Search Console data', duration:'18 min', type:'Video' },
-      { id:5, title:'Checkpoint quiz', duration:'9 min', type:'Quiz' }
+      { id:5, title:'Checkpoint quiz', duration:'9 min', type:'Quiz', quiz:[
+        { q:'What does "organic" traffic mean?', options:['Paid ad clicks','Unpaid visits from search engine results', 'Social media traffic only', 'Email newsletter clicks'], correct:1 },
+        { q:'Which tool would you check to see what search queries bring people to your site?', options:['Google Search Console','Photoshop','Figma','Slack'], correct:0 },
+        { q:'What is "on-page optimization" mainly about?', options:['Buying backlinks','Improving elements on your own page (titles, content, structure)','Running Facebook ads','Server uptime'], correct:1 }
+      ] }
     ]
   },
   {
@@ -92,7 +104,11 @@ export const skills = [
       { id:2, title:'Common grammar pitfalls', duration:'18 min', type:'Video' },
       { id:3, title:'Building fluent answers', duration:'22 min', type:'Video' },
       { id:4, title:'Practice test 1', duration:'30 min', type:'Video' },
-      { id:5, title:'Checkpoint quiz', duration:'10 min', type:'Quiz' }
+      { id:5, title:'Checkpoint quiz', duration:'10 min', type:'Quiz', quiz:[
+        { q:'What most commonly costs IELTS speaking candidates points?', options:['Perfect grammar','Hesitation and filler words','Speaking too slowly on purpose','Using a British accent'], correct:1 },
+        { q:"What is a good strategy when you don't know a word mid-sentence?", options:['Stop talking entirely','Paraphrase around it and keep going','Switch to your native language','Ask to restart the test'], correct:1 },
+        { q:'How many parts does the IELTS Speaking test typically have?', options:['1','2','3','5'], correct:2 }
+      ] }
     ]
   },
   {
@@ -112,7 +128,11 @@ export const skills = [
       { id:2, title:'Programming your first beat', duration:'24 min', type:'Video' },
       { id:3, title:'Layering melody and bass', duration:'20 min', type:'Video' },
       { id:4, title:'Intro to mixing', duration:'22 min', type:'Video' },
-      { id:5, title:'Checkpoint quiz', duration:'8 min', type:'Quiz' }
+      { id:5, title:'Checkpoint quiz', duration:'8 min', type:'Quiz', quiz:[
+        { q:'What does DAW stand for?', options:['Digital Audio Workstation','Direct Audio Wire','Dynamic Amplitude Wave','Dual Audio Width'], correct:0 },
+        { q:'What is sidechain compression commonly used for?', options:['Making a track louder overall','Ducking one sound (e.g. bass) when another (e.g. kick) hits','Adding reverb','Recording vocals'], correct:1 },
+        { q:'Why does the lesson recommend teaching inside whatever DAW you already use?', options:['All DAWs are identical','Fundamentals of mixing transfer regardless of software','You must switch software to learn properly','Free DAWs don\'t support mixing'], correct:1 }
+      ] }
     ]
   },
   {
@@ -131,7 +151,11 @@ export const skills = [
       { id:1, title:'Understanding natural light', duration:'14 min', type:'Video' },
       { id:2, title:'Composition and framing', duration:'16 min', type:'Video' },
       { id:3, title:'Directing your subject', duration:'20 min', type:'Video' },
-      { id:4, title:'Checkpoint quiz', duration:'7 min', type:'Quiz' }
+      { id:4, title:'Checkpoint quiz', duration:'7 min', type:'Quiz', quiz:[
+        { q:'What is generally the most flattering light for portraits?', options:['Harsh midday sun','Soft, diffused natural light','Direct on-camera flash','No light at all'], correct:1 },
+        { q:'What does "directing your subject" mainly involve?', options:['Ignoring the subject entirely','Giving clear, simple posing and expression guidance','Only shooting candids','Editing after the fact'], correct:1 },
+        { q:'Which is a composition technique mentioned for framing?', options:['Rule of thirds','Rule of fifths','Golden gate ratio','None of these'], correct:0 }
+      ] }
     ]
   },
   {
@@ -150,7 +174,11 @@ export const skills = [
       { id:1, title:'Baking science 101', duration:'12 min', type:'Video' },
       { id:2, title:'Your first loaf of bread', duration:'26 min', type:'Video' },
       { id:3, title:'Cookies and cakes', duration:'22 min', type:'Video' },
-      { id:4, title:'Checkpoint quiz', duration:'8 min', type:'Quiz' }
+      { id:4, title:'Checkpoint quiz', duration:'8 min', type:'Quiz', quiz:[
+        { q:'Why does baking rely more on precise measuring than general cooking?', options:['It doesn\'t, they\'re the same','Baking is a more exact chemical process','Ovens are always accurate','Flour never affects texture'], correct:1 },
+        { q:'What is a common cause of a dense loaf of bread?', options:['Too much kneading only','Under-proofing (not enough rise time)','Using a bowl instead of a pan','Too little salt'], correct:1 },
+        { q:'What does the lesson say is the goal of "baking science 101"?', options:['Memorizing recipes exactly','Building real intuition for why techniques work','Skipping measurements entirely','Only using pre-made mixes'], correct:1 }
+      ] }
     ]
   },
   {
@@ -169,7 +197,11 @@ export const skills = [
       { id:1, title:'Squat, hinge, push, pull, carry', duration:'16 min', type:'Video' },
       { id:2, title:'Squat and deadlift form', duration:'24 min', type:'Video' },
       { id:3, title:'Building your first split', duration:'18 min', type:'Video' },
-      { id:4, title:'Checkpoint quiz', duration:'8 min', type:'Quiz' }
+      { id:4, title:'Checkpoint quiz', duration:'8 min', type:'Quiz', quiz:[
+        { q:'Which of these is one of the 5 fundamental movement patterns mentioned?', options:['Hinge','Spin','Float','Bounce'], correct:0 },
+        { q:'Why are form checks over video emphasized?', options:['They aren\'t important','Bad form on compound lifts like squats/deadlifts risks injury','Only advanced lifters need form checks','Cameras improve strength directly'], correct:1 },
+        { q:'What is a "split" in the context of a training program?', options:['A stretching exercise','How you divide muscle groups/workouts across the week','A type of protein shake','A competition category'], correct:1 }
+      ] }
     ]
   }
 ];

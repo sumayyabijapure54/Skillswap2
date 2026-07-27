@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import Message from '../models/Message.js';
-import Notification from '../models/Notification.js';
 import User from '../models/User.js';
+import { parsePagination, paginationMeta } from '../utils/pagination.js';
+import { notifyUser } from '../utils/notify.js';
+import { getIO } from '../realtime/io.js';
 
 function initialsOf(name) {
   return (name || '')
@@ -12,12 +14,19 @@ function initialsOf(name) {
     .toUpperCase();
 }
 
-// GET /api/messages/conversations  (protected)
+// Mirrors Message's toJSON transform for .lean() results.
+function leanMessage(m) {
+  const { _id, __v, ...rest } = m;
+  return { id: _id, ...rest };
+}
+
+// GET /api/messages/conversations?page=&limit=  (protected)
 // One row per other participant: their info, the last message, and how
 // many of their messages to me are unread.
 export async function listConversations(req, res, next) {
   try {
     const meId = req.user._id;
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 30 });
 
     const rows = await Message.aggregate([
       { $match: { $or: [{ from: meId }, { to: meId }] } },
@@ -32,11 +41,13 @@ export async function listConversations(req, res, next) {
           unread: { $sum: { $cond: [{ $and: [{ $eq: ['$to', meId] }, { $eq: ['$read', false] }] }, 1, 0] } }
         }
       },
-      { $sort: { lastAt: -1 } }
+      { $sort: { lastAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
     ]);
 
     const otherIds = rows.map((r) => r._id);
-    const users = await User.find({ _id: { $in: otherIds } }).select('name');
+    const users = await User.find({ _id: { $in: otherIds } }).select('name').lean();
     const userById = Object.fromEntries(users.map((u) => [u._id.toString(), u]));
 
     const conversations = rows
@@ -54,15 +65,16 @@ export async function listConversations(req, res, next) {
         };
       });
 
-    res.json({ conversations });
+    res.json({ conversations, page, limit });
   } catch (err) {
     next(err);
   }
 }
 
-// GET /api/messages/:userId  (protected)
-// Full thread with one other user, oldest first. Marks their messages to
-// me as read as a side effect, same as opening a notification.
+// GET /api/messages/:userId?page=&limit=  (protected)
+// Thread with one other user, oldest first. page=1 is the most recent
+// `limit` messages, page=2 the ones before that, etc. Marks their messages
+// to me as read as a side effect, same as opening a notification.
 export async function getThread(req, res, next) {
   try {
     const { userId } = req.params;
@@ -70,22 +82,30 @@ export async function getThread(req, res, next) {
       return res.status(400).json({ message: 'Invalid user id' });
     }
 
-    const other = await User.findById(userId).select('name');
+    const other = await User.findById(userId).select('name').lean();
     if (!other) return res.status(404).json({ message: 'User not found' });
 
     const meId = req.user._id;
-    const messages = await Message.find({
+    const filter = {
       $or: [
         { from: meId, to: userId },
         { from: userId, to: meId }
       ]
-    }).sort({ createdAt: 1 });
+    };
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 100, maxLimit: 200 });
+
+    const [recentDesc, total] = await Promise.all([
+      Message.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Message.countDocuments(filter)
+    ]);
+    const messages = recentDesc.reverse().map(leanMessage);
 
     await Message.updateMany({ from: userId, to: meId, read: false }, { read: true });
 
     res.json({
       messages,
-      otherUser: { id: other._id, name: other.name, initials: initialsOf(other.name) }
+      otherUser: { id: other._id, name: other.name, initials: initialsOf(other.name) },
+      ...paginationMeta({ page, limit, total })
     });
   } catch (err) {
     next(err);
@@ -113,7 +133,11 @@ export async function sendMessage(req, res, next) {
 
     const message = await Message.create({ from: req.user._id, to: userId, text: text.trim() });
 
-    await Notification.create({
+    // Push the message itself in real time — the recipient's Sessions/Messages
+    // page (once wired) can just listen for 'message:new' instead of polling.
+    getIO()?.to(userId.toString()).emit('message:new', message.toJSON());
+
+    await notifyUser({
       user: userId,
       type: 'message',
       text: `${req.user.name} sent you a message`

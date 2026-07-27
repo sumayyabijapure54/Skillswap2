@@ -36,7 +36,15 @@ const UserSchema = new Schema(
     skillsWanted: { type: [String], default: [] },
 
     // Saved skills (Wishlist page)
-    wishlist: { type: [String], default: [] }
+    wishlist: { type: [String], default: [] },
+
+    // Wallet balance in whole currency units (dollars). Every new account
+    // starts with a $50 welcome credit, matching the frontend mock's seed
+    // state — see Transaction for the ledger of how the balance got here.
+    wallet: {
+      _id: false,
+      balance: { type: Number, default: 50, min: 0 }
+    }
   },
   { timestamps: true }
 );

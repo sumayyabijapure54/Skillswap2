@@ -1,0 +1,122 @@
+import { z } from 'zod';
+
+// --- auth ---
+
+export const signupSchema = z.object({
+  name: z.string().trim().min(1, 'name is required').max(100),
+  email: z.string().trim().toLowerCase().email('must be a valid email'),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(72)
+});
+
+export const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().email('must be a valid email'),
+  password: z.string().min(1, 'password is required')
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email('must be a valid email')
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'token is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(72)
+});
+
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, 'refreshToken is required')
+});
+
+export const logoutSchema = z.object({
+  refreshToken: z.string().min(1).optional()
+});
+
+// --- users ---
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'currentPassword is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters').max(72)
+});
+
+// --- bookings ---
+
+export const createBookingSchema = z.object({
+  skillId: z.string().trim().min(1, 'skillId is required'),
+  scheduledAt: z.coerce
+    .date({ invalid_type_error: 'scheduledAt must be a valid date' })
+    .refine((d) => d.getTime() > Date.now(), 'scheduledAt must be in the future'),
+  durationMinutes: z.coerce.number().int().positive().max(480).optional(),
+  notes: z.string().max(1000).optional()
+});
+
+export const checkoutBookingSchema = z.object({
+  skillId: z.string().trim().min(1, 'skillId is required'),
+  scheduledAt: z.coerce
+    .date({ invalid_type_error: 'scheduledAt must be a valid date' })
+    .refine((d) => d.getTime() > Date.now(), 'scheduledAt must be in the future'),
+  durationMinutes: z.coerce.number().int().positive().max(480).optional(),
+  notes: z.string().max(1000).optional(),
+  sessionType: z.string().trim().min(1, 'sessionType is required').max(100),
+  price: z.coerce.number().min(0, 'price must be 0 or more'),
+  method: z.enum(['card', 'wallet'], { errorMap: () => ({ message: "method must be 'card' or 'wallet'" }) })
+});
+
+// --- wallet ---
+
+export const topUpSchema = z.object({
+  amount: z.coerce.number().positive('amount must be greater than 0').max(100000),
+  method: z.literal('card').optional().default('card')
+});
+
+// --- reviews ---
+
+export const createReviewSchema = z.object({
+  bookingId: z.string().trim().min(1, 'bookingId is required'),
+  rating: z.coerce.number().min(1, 'rating must be between 1 and 5').max(5, 'rating must be between 1 and 5'),
+  comment: z.string().max(1000).optional()
+});
+
+// --- messages ---
+
+export const sendMessageSchema = z.object({
+  text: z.string().trim().min(1, 'text is required').max(2000)
+});
+
+// --- community ---
+
+export const createPostSchema = z.object({
+  text: z.string().trim().min(1, 'text is required').max(2000),
+  tags: z.array(z.string().trim().min(1)).max(10).optional()
+});
+
+export const addCommentSchema = z.object({
+  text: z.string().trim().min(1, 'text is required').max(500)
+});
+
+// --- skills ---
+
+const lessonSchema = z.object({
+  title: z.string().trim().min(1, 'lesson title is required'),
+  duration: z.string().max(50).optional(),
+  type: z.enum(['Video', 'Quiz']).optional()
+});
+
+export const createSkillSchema = z.object({
+  title: z.string().trim().min(1, 'title is required').max(150),
+  category: z.string().trim().min(1, 'category is required'),
+  level: z.string().trim().min(1, 'level is required'),
+  description: z.string().trim().min(1, 'description is required').max(3000),
+  duration: z.string().max(50).optional(),
+  mentorRole: z.string().max(100).optional(),
+  prerequisites: z.array(z.string().trim().min(1)).max(20).optional(),
+  tags: z.array(z.string().trim().min(1)).max(20).optional(),
+  lessons: z.array(lessonSchema).max(100).optional()
+});
+
+export const updateSkillSchema = z.object({
+  title: z.string().trim().min(1).max(150).optional(),
+  description: z.string().trim().min(1).max(3000).optional(),
+  duration: z.string().max(50).optional(),
+  prerequisites: z.array(z.string().trim().min(1)).max(20).optional(),
+  tags: z.array(z.string().trim().min(1)).max(20).optional(),
+  lessons: z.array(lessonSchema).max(100).optional()
+});

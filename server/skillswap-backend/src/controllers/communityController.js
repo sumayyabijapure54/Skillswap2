@@ -1,7 +1,6 @@
 import CommunityPost from '../models/CommunityPost.js';
-import Notification from '../models/Notification.js';
-
-const MAX_LIMIT = 50;
+import { parsePagination, paginationMeta } from '../utils/pagination.js';
+import { notifyUser } from '../utils/notify.js';
 
 function initialsOf(name) {
   return (name || '')
@@ -12,12 +11,32 @@ function initialsOf(name) {
     .toUpperCase();
 }
 
-// GET /api/community?limit=20  (protected)
+// Mirrors CommunityPost's toJSON({ viewerId }) transform for .lean() results.
+function leanPost(p, viewerId) {
+  const { _id, __v, user, likes, comments, ...rest } = p;
+  return {
+    id: _id,
+    ...rest,
+    likeCount: likes.length,
+    likedByMe: !!(viewerId && likes.some((id) => id.equals(viewerId))),
+    comments: comments.map((c) => ({ id: c._id, authorName: c.authorName, text: c.text, createdAt: c.createdAt }))
+  };
+}
+
+// GET /api/community?page=&limit=  (protected)
 export async function listPosts(req, res, next) {
   try {
-    const limit = Math.min(Number(req.query.limit) || 20, MAX_LIMIT);
-    const posts = await CommunityPost.find().sort({ createdAt: -1 }).limit(limit);
-    res.json({ posts: posts.map((p) => p.toJSON({ viewerId: req.user._id })) });
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 20 });
+
+    const [posts, total] = await Promise.all([
+      CommunityPost.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      CommunityPost.estimatedDocumentCount()
+    ]);
+
+    res.json({
+      posts: posts.map((p) => leanPost(p, req.user._id)),
+      ...paginationMeta({ page, limit, total })
+    });
   } catch (err) {
     next(err);
   }
@@ -77,7 +96,7 @@ export async function addComment(req, res, next) {
     await post.save();
 
     if (post.user.toString() !== req.user._id.toString()) {
-      await Notification.create({
+      await notifyUser({
         user: post.user,
         type: 'system',
         text: `${req.user.name} commented on your post`

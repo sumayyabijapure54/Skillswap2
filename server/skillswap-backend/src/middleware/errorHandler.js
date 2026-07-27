@@ -20,6 +20,11 @@ export function errorHandler(err, req, res, next) {
     return res.status(400).json({ message });
   }
 
+  // Multer upload errors (file too large, wrong type, etc.)
+  if (err.name === 'MulterError' || err.message?.includes('Only JPEG, PNG, or WEBP')) {
+    return res.status(400).json({ message: err.message });
+  }
+
   const status = err.statusCode || 500;
   res.status(status).json({
     message: err.message || 'Internal server error'

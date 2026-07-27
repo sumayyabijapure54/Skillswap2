@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const CertificateSchema = new Schema(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     skillId: { type: String, required: true }, // slug, matches Skill.id
 
     // Denormalized at issue time, same pattern as Booking/Review, so the
@@ -18,8 +18,11 @@ const CertificateSchema = new Schema(
   { timestamps: true }
 );
 
-// One certificate per user per skill — re-issuing just returns the existing one.
+// One certificate per user per skill — re-issuing just returns the existing
+// one. Also covers listMyCertificates's user filter; a separate compound
+// index adds the createdAt sort on top.
 CertificateSchema.index({ user: 1, skillId: 1 }, { unique: true });
+CertificateSchema.index({ user: 1, createdAt: -1 });
 
 CertificateSchema.set('toJSON', {
   transform: (_doc, ret) => {

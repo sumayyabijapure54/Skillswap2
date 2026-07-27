@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getSkillById } from '../data/skills.js';
 import { useUser } from '../context/UserContext.jsx';
+import Quiz from '../components/Quiz.jsx';
 import ComingSoon from './ComingSoon.jsx';
 
 const FILLER = [
@@ -13,7 +14,7 @@ const FILLER = [
 export default function LessonPlayer(){
   const { id } = useParams();
   const skill = getSkillById(id);
-  const { authed, enrolled, enroll, markLessonComplete } = useUser();
+  const { authed, enrolled, enroll, markLessonComplete, recordQuizScore } = useUser();
 
   const enrolledEntry = enrolled.find(e => e.skillId === id);
   const [activeIdx, setActiveIdx] = React.useState(0);
@@ -73,11 +74,25 @@ export default function LessonPlayer(){
         </div>
 
         {lesson.type==='Quiz' ? (
-          <div className="col-card" style={{marginBottom:'30px'}}>
-            <h3>Checkpoint quiz</h3>
-            <div className="desc">A short quiz to confirm what you've picked up so far. Multiple choice, no time limit.</div>
-            <button className="btn-primary-lg" style={{marginTop:'6px'}} onClick={markDoneAndNext}>Start quiz →</button>
-          </div>
+          lesson.quiz ? (
+            <div className="col-card" style={{marginBottom:'30px'}}>
+              <h3 style={{marginBottom:'4px'}}>Checkpoint quiz</h3>
+              <div className="desc" style={{marginBottom:'18px'}}>Answer all {lesson.quiz.length} questions, then submit to see your score.</div>
+              <Quiz
+                quiz={lesson.quiz}
+                onComplete={(score, total)=>{
+                  if(authed) recordQuizScore(skill.id, lesson.id, score, total);
+                  markDoneAndNext();
+                }}
+              />
+            </div>
+          ) : (
+            <div className="col-card" style={{marginBottom:'30px'}}>
+              <h3>Checkpoint quiz</h3>
+              <div className="desc">A short quiz to confirm what you've picked up so far. Multiple choice, no time limit.</div>
+              <button className="btn-primary-lg" style={{marginTop:'6px'}} onClick={markDoneAndNext}>Start quiz →</button>
+            </div>
+          )
         ) : (
           <div className="lesson-body">
             {FILLER.map((p,i)=><p key={i}>{p}</p>)}
@@ -86,9 +101,11 @@ export default function LessonPlayer(){
 
         <div className="lesson-nav">
           <button className="btn-ghost-lg" disabled={activeIdx===0} style={activeIdx===0?{opacity:0.4, cursor:'not-allowed'}:{}} onClick={()=>setActiveIdx(Math.max(0,activeIdx-1))}>← Previous</button>
-          <button className="btn-primary-lg" onClick={markDoneAndNext}>
-            {activeIdx===skill.lessons.length-1 ? 'Mark complete ✓' : 'Complete & continue →'}
-          </button>
+          {!(lesson.type==='Quiz' && lesson.quiz) && (
+            <button className="btn-primary-lg" onClick={markDoneAndNext}>
+              {activeIdx===skill.lessons.length-1 ? 'Mark complete ✓' : 'Complete & continue →'}
+            </button>
+          )}
         </div>
       </div>
 

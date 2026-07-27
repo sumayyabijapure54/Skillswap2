@@ -29,7 +29,7 @@ export default function LearningHistory(){
                   <span>{cat?.label} · Completed · {e.skill.lessons.length} lessons</span>
                 </div>
                 <div className="learning-row-pct" style={{color:'var(--accent)'}}>100%</div>
-                <Link to="/certificates" className="btn-outline">View certificate</Link>
+                <Link to={`/certificate/${e.skillId}`} className="btn-outline">View certificate</Link>
               </div>
             );
           })}

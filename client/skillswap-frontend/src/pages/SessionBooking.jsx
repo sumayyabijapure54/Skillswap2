@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { getMentorById } from '../data/mentors.js';
-import { useUser } from '../context/UserContext.jsx';
 import ComingSoon from './ComingSoon.jsx';
 
 const SESSION_TYPES = [
@@ -14,7 +13,6 @@ export default function SessionBooking(){
   const { mentorId } = useParams();
   const mentor = getMentorById(mentorId);
   const navigate = useNavigate();
-  const { bookSession } = useUser();
 
   const [day, setDay] = React.useState(null);
   const [time, setTime] = React.useState(null);
@@ -26,11 +24,10 @@ export default function SessionBooking(){
 
   const canConfirm = day && time && sessionType;
 
-  const onConfirm = ()=>{
+  const onContinue = ()=>{
     if(!canConfirm) return;
     const typeLabel = SESSION_TYPES.find(t=>t.key===sessionType)?.label;
-    const id = bookSession({ mentorId: mentor.id, skillId: null, day, time, sessionType: typeLabel });
-    navigate(`/session/${id}`);
+    navigate('/checkout', { state: { mentorId: mentor.id, skillId:null, day, time, sessionType: typeLabel, price: mentor.rate } });
   };
 
   return (
@@ -81,8 +78,8 @@ export default function SessionBooking(){
             <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid var(--border)', fontSize:'12.5px', color:'var(--muted)'}}>When <b style={{color:'var(--text)'}}>{day && time ? `${day}, ${time}` : 'Not selected'}</b></li>
             <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:'12.5px', color:'var(--muted)'}}>Price <b style={{color:'var(--text)'}}>${mentor.rate}</b></li>
           </ul>
-          <button className="btn-primary-lg btn-full" disabled={!canConfirm} style={!canConfirm?{opacity:0.45, cursor:'not-allowed'}:{}} onClick={onConfirm}>
-            Confirm booking →
+          <button className="btn-primary-lg btn-full" disabled={!canConfirm} style={!canConfirm?{opacity:0.45, cursor:'not-allowed'}:{}} onClick={onContinue}>
+            Continue to checkout →
           </button>
         </div>
       </div>

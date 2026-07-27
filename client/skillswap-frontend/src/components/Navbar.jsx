@@ -58,6 +58,7 @@ export default function Navbar(){
                 <Link to="/my-learning" onClick={()=>setMenuOpen(false)}>▶ My Learning</Link>
                 <Link to="/wishlist" onClick={()=>setMenuOpen(false)}>☆ Wishlist</Link>
                 <Link to="/certificates" onClick={()=>setMenuOpen(false)}>🎓 Certificates</Link>
+                <Link to="/wallet" onClick={()=>setMenuOpen(false)}>◎ Wallet</Link>
                 <Link to="/profile" onClick={()=>setMenuOpen(false)}>👤 Profile</Link>
                 <Link to="/account-settings" onClick={()=>setMenuOpen(false)}>⚙ Settings</Link>
                 <div className="nav-dropdown-sep"></div>

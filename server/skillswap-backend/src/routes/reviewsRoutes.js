@@ -6,6 +6,8 @@ import {
   listReviewableBookings
 } from '../controllers/reviewsController.js';
 import { requireAuth } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { createReviewSchema } from '../validation/schemas.js';
 
 const router = Router();
 
@@ -15,6 +17,6 @@ const router = Router();
 router.get('/mine', requireAuth, listMyReviews);
 router.get('/reviewable', requireAuth, listReviewableBookings);
 router.get('/skill/:skillId', listSkillReviews);
-router.post('/', requireAuth, createReview);
+router.post('/', requireAuth, validate(createReviewSchema), createReview);
 
 export default router;

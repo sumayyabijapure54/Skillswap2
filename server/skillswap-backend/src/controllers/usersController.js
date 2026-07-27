@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
 import Notification from '../models/Notification.js';
@@ -5,6 +7,9 @@ import Progress from '../models/Progress.js';
 import Review from '../models/Review.js';
 import Message from '../models/Message.js';
 import Skill from '../models/Skill.js';
+import RefreshToken from '../models/RefreshToken.js';
+import CommunityPost from '../models/CommunityPost.js';
+import { AVATAR_DIR_ABS, AVATAR_URL_PREFIX } from '../middleware/upload.js';
 
 const PROFILE_FIELDS = ['name', 'email', 'bio', 'avatar', 'skillsOffered', 'skillsWanted'];
 
@@ -68,6 +73,10 @@ export async function changePassword(req, res, next) {
     user.password = newPassword; // re-hashed by the pre-save hook
     await user.save();
 
+    // Changing the password ends every other session — if the change was
+    // prompted by a compromise, this locks the attacker out immediately.
+    await RefreshToken.deleteMany({ user: req.user._id });
+
     res.json({ message: 'Password updated' });
   } catch (err) {
     next(err);
@@ -82,6 +91,7 @@ export async function changePassword(req, res, next) {
 export async function deleteAccount(req, res, next) {
   try {
     const userId = req.user._id;
+    const user = await User.findById(userId);
 
     await Promise.all([
       Booking.deleteMany({ user: userId }),
@@ -89,12 +99,60 @@ export async function deleteAccount(req, res, next) {
       Progress.deleteMany({ user: userId }),
       Review.deleteMany({ user: userId }),
       Message.deleteMany({ $or: [{ from: userId }, { to: userId }] }),
-      Skill.updateMany({ mentorUser: userId }, { mentorUser: null })
+      Skill.updateMany({ mentorUser: userId }, { mentorUser: null }),
+      RefreshToken.deleteMany({ user: userId }),
+      CommunityPost.deleteMany({ user: userId })
     ]);
+
+    if (user?.avatar?.startsWith(AVATAR_URL_PREFIX)) {
+      fs.unlink(path.join(AVATAR_DIR_ABS, path.basename(user.avatar)), () => {}); // best-effort
+    }
 
     await User.findByIdAndDelete(userId);
 
     res.json({ message: 'Account deleted' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/users/me/avatar  (protected, multipart/form-data, field "avatar")
+export async function uploadUserAvatar(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded — send it as multipart/form-data under field "avatar"' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const oldAvatar = user.avatar;
+
+    user.avatar = `${AVATAR_URL_PREFIX}${req.file.filename}`;
+    await user.save();
+
+    // Best-effort cleanup of the file this one replaces.
+    if (oldAvatar && oldAvatar.startsWith(AVATAR_URL_PREFIX)) {
+      fs.unlink(path.join(AVATAR_DIR_ABS, path.basename(oldAvatar)), () => {});
+    }
+
+    res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// DELETE /api/users/me/avatar  (protected) — reset back to initials
+export async function removeUserAvatar(req, res, next) {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user.avatar && user.avatar.startsWith(AVATAR_URL_PREFIX)) {
+      fs.unlink(path.join(AVATAR_DIR_ABS, path.basename(user.avatar)), () => {});
+    }
+
+    user.avatar = '';
+    await user.save();
+
+    res.json({ user });
   } catch (err) {
     next(err);
   }

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   listSkills,
   getSkillById,
+  getSkillFull,
   getCategories,
   getLevels,
   listUnclaimedSkills,
@@ -12,7 +13,9 @@ import {
   updateSkill,
   deleteSkill
 } from '../controllers/skillsController.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, optionalAuth } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { createSkillSchema, updateSkillSchema } from '../validation/schemas.js';
 
 const router = Router();
 
@@ -24,9 +27,10 @@ router.get('/mentor/available', requireAuth, listUnclaimedSkills);
 router.get('/mentor/mine', requireAuth, listMySkills);
 
 router.get('/', listSkills);
-router.post('/', requireAuth, createSkill);
+router.post('/', requireAuth, validate(createSkillSchema), createSkill);
+router.get('/:id/full', optionalAuth, getSkillFull);
 router.get('/:id', getSkillById);
-router.patch('/:id', requireAuth, updateSkill);
+router.patch('/:id', requireAuth, validate(updateSkillSchema), updateSkill);
 router.delete('/:id', requireAuth, deleteSkill);
 router.patch('/:id/claim', requireAuth, claimSkillMentor);
 router.patch('/:id/unclaim', requireAuth, unclaimSkillMentor);

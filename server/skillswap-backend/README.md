@@ -280,6 +280,44 @@ Mentor name/initials/skill title are copied onto the booking at creation
 time, so a session still displays correctly even if the skill's mentor info
 changes later.
 
+**Paid checkout (Checkout page):**
+
+Plain `POST /api/bookings` above creates a free/unpaid booking. For the
+Checkout flow (mentor picker → session type/availability → pay), use this
+instead — it books the session **and** records the payment atomically,
+inside a Mongo session transaction, so a booking can never exist unpaid
+(mirrors the frontend mock's `payAndBookSession`):
+
+| Method | Route | Body | Description |
+|---|---|---|---|
+| POST | `/api/bookings/checkout` | `{ skillId, scheduledAt, durationMinutes?, notes?, sessionType, price, method }` | Books + pays in one step → `{ booking, wallet: { balance } }`. `method` is `"card"` or `"wallet"`. `400` if `method: "wallet"` and the balance is short. |
+
+Cancelling a **paid** booking that hasn't happened yet (`PATCH
+/api/bookings/:id/cancel`) now also refunds the price to the learner's
+wallet — regardless of the original payment method — and logs a `refund`
+transaction. The response becomes `{ booking, wallet: { balance } }` when a
+refund happened, or just `{ booking }` otherwise.
+
+**Mentor earnings (Mentor Dashboard):**
+
+| Method | Route | Description |
+|---|---|---|
+| GET | `/api/bookings/mentor/earnings` | Real numbers computed from your paid/completed bookings + reviews → `{ earnings, studentsCount, upcomingCount, avgRating, reviewsCount }` |
+
+## Wallet API
+
+Base path: `/api/wallet`. All protected. Every new account starts with a
+$50 welcome credit (`user.wallet.balance`), matching the frontend mock's
+seed state. Every balance change (top-up, paid checkout, refund) is logged
+as a `Transaction` — the ledger `PaymentHistory.jsx` and the Wallet page's
+"recent activity" list can filter/display directly.
+
+| Method | Route | Body | Description |
+|---|---|---|---|
+| GET | `/api/wallet` | — | Current balance → `{ wallet: { balance } }` |
+| GET | `/api/wallet/transactions?page=&limit=` | — | Full ledger, newest first → `{ transactions: [...], page, limit, total, totalPages }`. Each transaction has `type` (`topup`\|`session_payment`\|`refund`), a signed `amount`, `method`, `description`, and `booking` (id or null). |
+| POST | `/api/wallet/topup` | `{ amount, method? }` | Card top-up (method defaults to `"card"`) → `201 { wallet: { balance }, transaction }` |
+
 ## Email
 
 Set `SMTP_HOST` (and `SMTP_USER`/`SMTP_PASS` if required) in `.env` to send
@@ -350,7 +388,12 @@ skillswap-backend/
       User.js                    User schema (auth, verification, onboarding, profile, wishlist)
       Progress.js                 Per-user, per-skill lesson completion
       Notification.js             Per-user notification feed
-      Booking.js                   Per-user mentor session bookings
+      Booking.js                   Per-user mentor session bookings (+ price/paid/paymentMethod)
+      Transaction.js                Wallet ledger entries (topup/session_payment/refund)
+      Review.js                     Per-booking mentor reviews
+      Certificate.js                 Auto-issued on 100% skill completion
+      CommunityPost.js                Skill-exchange offers/requests
+      Message.js                      Direct messages (realtime via Socket.io)
     controllers/
       skillsController.js        list/detail/meta route handlers
       authController.js          signup/login/me/verify/resend/forgot/reset
@@ -358,7 +401,8 @@ skillswap-backend/
       progressController.js       list/enroll/complete-lesson
       wishlistController.js       toggle
       notificationsController.js  list/mark-read/mark-all-read
-      bookingsController.js       create/list/cancel
+      bookingsController.js       create/checkout/list/cancel(+refund)/mentor earnings
+      walletController.js          balance/transactions/top-up
     routes/                       one router per resource above
     middleware/
       errorHandler.js             404 + central error handler (incl. duplicate-key/validation messages)

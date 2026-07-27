@@ -1,6 +1,17 @@
 import Review from '../models/Review.js';
 import Booking from '../models/Booking.js';
 import Skill from '../models/Skill.js';
+import { parsePagination, paginationMeta } from '../utils/pagination.js';
+
+// Mirrors Review's toJSON transform for .lean() results.
+export function leanReview(r) {
+  const { _id, __v, user, ...rest } = r;
+  const out = { id: _id, ...rest };
+  if (user && typeof user === 'object' && user.name) {
+    out.reviewer = { id: user._id, name: user.name };
+  }
+  return out;
+}
 
 // Recomputes a skill's aggregate rating/review count from its Review
 // documents and writes them onto both `skill.rating`/`skill.reviews` and
@@ -74,23 +85,35 @@ export async function createReview(req, res, next) {
   }
 }
 
-// GET /api/reviews/skill/:skillId  (public)
+// GET /api/reviews/skill/:skillId?page=&limit=  (public)
 export async function listSkillReviews(req, res, next) {
   try {
-    const reviews = await Review.find({ skillId: req.params.skillId })
-      .sort({ createdAt: -1 })
-      .populate('user', 'name');
-    res.json({ reviews });
+    const filter = { skillId: req.params.skillId };
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 20 });
+
+    const [reviews, total] = await Promise.all([
+      Review.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).populate('user', 'name').lean(),
+      Review.countDocuments(filter)
+    ]);
+
+    res.json({ reviews: reviews.map(leanReview), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }
 }
 
-// GET /api/reviews/mine  (protected) — reviews the current user has written
+// GET /api/reviews/mine?page=&limit=  (protected) — reviews the current user has written
 export async function listMyReviews(req, res, next) {
   try {
-    const reviews = await Review.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json({ reviews });
+    const filter = { user: req.user._id };
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 20 });
+
+    const [reviews, total] = await Promise.all([
+      Review.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Review.countDocuments(filter)
+    ]);
+
+    res.json({ reviews: reviews.map(leanReview), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }

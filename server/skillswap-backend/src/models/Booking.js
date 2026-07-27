@@ -8,21 +8,36 @@ const BookingSchema = new Schema(
     skillId: { type: String, required: true }, // slug, matches Skill.id
 
     // Denormalized at booking time so a session still reads correctly even
-    // if the skill's mentor info changes later.
+    // if the skill's mentor info changes later. mentorUser is a snapshot
+    // too — if the mentor later unclaims the skill, this booking should
+    // stay theirs, not silently transfer to whoever claims it next. It
+    // also lets listMentorBookings query directly instead of first looking
+    // up which skills the mentor owns.
     skillTitle: { type: String, required: true },
     mentorName: { type: String, required: true },
     mentorInitials: { type: String, required: true },
+    mentorUser: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
 
     scheduledAt: { type: Date, required: true },
     durationMinutes: { type: Number, default: 45 },
     notes: { type: String, default: '', trim: true },
+    sessionType: { type: String, default: '', trim: true },
 
-    status: { type: String, enum: ['confirmed', 'cancelled', 'completed'], default: 'confirmed' }
+    status: { type: String, enum: ['confirmed', 'cancelled', 'completed'], default: 'confirmed' },
+
+    // Payment (set by POST /api/bookings/checkout — plain POST /api/bookings
+    // still creates a free/unpaid booking for skills with no session price).
+    price: { type: Number, default: 0 },
+    paid: { type: Boolean, default: false },
+    paymentMethod: { type: String, enum: ['card', 'wallet', null], default: null }
   },
   { timestamps: true }
 );
 
-BookingSchema.index({ user: 1, scheduledAt: 1 });
+// Covers listBookings (learner) and listMentorBookings, both of which
+// filter on status and sort/range on scheduledAt.
+BookingSchema.index({ user: 1, status: 1, scheduledAt: 1 });
+BookingSchema.index({ mentorUser: 1, status: 1, scheduledAt: 1 });
 
 BookingSchema.set('toJSON', {
   transform: (_doc, ret) => {
@@ -35,6 +50,7 @@ BookingSchema.set('toJSON', {
       ret.learner = { id: ret.user._id, name: ret.user.name, email: ret.user.email };
     }
     delete ret.user;
+    delete ret.mentorUser;
     return ret;
   }
 });

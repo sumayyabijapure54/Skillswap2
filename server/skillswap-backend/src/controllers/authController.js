@@ -1,16 +1,34 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import Notification from '../models/Notification.js';
+import RefreshToken from '../models/RefreshToken.js';
 import { sendMail, otpEmailHtml, resetPasswordEmailHtml } from '../utils/email.js';
-import { generateOTP, generateResetToken, hashToken } from '../utils/tokens.js';
+import { generateOTP, generateResetToken, generateRefreshToken, hashToken } from '../utils/tokens.js';
+import { notifyUser } from '../utils/notify.js';
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const RESET_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 function signToken(user) {
   return jwt.sign({ sub: user._id.toString() }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   });
+}
+
+// Issues a new refresh token for a user and stores its hash. The access
+// token's own expiry (JWT_EXPIRES_IN, default 7d) is left as-is here so
+// existing clients that don't yet call /refresh keep working unchanged —
+// this is purely additive. A client that wants shorter-lived access tokens
+// can set JWT_EXPIRES_IN lower and start calling POST /api/auth/refresh
+// with the refreshToken returned alongside it.
+async function issueRefreshToken(user) {
+  const { rawToken, hashedToken } = generateRefreshToken();
+  await RefreshToken.create({
+    user: user._id,
+    tokenHash: hashedToken,
+    expiresAt: new Date(Date.now() + REFRESH_TTL_MS)
+  });
+  return rawToken;
 }
 
 async function issueAndSendOTP(user) {
@@ -21,17 +39,10 @@ async function issueAndSendOTP(user) {
   await sendMail({ to: user.email, subject: 'Verify your SkillSwap email', html: otpEmailHtml(user.name, otp) });
 }
 
-// POST /api/auth/signup
+// POST /api/auth/signup  (validated by signupSchema)
 export async function signup(req, res, next) {
   try {
     const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'name, email, and password are all required' });
-    }
-    if (password.length < 8) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters' });
-    }
 
     const existing = await User.findOne({ email: email.toLowerCase().trim() });
     if (existing) {
@@ -40,27 +51,24 @@ export async function signup(req, res, next) {
 
     const user = await User.create({ name: name.trim(), email, password });
     await issueAndSendOTP(user);
-    await Notification.create({
+    await notifyUser({
       user: user._id,
       type: 'system',
       text: 'Welcome to SkillSwap! Complete your profile to get better matches.'
     });
 
     const token = signToken(user);
-    res.status(201).json({ token, user });
+    const refreshToken = await issueRefreshToken(user);
+    res.status(201).json({ token, refreshToken, user });
   } catch (err) {
     next(err);
   }
 }
 
-// POST /api/auth/login
+// POST /api/auth/login  (validated by loginSchema)
 export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: 'email and password are required' });
-    }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
     if (!user || !(await user.comparePassword(password))) {
@@ -68,9 +76,60 @@ export async function login(req, res, next) {
     }
 
     const token = signToken(user);
+    const refreshToken = await issueRefreshToken(user);
     user.password = undefined;
 
-    res.json({ token, user });
+    res.json({ token, refreshToken, user });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/auth/refresh  { refreshToken }  (validated by refreshTokenSchema)
+// Rotates the refresh token (old one is deleted, a new one issued) so a
+// leaked-and-reused token can't silently keep working forever.
+export async function refresh(req, res, next) {
+  try {
+    const { refreshToken } = req.body;
+    const tokenHash = hashToken(refreshToken);
+
+    const stored = await RefreshToken.findOne({ tokenHash });
+    const invalid = { message: 'Refresh token is invalid or expired — please log in again' };
+
+    if (!stored) return res.status(401).json(invalid);
+    if (stored.expiresAt < new Date()) {
+      await stored.deleteOne();
+      return res.status(401).json(invalid);
+    }
+
+    const user = await User.findById(stored.user);
+    if (!user) {
+      await stored.deleteOne();
+      return res.status(401).json(invalid);
+    }
+
+    await stored.deleteOne();
+    const token = signToken(user);
+    const newRefreshToken = await issueRefreshToken(user);
+
+    res.json({ token, refreshToken: newRefreshToken });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/auth/logout  { refreshToken? }  (protected)
+// Revokes one session (the device that sent refreshToken) if provided,
+// otherwise every session for this account — "log out everywhere".
+export async function logout(req, res, next) {
+  try {
+    const { refreshToken } = req.body;
+    if (refreshToken) {
+      await RefreshToken.deleteOne({ tokenHash: hashToken(refreshToken), user: req.user._id });
+    } else {
+      await RefreshToken.deleteMany({ user: req.user._id });
+    }
+    res.json({ message: 'Logged out' });
   } catch (err) {
     next(err);
   }
@@ -124,11 +183,10 @@ export async function resendOTP(req, res, next) {
   }
 }
 
-// POST /api/auth/forgot-password  { email }
+// POST /api/auth/forgot-password  { email }  (validated by forgotPasswordSchema)
 export async function forgotPassword(req, res, next) {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ message: 'email is required' });
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
 
@@ -180,6 +238,10 @@ export async function resetPassword(req, res, next) {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
+
+    // A password reset should end every existing session, not just the one
+    // that requested it — in case the reset was prompted by a compromise.
+    await RefreshToken.deleteMany({ user: user._id });
 
     res.json({ message: 'Password updated — you can now log in' });
   } catch (err) {

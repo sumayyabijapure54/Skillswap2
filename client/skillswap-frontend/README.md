@@ -1,4 +1,4 @@
-# SkillSwap — Phase 1 + 2 + 3 + 4 Frontend
+# SkillSwap — Phase 1 + 2 + 3 + 4 + 5 Frontend
 
 React + Vite frontend for the SkillSwap MVP, covering:
 
@@ -6,7 +6,7 @@ React + Vite frontend for the SkillSwap MVP, covering:
 - `/` — Home
 - `/explore` — Explore / Browse Skills (working filters, search, sort)
 - `/skill/:id` — Skill Detail (curriculum, prerequisites, mentor sidebar)
-- `/learn/:id` — Course/Lesson Player (sidebar progress, next/prev, quiz checkpoint)
+- `/learn/:id` — Course/Lesson Player (sidebar progress, next/prev, real quizzes)
 - `/legal` — Terms, Privacy, Cookie & Refund policies (tabbed single page)
 - `/help` — Help Center / FAQ (search + accordion)
 
@@ -32,12 +32,24 @@ React + Vite frontend for the SkillSwap MVP, covering:
 - `/community` — Community Feed, filterable by type/category/search (behind `RequireAuth`)
 - `/messages` — Chat/Messages, two-pane thread view (behind `RequireAuth`)
 - `/book-session` → `/book/:mentorId` — Session Booking Flow: mentor picker →
-  session type + availability grid → confirm (behind `RequireAuth`)
-- `/sessions` — Upcoming Sessions list, cancel bookings (behind `RequireAuth`)
+  session type + availability grid → **Checkout** (behind `RequireAuth`)
+- `/sessions` — Upcoming Sessions list, cancel bookings — refunds to wallet if paid (behind `RequireAuth`)
 - `/session/:id` — Session Detail/Room: notes, mark-complete, leave a review (behind `RequireAuth`)
 - `/reviews` — Reviews you've written (behind `RequireAuth`)
 
-Any other route (Pricing, About, Certificates, Account Settings, etc. — later phases)
+**Phase 5 — Monetization & Mentor Side** (behind `RequireAuth`)
+- `/checkout` — Pay for a booked session by card (mock) or wallet balance
+- `/wallet` — Wallet balance, quick top-up amounts + custom amount, recent activity
+- `/payments` — Full payment history/invoices, filterable by transaction type
+- `/certificates` → `/certificate/:skillId` — Auto-earned on 100% skill completion;
+  printable-style certificate with a real certificate ID
+- `/mentor-dashboard` — Earnings, students taught, upcoming teaching sessions,
+  reviews received (shown in the sidebar nav only when onboarding role is "teach"/"both")
+- **Quiz/Assessment** isn't a separate route — every checkpoint quiz lesson inside
+  `/learn/:id` now has real multiple-choice questions (see `Quiz.jsx`), with
+  scoring, a right/wrong review screen, and scores saved to progress
+
+Any other route (Pricing, About, Account Settings, etc. — later phases)
 falls back to a "coming in a later phase" placeholder instead of a dead link.
 
 ## Stack
@@ -54,10 +66,13 @@ falls back to a "coming in a later phase" placeholder instead of a dead link.
   "Wiring up the backend" below).
 - **All app state lives in two contexts**, both persisted to `localStorage`:
   - `UserContext` — auth, profile, enrolled/progress, wishlist, notifications,
-    conversations, bookings, reviews
+    conversations, bookings, reviews, wallet, transactions
   - `CommunityContext` — skill-exchange posts (offers/requests)
   - Guests can still play lessons (per the IA: content is viewable without login), but
     progress only sticks once logged in; `LessonPlayer` handles both cases.
+  - Checkout is atomic: `payAndBookSession` creates the booking AND the payment
+    record in one state update, so a booking can never exist unpaid. Wallet
+    payments are rejected client-side if the balance is short.
 
 ## Getting started
 
@@ -96,6 +111,7 @@ src/
     Dashboard.jsx, MyLearning.jsx, LearningHistory.jsx, Wishlist.jsx, Profile.jsx, Notifications.jsx
     MentorProfile.jsx, PostSkill.jsx, Community.jsx, Messages.jsx,
     BookSession.jsx, SessionBooking.jsx, Sessions.jsx, SessionDetail.jsx, Reviews.jsx
+    Checkout.jsx, Wallet.jsx, PaymentHistory.jsx, Certificates.jsx, CertificateDetail.jsx, MentorDashboard.jsx
     ComingSoon.jsx       fallback for unbuilt routes
   App.jsx                routes + shared shell
   main.jsx               entry point (wraps App in UserProvider + CommunityProvider)
@@ -145,6 +161,28 @@ src/
 12. `addReview` → `POST /api/reviews`; this is also where you'd recompute and
     cache the mentor's aggregate `rating`/`reviews` count server-side rather
     than trusting the static seed data in `mentors.js`.
+
+**Monetization & mentor side (Phase 5):**
+13. `Checkout.jsx` → integrate a real processor (Stripe is the natural fit for
+    MERN). `payAndBookSession` is the one function to replace: it should call
+    your `POST /api/checkout` (create a PaymentIntent, charge, then create the
+    booking server-side) instead of trusting the client-computed price/method.
+14. `topUpWallet` → `POST /api/wallet/topup`, again through a real processor
+    for card top-ups; the wallet balance itself should live in MongoDB against
+    the user document, not localStorage.
+15. `transactions` → `GET /api/payments` for the history page; each real
+    payment record would also want a downloadable invoice (PDF generation is
+    a good fit for a `pdfkit`/`puppeteer` Express endpoint).
+16. `Certificates.jsx`/`CertificateDetail.jsx` currently compute "is this skill
+    complete" from `enrolled` progress on the client — move that check
+    server-side and issue a real certificate record (with a verifiable ID)
+    the first time a skill hits 100%, via `POST /api/certificates`.
+17. `MentorDashboard.jsx` is currently mock/demo data (`MOCK_UPCOMING`,
+    `MOCK_REVIEWS`, and deterministic fake stats) since the seeded mentors in
+    `mentors.js` aren't real accounts. Once mentors are real users, this
+    becomes `GET /api/mentors/me/bookings`, `GET /api/mentors/me/earnings`, etc.
+18. Quiz scores (`recordQuizScore`) are local-only — `POST /api/progress/quiz`
+    would let you build real analytics on where learners struggle.
 
 ## Notes
 

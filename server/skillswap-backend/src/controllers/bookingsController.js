@@ -1,5 +1,23 @@
+import mongoose from 'mongoose';
 import Booking from '../models/Booking.js';
 import Skill from '../models/Skill.js';
+import User from '../models/User.js';
+import Transaction from '../models/Transaction.js';
+import Review from '../models/Review.js';
+import { parsePagination, paginationMeta } from '../utils/pagination.js';
+import { notifyUser } from '../utils/notify.js';
+
+// Mirrors Booking's toJSON transform, for use with .lean() query results
+// (plain objects, so the schema-level transform doesn't run automatically).
+function leanBooking(b) {
+  const { _id, __v, user, mentorUser, ...rest } = b;
+  const out = { id: _id, ...rest };
+  // Mentor-side views .populate('user', 'name email') before calling this.
+  if (user && typeof user === 'object' && user.name) {
+    out.learner = { id: user._id, name: user.name, email: user.email };
+  }
+  return out;
+}
 
 // POST /api/bookings  { skillId, scheduledAt, durationMinutes?, notes? }  (protected)
 export async function createBooking(req, res, next) {
@@ -29,6 +47,7 @@ export async function createBooking(req, res, next) {
       skillTitle: skill.title,
       mentorName: skill.mentor.name,
       mentorInitials: skill.mentor.initials,
+      mentorUser: skill.mentorUser || null,
       scheduledAt: when,
       durationMinutes: durationMinutes || 45,
       notes: notes || ''
@@ -40,7 +59,91 @@ export async function createBooking(req, res, next) {
   }
 }
 
-// GET /api/bookings?when=upcoming|past  (protected)
+// POST /api/bookings/checkout  { skillId, scheduledAt, durationMinutes?, notes?, sessionType, price, method }  (protected)
+// Books a *paid* session and records the payment atomically — a booking
+// created here can never exist unpaid, mirroring the frontend mock's
+// payAndBookSession(). Wallet payments are rejected up front if the
+// balance is short; card payments are just recorded (no real gateway).
+export async function checkoutBooking(req, res, next) {
+  const { skillId, scheduledAt, durationMinutes, notes, sessionType, price, method } = req.body;
+  const when = new Date(scheduledAt);
+
+  const session = await mongoose.startSession();
+  try {
+    let booking;
+    let walletBalance;
+
+    await session.withTransaction(async () => {
+      const skill = await Skill.findOne({ id: skillId }).session(session);
+      if (!skill) {
+        throw Object.assign(new Error(`No skill found with id "${skillId}"`), { status: 404 });
+      }
+
+      const user = await User.findById(req.user._id).session(session);
+
+      if (method === 'wallet' && user.wallet.balance < price) {
+        throw Object.assign(new Error('Insufficient wallet balance'), { status: 400 });
+      }
+
+      const [created] = await Booking.create(
+        [
+          {
+            user: user._id,
+            skillId: skill.id,
+            skillTitle: skill.title,
+            mentorName: skill.mentor.name,
+            mentorInitials: skill.mentor.initials,
+            mentorUser: skill.mentorUser || null,
+            scheduledAt: when,
+            durationMinutes: durationMinutes || 45,
+            notes: notes || '',
+            sessionType,
+            price,
+            paid: true,
+            paymentMethod: method
+          }
+        ],
+        { session }
+      );
+      booking = created;
+
+      if (method === 'wallet') {
+        user.wallet.balance = +(user.wallet.balance - price).toFixed(2);
+        await user.save({ session });
+      }
+      walletBalance = user.wallet.balance;
+
+      await Transaction.create(
+        [
+          {
+            user: user._id,
+            type: 'session_payment',
+            amount: -price,
+            method,
+            description: `${sessionType} session booking`,
+            booking: booking._id
+          }
+        ],
+        { session }
+      );
+    });
+
+    await notifyUser({
+      user: req.user._id,
+      type: 'booking',
+      text: `Your ${sessionType} session is booked for ${when.toLocaleDateString()}.`
+    });
+
+    res.status(201).json({ booking, wallet: { balance: walletBalance } });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
+    next(err);
+  } finally {
+    session.endSession();
+  }
+}
+
+// GET /api/bookings?when=upcoming|past&page=&limit=  (protected)
 export async function listBookings(req, res, next) {
   try {
     const { when } = req.query;
@@ -50,58 +153,108 @@ export async function listBookings(req, res, next) {
     else if (when === 'past') filter.scheduledAt = { $lt: new Date() };
 
     const sortDir = when === 'past' ? -1 : 1;
-    const bookings = await Booking.find(filter).sort({ scheduledAt: sortDir });
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 50 });
 
-    res.json({ bookings });
+    const [bookings, total] = await Promise.all([
+      Booking.find(filter).sort({ scheduledAt: sortDir }).skip(skip).limit(limit).lean(),
+      Booking.countDocuments(filter)
+    ]);
+
+    res.json({ bookings: bookings.map(leanBooking), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }
 }
 
 // PATCH /api/bookings/:id/cancel  (protected — the learner who booked it)
+// If the booking was paid for and hadn't already happened, the price is
+// refunded to the learner's wallet regardless of the original payment
+// method (matching the frontend mock's cancelBooking behavior) and logged
+// as a `refund` transaction.
 export async function cancelBooking(req, res, next) {
+  const session = await mongoose.startSession();
   try {
-    const booking = await Booking.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      { status: 'cancelled' },
-      { new: true }
-    );
-    if (!booking) return res.status(404).json({ message: 'Booking not found' });
-    res.json({ booking });
+    let booking;
+    let walletBalance;
+
+    await session.withTransaction(async () => {
+      const existing = await Booking.findOne({ _id: req.params.id, user: req.user._id }).session(session);
+      if (!existing) {
+        throw Object.assign(new Error('Booking not found'), { status: 404 });
+      }
+
+      const shouldRefund = existing.paid && existing.status === 'confirmed';
+
+      existing.status = 'cancelled';
+      await existing.save({ session });
+      booking = existing;
+
+      if (shouldRefund) {
+        const user = await User.findById(req.user._id).session(session);
+        user.wallet.balance = +(user.wallet.balance + existing.price).toFixed(2);
+        await user.save({ session });
+        walletBalance = user.wallet.balance;
+
+        await Transaction.create(
+          [
+            {
+              user: req.user._id,
+              type: 'refund',
+              amount: existing.price,
+              method: 'wallet',
+              description: `Refund for cancelled ${existing.sessionType || 'session'} booking`,
+              booking: existing._id
+            }
+          ],
+          { session }
+        );
+      }
+    });
+
+    res.json({ booking, wallet: walletBalance !== undefined ? { balance: walletBalance } : undefined });
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ message: err.message });
     next(err);
+  } finally {
+    session.endSession();
   }
 }
 
-// GET /api/bookings/mentor?when=upcoming|past  (protected)
-// Sessions booked with skills the current user mentors.
+// GET /api/bookings/mentor?when=upcoming|past&page=&limit=  (protected)
+// Sessions booked with skills the current user mentors. Reads mentorUser
+// directly off the booking (denormalized at creation) instead of first
+// looking up which skills the mentor owns — one indexed query instead of
+// two. Note: bookings created before this field existed won't match; a
+// one-time backfill (`mentorUser = skill.mentorUser` per skillId) would be
+// needed to bring old data along if this is deployed onto an existing DB.
 export async function listMentorBookings(req, res, next) {
   try {
     const { when } = req.query;
+    const filter = { mentorUser: req.user._id, status: { $ne: 'cancelled' } };
 
-    const mentoredSkillIds = (await Skill.find({ mentorUser: req.user._id }).select('id')).map(s => s.id);
-    if (mentoredSkillIds.length === 0) return res.json({ bookings: [] });
-
-    const filter = { skillId: { $in: mentoredSkillIds }, status: { $ne: 'cancelled' } };
     if (when === 'upcoming') filter.scheduledAt = { $gte: new Date() };
     else if (when === 'past') filter.scheduledAt = { $lt: new Date() };
 
     const sortDir = when === 'past' ? -1 : 1;
-    const bookings = await Booking.find(filter).sort({ scheduledAt: sortDir }).populate('user', 'name email');
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 50 });
 
-    res.json({ bookings });
+    const [bookings, total] = await Promise.all([
+      Booking.find(filter).sort({ scheduledAt: sortDir }).skip(skip).limit(limit).populate('user', 'name email').lean(),
+      Booking.countDocuments(filter)
+    ]);
+
+    res.json({ bookings: bookings.map(leanBooking), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }
 }
 
-// Shared guard: only the mentor of the booking's skill may act on it as a mentor.
+// Shared guard: only the mentor of the booking may act on it as a mentor.
 async function findBookingAsMentor(bookingId, mentorUserId) {
   const booking = await Booking.findById(bookingId);
   if (!booking) return { error: 404, message: 'Booking not found' };
 
-  const skill = await Skill.findOne({ id: booking.skillId });
-  if (!skill || !skill.mentorUser || skill.mentorUser.toString() !== mentorUserId.toString()) {
+  if (!booking.mentorUser || booking.mentorUser.toString() !== mentorUserId.toString()) {
     return { error: 403, message: "You're not the mentor for this session" };
   }
   return { booking };
@@ -130,6 +283,42 @@ export async function completeBooking(req, res, next) {
     booking.status = 'completed';
     await booking.save();
     res.json({ booking });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/bookings/mentor/earnings  (protected)
+// Real numbers for the Mentor Dashboard stat row, computed from actual
+// paid/completed bookings and reviews instead of the frontend's current
+// deterministic placeholder math.
+export async function getMentorEarnings(req, res, next) {
+  try {
+    const mentorUser = req.user._id;
+
+    const [earningsAgg] = await Booking.aggregate([
+      { $match: { mentorUser, status: 'completed', paid: true } },
+      { $group: { _id: null, total: { $sum: '$price' }, students: { $addToSet: '$user' } } }
+    ]);
+
+    const upcomingCount = await Booking.countDocuments({
+      mentorUser,
+      status: 'confirmed',
+      scheduledAt: { $gte: new Date() }
+    });
+
+    const [ratingAgg] = await Review.aggregate([
+      { $match: { mentorUser } },
+      { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]);
+
+    res.json({
+      earnings: earningsAgg ? +earningsAgg.total.toFixed(2) : 0,
+      studentsCount: earningsAgg ? earningsAgg.students.length : 0,
+      upcomingCount,
+      avgRating: ratingAgg ? Math.round(ratingAgg.avg * 10) / 10 : 0,
+      reviewsCount: ratingAgg ? ratingAgg.count : 0
+    });
   } catch (err) {
     next(err);
   }

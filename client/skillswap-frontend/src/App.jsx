@@ -32,6 +32,18 @@ import SessionBooking from './pages/SessionBooking.jsx';
 import Sessions from './pages/Sessions.jsx';
 import SessionDetail from './pages/SessionDetail.jsx';
 import Reviews from './pages/Reviews.jsx';
+import Checkout from './pages/Checkout.jsx';
+import Wallet from './pages/Wallet.jsx';
+import PaymentHistory from './pages/PaymentHistory.jsx';
+import Certificates from './pages/Certificates.jsx';
+import CertificateDetail from './pages/CertificateDetail.jsx';
+import MentorDashboard from './pages/MentorDashboard.jsx';
+import Recommendations from './pages/Recommendations.jsx';
+import RequireAdmin from './components/RequireAdmin.jsx';
+import AdminOverview from './pages/admin/AdminOverview.jsx';
+import AdminUsers from './pages/admin/AdminUsers.jsx';
+import AdminMentorApplications from './pages/admin/AdminMentorApplications.jsx';
+import AdminReports from './pages/admin/AdminReports.jsx';
 import ComingSoon from './pages/ComingSoon.jsx';
 
 // Auth/onboarding/dashboard screens use full-height layouts of their own
@@ -40,9 +52,10 @@ import ComingSoon from './pages/ComingSoon.jsx';
 const NO_FOOTER_EXACT = [
   '/signup', '/login', '/forgot-password', '/reset-password', '/verify-email', '/onboarding',
   '/dashboard', '/my-learning', '/learning-history', '/wishlist', '/profile', '/notifications',
-  '/post-skill', '/community', '/messages', '/book-session', '/sessions', '/reviews'
+  '/post-skill', '/community', '/messages', '/book-session', '/sessions', '/reviews',
+  '/checkout', '/wallet', '/payments', '/certificates', '/mentor-dashboard', '/recommendations'
 ];
-const NO_FOOTER_PREFIXES = ['/book/', '/session/'];
+const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/certificate/', '/admin'];
 
 export default function App(){
   const { pathname } = useLocation();
@@ -88,6 +101,18 @@ export default function App(){
         <Route path="/sessions" element={<RequireAuth><Sessions /></RequireAuth>} />
         <Route path="/session/:id" element={<RequireAuth><SessionDetail /></RequireAuth>} />
         <Route path="/reviews" element={<RequireAuth><Reviews /></RequireAuth>} />
+        <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+        <Route path="/wallet" element={<RequireAuth><Wallet /></RequireAuth>} />
+        <Route path="/payments" element={<RequireAuth><PaymentHistory /></RequireAuth>} />
+        <Route path="/certificates" element={<RequireAuth><Certificates /></RequireAuth>} />
+        <Route path="/certificate/:skillId" element={<RequireAuth><CertificateDetail /></RequireAuth>} />
+        <Route path="/mentor-dashboard" element={<RequireAuth><MentorDashboard /></RequireAuth>} />
+        <Route path="/recommendations" element={<RequireAuth><Recommendations /></RequireAuth>} />
+
+        <Route path="/admin" element={<RequireAdmin><AdminOverview /></RequireAdmin>} />
+        <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
+        <Route path="/admin/mentor-applications" element={<RequireAdmin><AdminMentorApplications /></RequireAdmin>} />
+        <Route path="/admin/reports" element={<RequireAdmin><AdminReports /></RequireAdmin>} />
 
         <Route path="*" element={<ComingSoon />} />
       </Routes>

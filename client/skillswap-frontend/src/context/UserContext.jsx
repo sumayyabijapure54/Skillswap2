@@ -42,13 +42,23 @@ function emptyState(){
     verified: false,
     onboarded: false,
     profile: { name:'', email:'', bio:'', avatar:'', role:null, skillsOffered:[], skillsWanted:[] },
-    enrolled: [],      // [{ skillId, completedLessons:[lessonId,...], enrolledAt }]
+    enrolled: [],      // [{ skillId, completedLessons:[lessonId,...], enrolledAt, quizScores:{lessonId:{score,total}} }]
     wishlist: [],       // [skillId, ...]
     notifications: SEED_NOTIFICATIONS,
     conversations: SEED_CONVERSATIONS,   // [{ id, mentorId, messages:[{id,from,text,time}] }]
-    bookings: [],          // [{ id, mentorId, skillId, day, time, sessionType, status, createdAt, notes }]
-    reviews: []             // [{ id, mentorId, skillId, bookingId, rating, text, createdAt }]
+    bookings: [],          // [{ id, mentorId, skillId, day, time, sessionType, price, status, paid, createdAt, notes }]
+    reviews: [],            // [{ id, mentorId, skillId, bookingId, rating, text, createdAt }]
+    wallet: { balance: 50 },
+    transactions: [
+      { id:'tx-seed-1', type:'topup', amount:50, method:'card', description:'Welcome bonus credit', createdAt: daysAgo(10) }
+    ]
   };
+}
+
+function daysAgo(n){
+  const d = new Date();
+  d.setDate(d.getDate()-n);
+  return d.toISOString();
 }
 
 export function UserProvider({ children }){
@@ -100,6 +110,13 @@ export function UserProvider({ children }){
       : [...s.enrolled, { skillId, completedLessons:[lessonId], enrolledAt:new Date().toISOString() }]
   }));
 
+  const recordQuizScore = (skillId, lessonId, score, total) => setState(s => ({
+    ...s,
+    enrolled: s.enrolled.map(e => e.skillId===skillId
+      ? { ...e, quizScores: { ...(e.quizScores||{}), [lessonId]: { score, total } } }
+      : e)
+  }));
+
   const toggleWishlist = (skillId) => setState(s => ({
     ...s,
     wishlist: s.wishlist.includes(skillId) ? s.wishlist.filter(id=>id!==skillId) : [...s.wishlist, skillId]
@@ -146,9 +163,56 @@ export function UserProvider({ children }){
     return id;
   };
 
-  const cancelBooking = (id) => setState(s => ({
-    ...s, bookings: s.bookings.map(b => b.id===id ? { ...b, status:'cancelled' } : b)
-  }));
+  // Checkout flow: books the session AND records the payment in one atomic
+  // action, so a booking can never exist in an unpaid state. Returns
+  // { ok:false, error } if a wallet payment can't cover the price.
+  const payAndBookSession = ({ mentorId, skillId, day, time, sessionType, price, method }) => {
+    if(method === 'wallet' && state.wallet.balance < price){
+      return { ok:false, error:'Insufficient wallet balance.' };
+    }
+    const bookingId = `bk-${Date.now()}`;
+    const txId = `tx-${Date.now()}`;
+    setState(s => ({
+      ...s,
+      bookings: [...s.bookings, { id:bookingId, mentorId, skillId, day, time, sessionType, price, status:'upcoming', paid:true, createdAt:new Date().toISOString(), notes:'' }],
+      wallet: method==='wallet' ? { ...s.wallet, balance: +(s.wallet.balance - price).toFixed(2) } : s.wallet,
+      transactions: [
+        { id:txId, type:'session_payment', amount:-price, method, description:`${sessionType} session booking`, bookingId, createdAt:new Date().toISOString() },
+        ...s.transactions
+      ],
+      notifications: [
+        { id: Date.now(), type:'booking', text:`Your ${sessionType} session is booked for ${day} at ${time}.`, time:'Just now', read:false },
+        ...s.notifications
+      ]
+    }));
+    return { ok:true, bookingId };
+  };
+
+  const topUpWallet = (amount, method='card') => {
+    const txId = `tx-${Date.now()}`;
+    setState(s => ({
+      ...s,
+      wallet: { ...s.wallet, balance: +(s.wallet.balance + amount).toFixed(2) },
+      transactions: [
+        { id:txId, type:'topup', amount, method, description:'Wallet top-up', createdAt:new Date().toISOString() },
+        ...s.transactions
+      ]
+    }));
+  };
+
+  const cancelBooking = (id) => setState(s => {
+    const booking = s.bookings.find(b=>b.id===id);
+    const shouldRefund = booking && booking.paid && booking.status==='upcoming';
+    return {
+      ...s,
+      bookings: s.bookings.map(b => b.id===id ? { ...b, status:'cancelled' } : b),
+      wallet: shouldRefund ? { ...s.wallet, balance: +(s.wallet.balance + booking.price).toFixed(2) } : s.wallet,
+      transactions: shouldRefund ? [
+        { id:`tx-${Date.now()}`, type:'refund', amount:booking.price, method:'wallet', description:`Refund for cancelled ${booking.sessionType} session`, bookingId:id, createdAt:new Date().toISOString() },
+        ...s.transactions
+      ] : s.transactions
+    };
+  });
 
   const updateBookingNotes = (id, notes) => setState(s => ({
     ...s, bookings: s.bookings.map(b => b.id===id ? { ...b, notes } : b)
@@ -171,10 +235,11 @@ export function UserProvider({ children }){
   const value = {
     ...state,
     signUp, logIn, verifyEmail, completeOnboarding, logOut,
-    updateProfile, enroll, markLessonComplete, toggleWishlist,
+    updateProfile, enroll, markLessonComplete, recordQuizScore, toggleWishlist,
     markNotifRead, markAllNotifsRead,
     getOrCreateConversation, sendMessage,
-    bookSession, cancelBooking, updateBookingNotes, markBookingCompleted, addReview
+    bookSession, payAndBookSession, cancelBooking, updateBookingNotes, markBookingCompleted, addReview,
+    topUpWallet
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

@@ -2,13 +2,14 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../context/UserContext.jsx';
 
-const NAV = [
+const BASE_NAV = [
   { section:null, items:[ { to:'/dashboard', label:'Overview', icon:'▦' } ] },
   { section:'My Learning', items:[
     { to:'/my-learning', label:'In Progress', icon:'▶' },
     { to:'/learning-history', label:'Learning History', icon:'✓' },
     { to:'/certificates', label:'Certificates', icon:'🎓' },
-    { to:'/wishlist', label:'Wishlist', icon:'☆' }
+    { to:'/wishlist', label:'Wishlist', icon:'☆' },
+    { to:'/recommendations', label:'AI Recommendations', icon:'✨' }
   ]},
   { section:'Community', items:[
     { to:'/post-skill', label:'Post a Skill', icon:'＋' },
@@ -20,6 +21,10 @@ const NAV = [
     { to:'/sessions', label:'Upcoming Sessions', icon:'⏱' },
     { to:'/reviews', label:'Reviews', icon:'★' }
   ]},
+  { section:'Payments', items:[
+    { to:'/wallet', label:'Wallet', icon:'◎' },
+    { to:'/payments', label:'Payment History', icon:'🧾' }
+  ]},
   { section:'Settings', items:[
     { to:'/profile', label:'Profile', icon:'👤' },
     { to:'/account-settings', label:'Account', icon:'⚙' },
@@ -27,9 +32,22 @@ const NAV = [
   ]}
 ];
 
+const MENTOR_ITEM = { to:'/mentor-dashboard', label:'Mentor Dashboard', icon:'🧑‍🏫' };
+
 export default function DashboardLayout({ title, subtitle, children }){
   const { profile, logOut } = useUser();
   const initials = (profile.name || 'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const isMentor = profile.role === 'teach' || profile.role === 'both';
+
+  const isAdmin = profile.role === 'admin';
+
+  const nav = isMentor
+    ? [{ section:null, items:[ BASE_NAV[0].items[0], MENTOR_ITEM ] }, ...BASE_NAV.slice(1)]
+    : BASE_NAV;
+
+  const navWithAdmin = isAdmin
+    ? [...nav, { section:'Admin', items:[ { to:'/admin', label:'Admin Dashboard', icon:'🛠' } ] }]
+    : nav;
 
   return (
     <div className="dash-shell">
@@ -42,7 +60,7 @@ export default function DashboardLayout({ title, subtitle, children }){
           </div>
         </div>
         <nav className="dash-nav">
-          {NAV.map((group, gi)=>(
+          {navWithAdmin.map((group, gi)=>(
             <div className="dash-nav-group" key={gi}>
               {group.section && <div className="dash-nav-label">{group.section}</div>}
               {group.items.map(item=>(

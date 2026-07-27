@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { UserProvider } from './context/UserContext.jsx';
 import { CommunityProvider } from './context/CommunityContext.jsx';
+import { AdminProvider } from './context/AdminContext.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -11,7 +12,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <UserProvider>
         <CommunityProvider>
-          <App />
+          <AdminProvider>
+            <App />
+          </AdminProvider>
         </CommunityProvider>
       </UserProvider>
     </BrowserRouter>

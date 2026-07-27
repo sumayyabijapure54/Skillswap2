@@ -4,8 +4,8 @@ const { Schema } = mongoose;
 
 const ReviewSchema = new Schema(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    skillId: { type: String, required: true, index: true }, // slug, matches Skill.id
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    skillId: { type: String, required: true }, // slug, matches Skill.id
 
     // One review per completed booking — also lets us look up "have I
     // already reviewed this session" without a separate query.
@@ -22,6 +22,11 @@ const ReviewSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// listSkillReviews and listMyReviews both filter on one field and sort by
+// createdAt — compound indexes serve the whole query in one pass.
+ReviewSchema.index({ skillId: 1, createdAt: -1 });
+ReviewSchema.index({ user: 1, createdAt: -1 });
 
 ReviewSchema.set('toJSON', {
   transform: (_doc, ret) => {

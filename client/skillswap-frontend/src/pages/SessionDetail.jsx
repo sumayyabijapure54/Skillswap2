@@ -4,6 +4,7 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { getMentorById } from '../data/mentors.js';
 import ComingSoon from './ComingSoon.jsx';
+import VideoCall from '../components/VideoCall.jsx';
 
 export default function SessionDetail(){
   const { id } = useParams();
@@ -13,6 +14,7 @@ export default function SessionDetail(){
   const [notes, setNotes] = React.useState(booking?.notes || '');
   const [rating, setRating] = React.useState(5);
   const [reviewText, setReviewText] = React.useState('');
+  const [inCall, setInCall] = React.useState(false);
 
   if(!booking){
     return <ComingSoon title="Session not found" text="We couldn't find that session." />;
@@ -38,9 +40,15 @@ export default function SessionDetail(){
 
       <div className="two-col-dash" style={{alignItems:'flex-start'}}>
         <div>
-          <div className="video-frame" style={{marginBottom:'20px'}}>
-            <div className="playbtn">🎥</div>
-          </div>
+          {inCall ? (
+            <div style={{marginBottom:'20px'}}>
+              <VideoCall mentorName={mentor?.name || 'your mentor'} onEnd={()=>setInCall(false)} />
+            </div>
+          ) : (
+            <div className="video-frame" style={{marginBottom:'20px'}} onClick={()=>setInCall(true)}>
+              <div className="playbtn">🎥</div>
+            </div>
+          )}
 
           <div className="col-card" style={{marginBottom:'20px'}}>
             <h3>Session details</h3>

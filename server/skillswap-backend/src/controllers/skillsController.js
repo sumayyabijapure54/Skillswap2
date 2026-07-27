@@ -4,6 +4,8 @@ import Progress from '../models/Progress.js';
 import Review from '../models/Review.js';
 import User from '../models/User.js';
 import { categories, levels } from '../data/skillsSeedData.js';
+import { parsePagination, paginationMeta } from '../utils/pagination.js';
+import { leanReview } from './reviewsController.js';
 
 const SORTS = {
   popular: { students: -1 },
@@ -12,7 +14,15 @@ const SORTS = {
   az: { title: 1 }
 };
 
-// GET /api/skills?q=&cat=programming&cat=design&level=Beginner&level=Advanced&sort=rating
+// Mirrors Skill's toJSON transform (strip _id/__v) for .lean() results,
+// which skip the schema-level transform since they're plain objects, not
+// Mongoose documents.
+function leanSkill(s) {
+  const { _id, __v, ...rest } = s;
+  return rest;
+}
+
+// GET /api/skills?q=&cat=programming&cat=design&level=Beginner&level=Advanced&sort=rating&page=&limit=
 export async function listSkills(req, res, next) {
   try {
     const { q, sort } = req.query;
@@ -31,9 +41,17 @@ export async function listSkills(req, res, next) {
     if (q) filter.$text = { $search: q };
 
     const sortSpec = SORTS[sort] || SORTS.popular;
+    // Generous default — the frontend doesn't send page/limit yet and
+    // expects the full catalog back; this just caps a single request from
+    // being able to pull an unbounded result set once the catalog grows.
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 100, maxLimit: 200 });
 
-    const results = await Skill.find(filter).sort(sortSpec);
-    res.json({ count: results.length, results });
+    const [results, total] = await Promise.all([
+      Skill.find(filter).sort(sortSpec).skip(skip).limit(limit).lean(),
+      Skill.countDocuments(filter)
+    ]);
+
+    res.json({ count: total, results: results.map(leanSkill), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }
@@ -42,17 +60,64 @@ export async function listSkills(req, res, next) {
 // GET /api/skills/:id  (id is the slug, e.g. "react-fundamentals")
 export async function getSkillById(req, res, next) {
   try {
-    const skill = await Skill.findOne({ id: req.params.id });
+    const skill = await Skill.findOne({ id: req.params.id }).lean();
     if (!skill) {
       return res.status(404).json({ message: `No skill found with id "${req.params.id}"` });
     }
-    res.json(skill);
+    res.json(leanSkill(skill));
   } catch (err) {
     next(err);
   }
 }
 
-// GET /api/skills/meta/categories
+// GET /api/skills/:id/full  (optionalAuth — public, personalized if logged in)
+// Everything a skill detail page needs in one round trip: the skill, its
+// most recent reviews, and — if the requester is logged in — the earliest
+// completed session of theirs that's still waiting on a review, so the
+// frontend can show a "leave a review" prompt without a second request.
+export async function getSkillFull(req, res, next) {
+  try {
+    const skill = await Skill.findOne({ id: req.params.id }).lean();
+    if (!skill) {
+      return res.status(404).json({ message: `No skill found with id "${req.params.id}"` });
+    }
+
+    const [reviews, reviewsTotal] = await Promise.all([
+      Review.find({ skillId: skill.id }).sort({ createdAt: -1 }).limit(10).populate('user', 'name').lean(),
+      Review.countDocuments({ skillId: skill.id })
+    ]);
+
+    let reviewableBooking = null;
+    if (req.user) {
+      const completed = await Booking.find({
+        user: req.user._id,
+        skillId: skill.id,
+        status: 'completed'
+      }).sort({ scheduledAt: -1 });
+
+      if (completed.length) {
+        const reviewed = await Review.find({
+          user: req.user._id,
+          booking: { $in: completed.map((b) => b._id) }
+        }).select('booking');
+        const reviewedIds = new Set(reviewed.map((r) => r.booking.toString()));
+        const match = completed.find((b) => !reviewedIds.has(b._id.toString()));
+        reviewableBooking = match ? match.toJSON() : null;
+      }
+    }
+
+    res.json({
+      skill: leanSkill(skill),
+      reviews: reviews.map(leanReview),
+      reviewsTotal,
+      reviewableBooking
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 // Returns the static category list plus a live count per category, matching
 // the counts shown next to each checkbox in Explore.jsx's filter panel.
 export async function getCategories(_req, res, next) {
@@ -73,10 +138,17 @@ export function getLevels(_req, res) {
 
 // GET /api/skills/mentor/available  (protected)
 // Skills not yet linked to a real mentor account — candidates to claim.
-export async function listUnclaimedSkills(_req, res, next) {
+export async function listUnclaimedSkills(req, res, next) {
   try {
-    const results = await Skill.find({ mentorUser: null });
-    res.json({ count: results.length, results });
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 100, maxLimit: 200 });
+    const filter = { mentorUser: null };
+
+    const [results, total] = await Promise.all([
+      Skill.find(filter).skip(skip).limit(limit).lean(),
+      Skill.countDocuments(filter)
+    ]);
+
+    res.json({ count: total, results: results.map(leanSkill), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }
@@ -85,8 +157,8 @@ export async function listUnclaimedSkills(_req, res, next) {
 // GET /api/skills/mentor/mine  (protected) — skills the current user mentors
 export async function listMySkills(req, res, next) {
   try {
-    const results = await Skill.find({ mentorUser: req.user._id });
-    res.json({ count: results.length, results });
+    const results = await Skill.find({ mentorUser: req.user._id }).lean();
+    res.json({ count: results.length, results: results.map(leanSkill) });
   } catch (err) {
     next(err);
   }

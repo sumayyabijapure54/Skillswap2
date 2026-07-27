@@ -1,11 +1,17 @@
 import Progress from '../models/Progress.js';
 import { issueIfEarned } from './certificatesController.js';
 
+// Mirrors Progress's toJSON transform for .lean() results.
+function leanProgress(p) {
+  const { _id, __v, user, ...rest } = p;
+  return rest;
+}
+
 // GET /api/progress  (protected) — everything the current user is enrolled in
 export async function listProgress(req, res, next) {
   try {
-    const entries = await Progress.find({ user: req.user._id });
-    res.json({ enrolled: entries });
+    const entries = await Progress.find({ user: req.user._id }).lean();
+    res.json({ enrolled: entries.map(leanProgress) });
   } catch (err) {
     next(err);
   }

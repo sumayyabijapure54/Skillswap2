@@ -1,8 +1,15 @@
 import Certificate from '../models/Certificate.js';
 import Progress from '../models/Progress.js';
 import Skill from '../models/Skill.js';
-import Notification from '../models/Notification.js';
 import { generateCertificateNumber } from '../utils/tokens.js';
+import { parsePagination, paginationMeta } from '../utils/pagination.js';
+import { notifyUser } from '../utils/notify.js';
+
+// Mirrors Certificate's toJSON transform for .lean() results.
+function leanCertificate(c) {
+  const { _id, __v, user, createdAt, ...rest } = c;
+  return { id: _id, issuedAt: createdAt, createdAt, ...rest };
+}
 
 // Shared by the manual "issue" endpoint and the auto-issue hook in
 // progressController.completeLesson. Returns { certificate, justIssued }
@@ -30,7 +37,7 @@ export async function issueIfEarned(user, skillId) {
       certificateNumber: generateCertificateNumber()
     });
 
-    await Notification.create({
+    await notifyUser({
       user: user._id,
       type: 'system',
       text: `You earned a certificate for completing "${skill.title}"!`
@@ -66,11 +73,18 @@ export async function issueCertificate(req, res, next) {
   }
 }
 
-// GET /api/certificates  (protected) — everything the current user has earned
+// GET /api/certificates?page=&limit=  (protected) — everything the current user has earned
 export async function listMyCertificates(req, res, next) {
   try {
-    const certificates = await Certificate.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json({ certificates });
+    const filter = { user: req.user._id };
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 50 });
+
+    const [certificates, total] = await Promise.all([
+      Certificate.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Certificate.countDocuments(filter)
+    ]);
+
+    res.json({ certificates: certificates.map(leanCertificate), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }
