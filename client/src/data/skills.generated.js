@@ -28,14 +28,14 @@ export const generatedSkills = [
       "Software Engineering",
       "Coding"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -63,7 +63,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -158,14 +158,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -253,14 +253,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -348,14 +348,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -436,21 +436,21 @@ export const generatedSkills = [
       "Software Engineering",
       "Coding"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -538,14 +538,14 @@ export const generatedSkills = [
       "Software Engineering",
       "Coding"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -573,7 +573,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -668,14 +668,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -763,14 +763,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -858,14 +858,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -946,21 +946,21 @@ export const generatedSkills = [
       "Software Engineering",
       "Coding"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -1048,14 +1048,14 @@ export const generatedSkills = [
       "Software Engineering",
       "Coding"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -1083,7 +1083,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -1178,14 +1178,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -1273,14 +1273,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -1368,14 +1368,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -1456,21 +1456,21 @@ export const generatedSkills = [
       "Machine Learning",
       "Python"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -1558,14 +1558,14 @@ export const generatedSkills = [
       "Machine Learning",
       "Python"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -1593,7 +1593,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -1688,14 +1688,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -1783,14 +1783,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -1878,14 +1878,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -1966,21 +1966,21 @@ export const generatedSkills = [
       "Machine Learning",
       "Python"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -2068,14 +2068,14 @@ export const generatedSkills = [
       "Machine Learning",
       "Python"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -2103,7 +2103,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -2198,14 +2198,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -2293,14 +2293,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -2388,14 +2388,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -2476,21 +2476,21 @@ export const generatedSkills = [
       "HTML",
       "CSS"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -2578,14 +2578,14 @@ export const generatedSkills = [
       "HTML",
       "CSS"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -2613,7 +2613,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -2708,14 +2708,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -2803,14 +2803,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -2898,14 +2898,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -2986,21 +2986,21 @@ export const generatedSkills = [
       "HTML",
       "CSS"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -3088,14 +3088,14 @@ export const generatedSkills = [
       "HTML",
       "CSS"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -3123,7 +3123,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -3218,14 +3218,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -3312,14 +3312,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -3406,14 +3406,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -3493,21 +3493,21 @@ export const generatedSkills = [
       "Mobile Development",
       "App Development"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -3594,14 +3594,14 @@ export const generatedSkills = [
       "Mobile Development",
       "App Development"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -3629,7 +3629,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -3723,14 +3723,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -3817,14 +3817,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -3911,14 +3911,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -3998,21 +3998,21 @@ export const generatedSkills = [
       "Mobile Development",
       "App Development"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -4100,14 +4100,14 @@ export const generatedSkills = [
       "Design",
       "Figma"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -4135,7 +4135,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -4230,14 +4230,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -4325,14 +4325,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -4420,14 +4420,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -4508,21 +4508,21 @@ export const generatedSkills = [
       "Design",
       "Figma"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -4610,14 +4610,14 @@ export const generatedSkills = [
       "Design",
       "Figma"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -4645,7 +4645,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -4740,14 +4740,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -4835,14 +4835,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -4930,14 +4930,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -5018,21 +5018,21 @@ export const generatedSkills = [
       "Branding",
       "Illustrator"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -5120,14 +5120,14 @@ export const generatedSkills = [
       "Branding",
       "Illustrator"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -5155,7 +5155,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -5250,14 +5250,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -5345,14 +5345,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -5440,14 +5440,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -5528,21 +5528,21 @@ export const generatedSkills = [
       "Branding",
       "Illustrator"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -5630,14 +5630,14 @@ export const generatedSkills = [
       "Branding",
       "Illustrator"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -5665,7 +5665,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -5760,14 +5760,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -5855,14 +5855,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -5950,14 +5950,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -6038,21 +6038,21 @@ export const generatedSkills = [
       "Premiere Pro",
       "Motion Graphics"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -6140,14 +6140,14 @@ export const generatedSkills = [
       "Premiere Pro",
       "Motion Graphics"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -6175,7 +6175,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -6270,14 +6270,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -6365,14 +6365,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -6460,14 +6460,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -6548,21 +6548,21 @@ export const generatedSkills = [
       "Social Media",
       "Growth"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -6650,14 +6650,14 @@ export const generatedSkills = [
       "Social Media",
       "Growth"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -6685,7 +6685,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -6780,14 +6780,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -6875,14 +6875,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -6970,14 +6970,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -7058,21 +7058,21 @@ export const generatedSkills = [
       "Social Media",
       "Growth"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -7160,14 +7160,14 @@ export const generatedSkills = [
       "Social Media",
       "Growth"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -7195,7 +7195,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -7290,14 +7290,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -7385,14 +7385,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -7480,14 +7480,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -7568,21 +7568,21 @@ export const generatedSkills = [
       "Strategy",
       "Entrepreneurship"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -7670,14 +7670,14 @@ export const generatedSkills = [
       "Strategy",
       "Entrepreneurship"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -7705,7 +7705,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -7800,14 +7800,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -7895,14 +7895,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -7990,14 +7990,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -8078,21 +8078,21 @@ export const generatedSkills = [
       "Investing",
       "Budgeting"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -8180,14 +8180,14 @@ export const generatedSkills = [
       "Investing",
       "Budgeting"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -8215,7 +8215,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -8310,14 +8310,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -8405,14 +8405,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -8500,14 +8500,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -8588,21 +8588,21 @@ export const generatedSkills = [
       "Investing",
       "Budgeting"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -8690,14 +8690,14 @@ export const generatedSkills = [
       "Grammar",
       "Conversation"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -8725,7 +8725,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -8820,14 +8820,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -8915,14 +8915,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -9010,14 +9010,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -9098,21 +9098,21 @@ export const generatedSkills = [
       "Grammar",
       "Conversation"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -9200,14 +9200,14 @@ export const generatedSkills = [
       "Grammar",
       "Conversation"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -9235,7 +9235,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -9330,14 +9330,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -9425,14 +9425,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -9520,14 +9520,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -9608,21 +9608,21 @@ export const generatedSkills = [
       "Instrument",
       "Theory"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -9710,14 +9710,14 @@ export const generatedSkills = [
       "Instrument",
       "Theory"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -9745,7 +9745,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -9840,14 +9840,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -9935,14 +9935,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -10030,14 +10030,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -10118,21 +10118,21 @@ export const generatedSkills = [
       "Editing",
       "Composition"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -10220,14 +10220,14 @@ export const generatedSkills = [
       "Editing",
       "Composition"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -10255,7 +10255,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -10350,14 +10350,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -10445,14 +10445,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -10540,14 +10540,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -10628,21 +10628,21 @@ export const generatedSkills = [
       "Editing",
       "Composition"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -10730,14 +10730,14 @@ export const generatedSkills = [
       "Recipes",
       "Technique"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -10765,7 +10765,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -10860,14 +10860,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -10955,14 +10955,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -11050,14 +11050,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -11138,21 +11138,21 @@ export const generatedSkills = [
       "Recipes",
       "Technique"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -11240,14 +11240,14 @@ export const generatedSkills = [
       "Recipes",
       "Technique"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -11275,7 +11275,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -11370,14 +11370,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,
@@ -11465,14 +11465,14 @@ export const generatedSkills = [
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 4,
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 5,
@@ -11560,14 +11560,14 @@ export const generatedSkills = [
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 3,
         "title": "Hands-on practice session",
         "duration": "16 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 4,
@@ -11648,21 +11648,21 @@ export const generatedSkills = [
       "Training",
       "Wellness"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 2,
         "title": "Core concepts walkthrough",
         "duration": "13 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 3,
@@ -11750,14 +11750,14 @@ export const generatedSkills = [
       "Training",
       "Wellness"
     ],
-    "previewVideoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    "previewVideoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     "lessons": [
       {
         "id": 1,
         "title": "Getting oriented: tools & setup",
         "duration": "10 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 2,
@@ -11785,7 +11785,7 @@ export const generatedSkills = [
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 6,
@@ -11880,14 +11880,14 @@ export const generatedSkills = [
         "title": "Common mistakes to avoid",
         "duration": "19 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
       },
       {
         "id": 5,
         "title": "Putting it all together",
         "duration": "22 min",
         "type": "Video",
-        "videoUrl": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
+        "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
       },
       {
         "id": 6,

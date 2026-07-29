@@ -8,7 +8,7 @@
 // lesson page render instantly with zero network round-trip too.
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-const LOCAL_CACHE_PREFIX = 'skillswap_yt_cache_v1:';
+const LOCAL_CACHE_PREFIX = 'skillswap_yt_cache_v2:';
 const LOCAL_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 function readLocalCache(key) {
@@ -34,27 +34,30 @@ function writeLocalCache(key, value) {
 }
 
 /**
- * Fetches a curated list of real YouTube tutorial videos for a skill.
- * Returns { videos, source, quotaExceeded, error }. Never throws — callers
- * can rely on `error` being set instead, so the UI can fall back gracefully
- * to the app's own sample lesson content.
+ * Fetches ONE real YouTube course video for a skill, plus its chapter list
+ * (either the video's own author-provided chapters, or evenly-split
+ * fallback segments). Every curriculum "topic" the UI shows comes from this
+ * single video's chapters — never a mix of different videos.
+ * Returns { video, chapters, source, quotaExceeded, error }. Never throws —
+ * callers can rely on `error` being set instead, so the UI can fall back
+ * gracefully to the app's own sample lesson content.
  */
-export async function fetchCourseVideos(skillTitle, limit = 8) {
-  const cacheKey = `${skillTitle.toLowerCase().trim()}:${limit}`;
+export async function fetchCourseVideo(skillTitle) {
+  const cacheKey = skillTitle.toLowerCase().trim();
   const cached = readLocalCache(cacheKey);
-  if (cached) return { videos: cached, source: 'local-cache', quotaExceeded: false, error: null };
+  if (cached) return { video: cached.video, chapters: cached.chapters, source: 'local-cache', quotaExceeded: false, error: null };
 
   try {
-    const url = `${API_BASE}/api/youtube/course?skill=${encodeURIComponent(skillTitle)}&limit=${limit}`;
+    const url = `${API_BASE}/api/youtube/course?skill=${encodeURIComponent(skillTitle)}`;
     const res = await fetch(url);
     const data = await res.json().catch(() => null);
 
     if (!res.ok || !data) {
-      return { videos: [], source: 'none', quotaExceeded: false, error: data?.error || `Request failed (${res.status})` };
+      return { video: null, chapters: [], source: 'none', quotaExceeded: false, error: data?.error || `Request failed (${res.status})` };
     }
-    if (data.videos?.length) writeLocalCache(cacheKey, data.videos);
-    return { videos: data.videos || [], source: data.source, quotaExceeded: !!data.quotaExceeded, error: null };
+    if (data.video) writeLocalCache(cacheKey, { video: data.video, chapters: data.chapters || [] });
+    return { video: data.video || null, chapters: data.chapters || [], source: data.source, quotaExceeded: !!data.quotaExceeded, error: null };
   } catch (err) {
-    return { videos: [], source: 'none', quotaExceeded: false, error: err.message || 'Network error' };
+    return { video: null, chapters: [], source: 'none', quotaExceeded: false, error: err.message || 'Network error' };
   }
 }

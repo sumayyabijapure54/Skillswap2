@@ -22,15 +22,35 @@ function loadYouTubeApi() {
 
 /**
  * Embedded YouTube player using the real IFrame Player API (not just a
- * plain <iframe src>) so we get reliable onEnded events — required for the
- * "autoplay next lesson" feature — plus play/progress state for things
- * like resuming Continue Watching.
+ * plain <iframe src>) so we get reliable onEnded/progress events — required
+ * for "autoplay next" plus resuming Continue Watching.
+ *
+ * A single video can represent an entire curriculum (chapters within one
+ * video rather than separate videos per topic), so the player only remounts
+ * when `videoId` itself changes. Moving between chapters of the *same*
+ * video is done by seeking — exposed via `ref.current.seekTo(seconds)` —
+ * which keeps a single playback session instead of reloading the iframe.
  */
-export default function YouTubePlayer({ videoId, onEnded, onReady, onProgress, autoplay = false }) {
+const YouTubePlayer = React.forwardRef(function YouTubePlayer(
+  { videoId, startSeconds = 0, onEnded, onReady, onProgress, autoplay = false },
+  ref
+) {
   const containerRef = React.useRef(null);
   const playerRef = React.useRef(null);
   const progressInterval = React.useRef(null);
   const [loaded, setLoaded] = React.useState(false);
+
+  React.useImperativeHandle(ref, () => ({
+    seekTo(seconds, { play = true } = {}) {
+      const player = playerRef.current;
+      if (!player?.seekTo) return;
+      player.seekTo(seconds, true);
+      if (play) player.playVideo?.();
+    },
+    getCurrentTime() {
+      return playerRef.current?.getCurrentTime?.() ?? 0;
+    }
+  }), []);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -41,6 +61,7 @@ export default function YouTubePlayer({ videoId, onEnded, onReady, onProgress, a
         videoId,
         playerVars: {
           autoplay: autoplay ? 1 : 0,
+          start: Math.max(0, Math.floor(startSeconds)) || undefined,
           rel: 0,
           modestbranding: 1,
           playsinline: 1
@@ -55,7 +76,7 @@ export default function YouTubePlayer({ videoId, onEnded, onReady, onProgress, a
                 if (player?.getCurrentTime) {
                   onProgress?.(player.getCurrentTime(), player.getDuration());
                 }
-              }, 5000);
+              }, 2000);
             } else {
               clearInterval(progressInterval.current);
             }
@@ -69,6 +90,8 @@ export default function YouTubePlayer({ videoId, onEnded, onReady, onProgress, a
       clearInterval(progressInterval.current);
       playerRef.current?.destroy?.();
     };
+    // Intentionally only remounts on videoId change — chapter-to-chapter
+    // navigation within the same video goes through seekTo() instead.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId]);
 
@@ -82,4 +105,6 @@ export default function YouTubePlayer({ videoId, onEnded, onReady, onProgress, a
       <div ref={containerRef} className="yt-player-iframe" />
     </div>
   );
-}
+});
+
+export default YouTubePlayer;

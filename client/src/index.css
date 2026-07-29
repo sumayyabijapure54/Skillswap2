@@ -76,7 +76,7 @@ button{font-family:inherit;}
 }
 #bg-fx-fade{
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:radial-gradient(1100px circle at 50% 0%, transparent 30%, var(--bg) 92%);
+  background:radial-gradient(1600px circle at 58% 10%, transparent 55%, var(--bg) 100%);
 }
 .bg-fx-canvas{ position:fixed; inset:0; width:100vw; height:100vh; z-index:0; pointer-events:none; display:block; opacity:0.85; }
 .grain{
@@ -397,6 +397,20 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
   .player-shell{grid-template-columns:1fr; padding:100px 24px 80px;}
   .player-side{position:relative; top:0; max-height:none;}
   .page-header{padding:130px 24px 40px;}
+}
+
+/* Phone-only: the 3D hero graphic (OrbitalOrb) is sized for desktop/tablet
+   at a fixed 440x440px via .globe-wrap. On narrow phones that both crowds
+   the page and — since only its width is capped by max-width:100% while
+   height stays fixed — stretches it out of its square aspect ratio. This
+   scales it down as a true square without touching desktop/laptop at all. */
+@media (max-width:640px){
+  .globe-wrap{ width:min(78vw, 300px); height:min(78vw, 300px); }
+  .float-chip{ font-size:10.5px; padding:6px 11px 6px 6px; }
+  .float-chip .ic{ width:20px; height:20px; font-size:11px; }
+  .stat-float{ padding:10px 14px; }
+  .stat-float .n{ font-size:17px; }
+  .stat-float .l{ font-size:10px; }
 }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important;} }
 
@@ -841,4 +855,73 @@ button, .btn-solid, .btn-primary-lg, .btn-ghost-lg, .btn-white, .btn-outline{ po
 
 @media (max-width:860px){
   .lesson-toolbar{ flex-direction:column; align-items:flex-start; }
+}
+
+/* ── Light theme: premium depth pass ──────────────────────────────────
+   The [data-theme="light"] block near the top already flips the base
+   bg/text/shadow tokens; these rules add the finishing touches (crisper
+   white cards, tinted badges/pills, richer hover states, a faint top
+   hairline for dimensionality) so light mode reads as intentionally
+   premium instead of a flat inverse of dark mode. Every rule here is
+   scoped under [data-theme="light"] — dark mode is untouched. */
+[data-theme="light"] .col-card, [data-theme="light"] .dash-stat, [data-theme="light"] .continue-card,
+[data-theme="light"] .cert-card, [data-theme="light"] .skill-tile, [data-theme="light"] .mentor-card,
+[data-theme="light"] .invoice-table, [data-theme="light"] .form-input, [data-theme="light"] .video-frame,
+[data-theme="light"] .search-box, [data-theme="light"] .icon-btn, [data-theme="light"] .btn-ghost-lg,
+[data-theme="light"] .btn-outline, [data-theme="light"] .tag-pills span{
+  background:#FFFFFF;
+  border-color:rgba(20,30,60,0.07);
+}
+[data-theme="light"] .skill-tile:hover{ box-shadow:var(--shadow-lg), 0 0 22px rgba(15,190,147,0.14); }
+[data-theme="light"] .mentor-card:hover, [data-theme="light"] .cert-card:hover{ box-shadow:var(--shadow-lg); }
+[data-theme="light"] .icon-btn:hover{ box-shadow:0 4px 14px rgba(15,190,147,0.14); }
+[data-theme="light"] .tag-pills span{ box-shadow:0 2px 8px rgba(30,41,59,0.04); }
+[data-theme="light"] .tag-pills span:hover{ box-shadow:0 4px 14px rgba(15,190,147,0.14); }
+[data-theme="light"] .search-box{ box-shadow:var(--shadow-md), 0 0 0 1px rgba(20,30,60,0.03); }
+[data-theme="light"] .badge{
+  background:linear-gradient(135deg, rgba(15,190,147,0.1), rgba(124,92,224,0.08));
+  border-color:rgba(15,190,147,0.25);
+  box-shadow:0 4px 16px rgba(15,190,147,0.1);
+}
+[data-theme="light"] nav.topnav{ box-shadow:0 1px 0 rgba(20,30,60,0.05); }
+[data-theme="light"] .btn-primary-lg:hover{ box-shadow:0 0 26px rgba(15,190,147,0.35), 0 0 40px rgba(124,92,224,0.28); }
+[data-theme="light"] .avatar-stack div{ background:#FFFFFF; box-shadow:0 2px 6px rgba(30,41,59,0.08); }
+
+[data-theme="light"] .col-card, [data-theme="light"] .mentor-card, [data-theme="light"] .cert-card,
+[data-theme="light"] .skill-tile, [data-theme="light"] .dash-stat{ position:relative; }
+[data-theme="light"] .col-card::before, [data-theme="light"] .mentor-card::before, [data-theme="light"] .cert-card::before,
+[data-theme="light"] .skill-tile::before, [data-theme="light"] .dash-stat::before{
+  content:''; position:absolute; top:0; left:16px; right:16px; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(15,190,147,0.4), rgba(124,92,224,0.32), transparent);
+  opacity:0.7; pointer-events:none;
+}
+
+/* Extend the existing colour-transition list (defined near the top of this
+   file) to cover the extra surfaces styled above, so every one of them
+   crossfades smoothly rather than snapping when the theme changes. */
+.badge, .tag-pills span, .search-box, .icon-btn, .skill-tile, .mentor-card, .avatar-stack div{
+  transition: background-color .35s ease, border-color .35s ease, color .35s ease, box-shadow .35s ease;
+}
+
+/* ── Theme switch: circular reveal ─────────────────────────────────────
+   In browsers that support the View Transitions API (see ThemeToggle.jsx,
+   which sets --vt-x/--vt-y/--vt-radius to the click position before
+   calling document.startViewTransition), switching themes wipes in with a
+   circular reveal from the toggle button instead of an instant snap.
+   Browsers without support silently fall back to the plain 0.35s colour
+   crossfade already defined above — nothing else changes either way, and
+   this only affects the transition moment, never dark mode's own look. */
+@supports (view-transition-name: none){
+  ::view-transition-old(root), ::view-transition-new(root){
+    animation:none; mix-blend-mode:normal;
+  }
+  ::view-transition-old(root){ z-index:1; }
+  ::view-transition-new(root){
+    z-index:2;
+    clip-path:circle(0px at var(--vt-x,50%) var(--vt-y,50%));
+    animation:theme-reveal .62s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @keyframes theme-reveal{
+    to{ clip-path:circle(var(--vt-radius,150%) at var(--vt-x,50%) var(--vt-y,50%)); }
+  }
 }

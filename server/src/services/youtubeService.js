@@ -1,5 +1,6 @@
 import { cacheGet, cacheSet } from '../utils/ytCache.js';
 import { parseIsoDuration, formatSecondsAsDuration } from '../utils/ytDuration.js';
+import { parseChaptersFromDescription, syntheticChapters } from '../utils/ytChapters.js';
 import {
   PREFERRED_CHANNELS, EXCLUDE_KEYWORDS, MIN_DURATION_SECONDS,
   MAX_DURATION_SECONDS, MIN_VIEW_COUNT, buildQueries, looksNonEnglish
@@ -116,15 +117,34 @@ function passesFilters(video) {
 }
 
 /**
- * Fetches, filters, dedupes, and ranks a "course" of tutorial videos for a
- * given skill. Cached per skill (utils/ytCache.js — memory + Mongo) so
- * repeat page loads and multiple users don't each burn fresh API quota.
+ * Picks ONE best-matching full course video for a skill and breaks it into
+ * chapters, so the curriculum sidebar represents topics *within that one
+ * video* (seeking the same player) instead of a grab-bag of unrelated
+ * standalone videos. We prefer the top-ranked candidate that ships real
+ * author-provided chapters in its description; if none of the candidates
+ * have those, we fall back to the single top-ranked video with evenly
+ * split synthetic segments so there's still more than one curriculum step.
+ */
+function chooseVideoAndChapters(candidates) {
+  for (const video of candidates) {
+    const chapters = parseChaptersFromDescription(video.description, video.durationSeconds);
+    if (chapters.length >= 3) return { video, chapters, chaptersAreReal: true };
+  }
+  const video = candidates[0];
+  return { video, chapters: syntheticChapters(video.durationSeconds), chaptersAreReal: false };
+}
+
+/**
+ * Fetches, filters, dedupes, and ranks candidate videos for a skill, then
+ * settles on a single course video + its chapter list. Cached per skill
+ * (utils/ytCache.js — memory + Mongo) so repeat page loads and multiple
+ * users don't each burn fresh API quota.
  */
 export async function getCourseForSkill({ skillTitle, limit = 8 }) {
-  const cacheKey = `yt:course:${skillTitle.toLowerCase().trim()}:${limit}`;
+  const cacheKey = `yt:course:v2:${skillTitle.toLowerCase().trim()}`;
   const cached = await cacheGet(cacheKey);
   if (cached && !cached.stale) {
-    return { videos: cached.value, source: 'cache', quotaExceeded: false };
+    return { ...cached.value, source: 'cache', quotaExceeded: false };
   }
 
   try {
@@ -137,20 +157,37 @@ export async function getCourseForSkill({ skillTitle, limit = 8 }) {
     const detailBatches = await Promise.all(chunks.map(fetchVideoDetails));
     const details = detailBatches.flat();
 
-    const videos = details
+    const candidates = details
       .map(toVideoSummary)
       .filter(passesFilters)
       .sort((a, b) => scoreVideo(b) - scoreVideo(a))
-      .slice(0, limit);
+      .slice(0, Math.max(limit, 5));
 
-    await cacheSet(cacheKey, videos);
-    return { videos, source: 'live', quotaExceeded: false };
+    let result;
+    if (candidates.length === 0) {
+      result = { video: null, chapters: [] };
+    } else {
+      const { video, chapters } = chooseVideoAndChapters(candidates);
+      result = {
+        video,
+        chapters: chapters.map((c, i) => ({
+          id: `${video.id}-ch${i}`,
+          title: c.title,
+          startSeconds: c.startSeconds,
+          endSeconds: c.endSeconds,
+          duration: formatSecondsAsDuration(Math.max(0, c.endSeconds - c.startSeconds))
+        }))
+      };
+    }
+
+    await cacheSet(cacheKey, result);
+    return { ...result, source: 'live', quotaExceeded: false };
   } catch (err) {
     if (err instanceof QuotaExceededError && cached) {
-      return { videos: cached.value, source: 'stale-cache', quotaExceeded: true };
+      return { ...cached.value, source: 'stale-cache', quotaExceeded: true };
     }
     if (err instanceof QuotaExceededError) {
-      return { videos: [], source: 'none', quotaExceeded: true };
+      return { video: null, chapters: [], source: 'none', quotaExceeded: true };
     }
     throw err;
   }

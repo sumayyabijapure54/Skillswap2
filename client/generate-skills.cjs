@@ -3,8 +3,8 @@
 const fs = require('fs');
 
 const SAMPLE_VIDEOS = [
-  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'

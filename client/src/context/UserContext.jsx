@@ -86,11 +86,6 @@ function emptyState(){
     verified: false,
     onboarded: false,
     isAdmin: false,
-    // Demo-only stand-in for a real backend role/permission system — see
-    // the toggle on the Profile page. Deliberately kept separate from the
-    // real `profile.role` (learn/teach/both) and `isAdmin` fields above,
-    // which now come straight from the server.
-    demoAdmin: false,
     profile: { name:'', email:'', bio:'', avatar:'', role:null, interests:[], goal:null, skillsOffered:[], skillsWanted:[] },
     enrolled: [],      // [{ skillId, completedLessons:[lessonId,...], enrolledAt, quizScores:{lessonId:{score,total}} }]
     wishlist: [],       // [skillId, ...]
@@ -271,10 +266,6 @@ export function UserProvider({ children }){
     }
   };
 
-  // Demo-only stand-in for a real permissions system (see Profile.jsx) —
-  // deliberately local, not sent to the backend.
-  const toggleDemoAdmin = (on) => setState(s => ({ ...s, demoAdmin: on }));
-
   const changePassword = async ({ current, next }) => {
     try{
       await api.patch('/api/users/me/password', { currentPassword: current, newPassword: next });
@@ -323,22 +314,25 @@ export function UserProvider({ children }){
 
   // --- YouTube lesson player: save-for-later + continue-watching --------
 
-  const toggleSavedLesson = (skillId, video) => setState(s => {
-    const exists = s.savedLessons.some(l => l.skillId===skillId && l.videoId===video.id);
+  // `chapter` is { chapterId, videoId, startSeconds, title, thumbnail, channelTitle }.
+  // Saved by chapterId (not videoId) because a skill's whole curriculum now
+  // lives inside one video — chapterId is what makes each topic distinct.
+  const toggleSavedLesson = (skillId, chapter) => setState(s => {
+    const exists = s.savedLessons.some(l => l.skillId===skillId && l.chapterId===chapter.chapterId);
     return {
       ...s,
       savedLessons: exists
-        ? s.savedLessons.filter(l => !(l.skillId===skillId && l.videoId===video.id))
+        ? s.savedLessons.filter(l => !(l.skillId===skillId && l.chapterId===chapter.chapterId))
         : [...s.savedLessons, {
-            skillId, videoId: video.id, title: video.title,
-            thumbnail: video.thumbnail, channelTitle: video.channelTitle,
+            skillId, chapterId: chapter.chapterId, videoId: chapter.videoId, startSeconds: chapter.startSeconds,
+            title: chapter.title, thumbnail: chapter.thumbnail, channelTitle: chapter.channelTitle,
             savedAt: new Date().toISOString()
           }]
     };
   });
 
-  const isLessonSaved = (skillId, videoId) =>
-    state.savedLessons.some(l => l.skillId===skillId && l.videoId===videoId);
+  const isLessonSaved = (skillId, chapterId) =>
+    state.savedLessons.some(l => l.skillId===skillId && l.chapterId===chapterId);
 
   const setLastWatched = (skillId, { videoId, lessonIndex }) => setState(s => ({
     ...s,

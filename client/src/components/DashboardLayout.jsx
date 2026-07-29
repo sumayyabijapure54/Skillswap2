@@ -37,12 +37,14 @@ const BASE_NAV = [
 const MENTOR_ITEM = { to:'/mentor-dashboard', label:'Mentor Dashboard', icon:'🧑‍🏫' };
 
 export default function DashboardLayout({ title, subtitle, children }){
-  const { profile, logOut } = useUser();
+  const { profile, isAdmin: realIsAdmin, logOut } = useUser();
   const [navOpen, setNavOpen] = React.useState(false);
   const initials = (profile.name || 'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const isMentor = profile.role === 'teach' || profile.role === 'both';
 
-  const isAdmin = profile.role === 'admin';
+  // Real backend-granted admins (`isAdmin` from the server) OR the demo
+  // toggle on the Profile page (`profile.role === 'admin'`) both count.
+  const isAdmin = realIsAdmin || profile.role === 'admin';
 
   const nav = isMentor
     ? [{ section:null, items:[ BASE_NAV[0].items[0], MENTOR_ITEM ] }, ...BASE_NAV.slice(1)]
