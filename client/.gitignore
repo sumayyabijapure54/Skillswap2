@@ -1,4 +1,22 @@
-﻿node_modules/
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment variables — never commit real secrets/URLs
 .env
 .env.local
-dist/
+.env.*.local
+
+# Editor/OS
+.DS_Store
+*.local
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
