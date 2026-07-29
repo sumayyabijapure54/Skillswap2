@@ -38,7 +38,7 @@ function Field() {
     });
 
     const edges = [];
-    const MAXDIST = 3.2;
+    const MAXDIST = 3.6;
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         if (nodes[i].pos.distanceTo(nodes[j].pos) < MAXDIST) edges.push([i, j]);
@@ -101,13 +101,13 @@ function Field() {
           <bufferAttribute attach="attributes-position" count={COUNT} array={posArr} itemSize={3} />
           <bufferAttribute attach="attributes-color" count={COUNT} array={colorArr} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.06} vertexColors transparent opacity={0.85} />
+        <pointsMaterial size={0.075} vertexColors transparent opacity={0.9} />
       </points>
       <lineSegments>
         <bufferGeometry ref={edgesGeoRef}>
           <bufferAttribute attach="attributes-position" count={edges.length * 2} array={edgePosArr} itemSize={3} />
         </bufferGeometry>
-        <lineBasicMaterial color="#14f0b4" transparent opacity={0.14} />
+        <lineBasicMaterial color="#14f0b4" transparent opacity={0.22} />
       </lineSegments>
     </group>
   );

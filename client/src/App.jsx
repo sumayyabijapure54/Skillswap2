@@ -81,6 +81,19 @@ export default function App(){
     return ()=> cancelAnimationFrame(id);
   }, [pathname]);
 
+  // A single next-frame refresh (above) is enough for route changes, but on
+  // the very first load there's more still settling below the fold — web
+  // fonts swapping in, images, the marquee/testimonial carousel — each of
+  // which shifts document height after ScrollTrigger already measured it.
+  // Re-running refresh once those actually finish keeps every trigger's
+  // bounds (including the hero parallax) accurate instead of stale.
+  React.useEffect(()=>{
+    const refresh = () => ScrollTrigger.refresh();
+    if (document.fonts?.ready) document.fonts.ready.then(refresh);
+    window.addEventListener('load', refresh);
+    return () => window.removeEventListener('load', refresh);
+  }, []);
+
   const showFooter = !NO_FOOTER_EXACT.includes(pathname) && !NO_FOOTER_PREFIXES.some(p=>pathname.startsWith(p));
 
   return (
