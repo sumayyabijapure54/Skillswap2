@@ -1,28 +1,85 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 
-// Adjust this if your backend uses session cookies instead of a bearer
-// token — swap this for `credentials: 'include'` on the fetch below and
-// drop the Authorization header.
-function getToken() {
-  return localStorage.getItem('skillswap_token');
+const TOKEN_KEY = 'skillswap_token';
+const REFRESH_KEY = 'skillswap_refresh_token';
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
 }
 
-async function request(path, options = {}) {
+export function getRefreshToken() {
+  return localStorage.getItem(REFRESH_KEY);
+}
+
+export function setTokens({ token, refreshToken } = {}) {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
+}
+
+export function clearTokens() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+}
+
+// Prevents a burst of parallel 401s (e.g. several dashboard widgets firing
+// requests at once) from each independently racing to refresh the token —
+// they all await this same in-flight promise instead.
+let refreshPromise = null;
+
+async function attemptRefresh() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  if (!refreshPromise) {
+    refreshPromise = fetch(`${API_BASE}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken })
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => null);
+        if (!res.ok) return false;
+        setTokens(data);
+        return true;
+      })
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
+async function request(path, options = {}, { retry = true } = {}) {
   const token = getToken();
+
+  const isFormData = options.body instanceof FormData;
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {})
     }
   });
 
+  // Session expired mid-use — try one silent refresh-and-retry before
+  // giving up, so a short access-token lifetime doesn't boot people out
+  // of the app every few minutes.
+  if (res.status === 401 && retry && token) {
+    const refreshed = await attemptRefresh();
+    if (refreshed) return request(path, options, { retry: false });
+    clearTokens();
+  }
+
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error((data && data.error) || `Request failed (${res.status})`);
+    const err = new Error((data && data.message) || (data && data.error) || `Request failed (${res.status})`);
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
 
   return data;
@@ -30,5 +87,7 @@ async function request(path, options = {}) {
 
 export const api = {
   get: (path) => request(path),
-  post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) })
+  post: (path, body) => request(path, { method: 'POST', body: body instanceof FormData ? body : JSON.stringify(body) }),
+  patch: (path, body) => request(path, { method: 'PATCH', body: body instanceof FormData ? body : JSON.stringify(body) }),
+  del: (path) => request(path, { method: 'DELETE' })
 };
