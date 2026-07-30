@@ -34,7 +34,12 @@ const BASE_NAV = [
   ]}
 ];
 
-const MENTOR_ITEM = { to:'/mentor-dashboard', label:'Mentor Dashboard', icon:'🧑‍🏫' };
+const MENTOR_ITEMS = [
+  { to:'/mentor-dashboard', label:'Mentor Dashboard', icon:'🧑‍🏫' },
+  { to:'/mentor-courses', label:'My Courses', icon:'📚' },
+  { to:'/mentor-students', label:'Students', icon:'🧑‍🎓' },
+  { to:'/mentor-analytics', label:'Analytics', icon:'📊' }
+];
 
 export default function DashboardLayout({ title, subtitle, children }){
   const { profile, isAdmin: realIsAdmin, logOut } = useUser();
@@ -47,7 +52,7 @@ export default function DashboardLayout({ title, subtitle, children }){
   const isAdmin = realIsAdmin || profile.role === 'admin';
 
   const nav = isMentor
-    ? [{ section:null, items:[ BASE_NAV[0].items[0], MENTOR_ITEM ] }, ...BASE_NAV.slice(1)]
+    ? [{ section:null, items:[ BASE_NAV[0].items[0] ] }, { section:'Teaching', items: MENTOR_ITEMS }, ...BASE_NAV.slice(1)]
     : BASE_NAV;
 
   const navWithAdmin = isAdmin

@@ -23,6 +23,20 @@ const LessonSchema = new Schema(
   { _id: false }
 );
 
+const YoutubeVideoSchema = new Schema(
+  {
+    videoId: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true },
+    url: { type: String, required: true, trim: true },
+    embedUrl: { type: String, required: true, trim: true },
+    thumbnail: { type: String, default: '', trim: true },
+    channelTitle: { type: String, default: '', trim: true },
+    duration: { type: String, default: '', trim: true },
+    durationSeconds: { type: Number, default: 0 }
+  },
+  { _id: false }
+);
+
 const SkillSchema = new Schema(
   {
     // human-readable slug used in URLs, e.g. /skill/react-fundamentals
@@ -46,7 +60,12 @@ const SkillSchema = new Schema(
     mentorUser: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     prerequisites: { type: [String], default: [] },
     tags: { type: [String], default: [], index: true },
-    lessons: { type: [LessonSchema], default: [] }
+    lessons: { type: [LessonSchema], default: [] },
+    // Set when a mentor uploads a course by pasting a YouTube URL (see
+    // POST /api/youtube/video + createSkill/updateSkill). Null for skills
+    // with no linked video — the lesson player falls back to the curated
+    // getCourseForSkill() search in that case, same as before.
+    youtubeVideo: { type: YoutubeVideoSchema, default: null }
   },
   { timestamps: true }
 );

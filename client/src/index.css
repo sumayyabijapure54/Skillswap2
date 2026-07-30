@@ -284,6 +284,27 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .explore-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:20px;}
 .explore-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:22px; transition:all .25s ease; text-decoration:none; display:block; color:var(--text); cursor:pointer;}
 .explore-card:hover{border-color:rgba(20,240,180,0.35); box-shadow:var(--shadow-lg); transform:translateY(-3px);}
+
+/* ── 3D skill icon (course cards only) ─────────────────────────────
+   Scoped to .explore-card so no other card style on the site changes. */
+.skill-icon-3d{
+  margin-bottom:14px;
+  filter:drop-shadow(0 8px 18px var(--icon-glow));
+  animation:si3d-float 4.5s ease-in-out infinite;
+  transition:transform .35s ease, filter .35s ease;
+}
+.explore-card:hover .skill-icon-3d{
+  transform:translateY(-3px) rotate(-3deg) scale(1.04);
+  filter:drop-shadow(0 12px 22px var(--icon-glow));
+}
+@keyframes si3d-float{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce){
+  .skill-icon-3d{ animation:none; }
+}
+
 .explore-card .cat{display:inline-block; font-size:10.5px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:4px 10px; border-radius:100px; margin-bottom:12px;}
 .explore-card h3{font-size:15.5px; margin-bottom:6px;}
 .explore-card .desc{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:16px;}

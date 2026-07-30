@@ -323,3 +323,173 @@ export async function getMentorEarnings(req, res, next) {
     next(err);
   }
 }
+
+// GET /api/bookings/mentor/students?skillId=&q=  (protected)
+// One row per distinct learner who has booked (any status other than
+// cancelled) a session with this mentor, optionally scoped to one course.
+// Aggregated straight off Booking so it stays correct without a separate
+// enrollment table — session count / spend / last-seen all derive from the
+// same records the earnings and analytics endpoints already trust.
+export async function getMentorStudents(req, res, next) {
+  try {
+    const mentorUser = req.user._id;
+    const { skillId, q } = req.query;
+
+    const match = { mentorUser, status: { $ne: 'cancelled' } };
+    if (skillId) match.skillId = skillId;
+
+    const rows = await Booking.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: '$user',
+          sessionsCount: { $sum: 1 },
+          completedCount: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+          totalSpent: { $sum: { $cond: ['$paid', '$price', 0] } },
+          skills: { $addToSet: { skillId: '$skillId', skillTitle: '$skillTitle' } },
+          firstSession: { $min: '$scheduledAt' },
+          lastSession: { $max: '$scheduledAt' }
+        }
+      },
+      { $sort: { lastSession: -1 } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 0,
+          id: '$user._id',
+          name: '$user.name',
+          email: '$user.email',
+          avatarUrl: '$user.avatarUrl',
+          sessionsCount: 1,
+          completedCount: 1,
+          totalSpent: { $round: ['$totalSpent', 2] },
+          skills: 1,
+          firstSession: 1,
+          lastSession: 1
+        }
+      }
+    ]);
+
+    const search = (q || '').trim().toLowerCase();
+    const filtered = search
+      ? rows.filter((r) => r.name?.toLowerCase().includes(search) || r.email?.toLowerCase().includes(search))
+      : rows;
+
+    res.json({ count: filtered.length, students: filtered });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/bookings/mentor/analytics?months=6  (protected)
+// Time-series + per-course numbers for the Mentor Analytics page: monthly
+// enrollments/revenue over the trailing window, and a per-course rollup
+// (enrollments, revenue, rating) so mentors can see which courses are
+// carrying the business, not just an aggregate total.
+export async function getMentorAnalytics(req, res, next) {
+  try {
+    const mentorUser = req.user._id;
+    const months = Math.min(Math.max(Number(req.query.months) || 6, 1), 24);
+
+    const since = new Date();
+    since.setMonth(since.getMonth() - (months - 1));
+    since.setDate(1);
+    since.setHours(0, 0, 0, 0);
+
+    const monthlyBookings = await Booking.aggregate([
+      { $match: { mentorUser, status: { $ne: 'cancelled' }, createdAt: { $gte: since } } },
+      {
+        $group: {
+          _id: { y: { $year: '$createdAt' }, m: { $month: '$createdAt' } },
+          enrollments: { $sum: 1 },
+          revenue: { $sum: { $cond: ['$paid', '$price', 0] } }
+        }
+      },
+      { $sort: { '_id.y': 1, '_id.m': 1 } }
+    ]);
+
+    // Fill in months with zero activity so the chart has a continuous axis.
+    const monthly = [];
+    const cursor = new Date(since);
+    for (let i = 0; i < months; i++) {
+      const y = cursor.getFullYear();
+      const m = cursor.getMonth() + 1;
+      const found = monthlyBookings.find((b) => b._id.y === y && b._id.m === m);
+      monthly.push({
+        label: cursor.toLocaleDateString(undefined, { month: 'short', year: '2-digit' }),
+        enrollments: found ? found.enrollments : 0,
+        revenue: found ? +found.revenue.toFixed(2) : 0
+      });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+
+    const perCourse = await Booking.aggregate([
+      { $match: { mentorUser, status: { $ne: 'cancelled' } } },
+      {
+        $group: {
+          _id: '$skillId',
+          skillTitle: { $first: '$skillTitle' },
+          enrollments: { $sum: 1 },
+          revenue: { $sum: { $cond: ['$paid', '$price', 0] } },
+          students: { $addToSet: '$user' }
+        }
+      },
+      { $sort: { revenue: -1 } }
+    ]);
+
+    const ratingBySkill = await Review.aggregate([
+      { $match: { mentorUser } },
+      { $group: { _id: '$skillId', avg: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]);
+    const ratingMap = Object.fromEntries(ratingBySkill.map((r) => [r._id, { avg: Math.round(r.avg * 10) / 10, count: r.count }]));
+
+    const monthlyRatings = await Review.aggregate([
+      { $match: { mentorUser, createdAt: { $gte: since } } },
+      {
+        $group: {
+          _id: { y: { $year: '$createdAt' }, m: { $month: '$createdAt' } },
+          avg: { $avg: '$rating' },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.y': 1, '_id.m': 1 } }
+    ]);
+    const ratingCursor = new Date(since);
+    const ratingTrend = [];
+    for (let i = 0; i < months; i++) {
+      const y = ratingCursor.getFullYear();
+      const m = ratingCursor.getMonth() + 1;
+      const found = monthlyRatings.find((r) => r._id.y === y && r._id.m === m);
+      ratingTrend.push({
+        label: ratingCursor.toLocaleDateString(undefined, { month: 'short', year: '2-digit' }),
+        avgRating: found ? Math.round(found.avg * 10) / 10 : null,
+        count: found ? found.count : 0
+      });
+      ratingCursor.setMonth(ratingCursor.getMonth() + 1);
+    }
+
+    res.json({
+      monthly,
+      ratingTrend,
+      courses: perCourse.map((c) => ({
+        skillId: c._id,
+        skillTitle: c.skillTitle,
+        enrollments: c.enrollments,
+        revenue: +c.revenue.toFixed(2),
+        studentsCount: c.students.length,
+        avgRating: ratingMap[c._id]?.avg || 0,
+        reviewsCount: ratingMap[c._id]?.count || 0
+      }))
+    });
+  } catch (err) {
+    next(err);
+  }
+}

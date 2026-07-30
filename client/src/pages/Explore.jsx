@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { categories, levels, skills } from '../data/skills.js';
+import SkillIcon3D from '../components/SkillIcon3D.jsx';
 
 export default function Explore(){
   const [params, setParams] = useSearchParams();
@@ -100,7 +101,8 @@ export default function Explore(){
                 const cat = categories.find(c=>c.key===s.category);
                 return (
                   <Link to={`/skill/${s.id}`} className="explore-card" key={s.id}>
-                    <span className="cat">{cat?.icon} {cat?.label}</span>
+                    <SkillIcon3D category={s.category} />
+                    <span className="cat">{cat?.label}</span>
                     <h3>{s.title}</h3>
                     <div className="desc">{s.description.slice(0,90)}…</div>
                     <div className="meta">

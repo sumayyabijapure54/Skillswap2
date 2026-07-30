@@ -46,6 +46,10 @@ import PaymentHistory from './pages/PaymentHistory.jsx';
 import Certificates from './pages/Certificates.jsx';
 import CertificateDetail from './pages/CertificateDetail.jsx';
 import MentorDashboard from './pages/MentorDashboard.jsx';
+import MentorCourses from './pages/MentorCourses.jsx';
+import MentorCourseForm from './pages/MentorCourseForm.jsx';
+import MentorStudents from './pages/MentorStudents.jsx';
+import MentorAnalytics from './pages/MentorAnalytics.jsx';
 import Recommendations from './pages/Recommendations.jsx';
 import Achievements from './pages/Achievements.jsx';
 import AccountSettings from './pages/AccountSettings.jsx';
@@ -64,9 +68,9 @@ const NO_FOOTER_EXACT = [
   '/dashboard', '/my-learning', '/learning-history', '/wishlist', '/profile', '/notifications',
   '/post-skill', '/community', '/messages', '/book-session', '/sessions', '/reviews',
   '/checkout', '/wallet', '/payments', '/certificates', '/mentor-dashboard', '/recommendations', '/achievements',
-  '/account-settings'
+  '/account-settings', '/mentor-courses', '/mentor-courses/new', '/mentor-students', '/mentor-analytics'
 ];
-const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/certificate/', '/admin'];
+const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/certificate/', '/admin', '/mentor-courses/'];
 
 export default function App(){
   const { pathname } = useLocation();
@@ -146,6 +150,11 @@ export default function App(){
           <Route path="/certificates" element={<RequireAuth><Certificates /></RequireAuth>} />
           <Route path="/certificate/:skillId" element={<RequireAuth><CertificateDetail /></RequireAuth>} />
           <Route path="/mentor-dashboard" element={<RequireAuth><MentorDashboard /></RequireAuth>} />
+          <Route path="/mentor-courses" element={<RequireAuth><MentorCourses /></RequireAuth>} />
+          <Route path="/mentor-courses/new" element={<RequireAuth><MentorCourseForm /></RequireAuth>} />
+          <Route path="/mentor-courses/:id/edit" element={<RequireAuth><MentorCourseForm /></RequireAuth>} />
+          <Route path="/mentor-students" element={<RequireAuth><MentorStudents /></RequireAuth>} />
+          <Route path="/mentor-analytics" element={<RequireAuth><MentorAnalytics /></RequireAuth>} />
           <Route path="/recommendations" element={<RequireAuth><Recommendations /></RequireAuth>} />
           <Route path="/achievements" element={<RequireAuth><Achievements /></RequireAuth>} />
           <Route path="/account-settings" element={<RequireAuth><AccountSettings /></RequireAuth>} />

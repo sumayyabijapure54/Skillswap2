@@ -134,6 +134,67 @@ function chooseVideoAndChapters(candidates) {
   return { video, chapters: syntheticChapters(video.durationSeconds), chaptersAreReal: false };
 }
 
+// Pulls the 11-char video id out of any common YouTube URL shape
+// (watch?v=, youtu.be/, /embed/, /shorts/) or accepts a bare id.
+function extractVideoId(input) {
+  const trimmed = (input || '').trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+
+  try {
+    const url = new URL(trimmed);
+    if (url.hostname.includes('youtu.be')) {
+      return url.pathname.slice(1).split('/')[0] || null;
+    }
+    if (url.hostname.includes('youtube.com')) {
+      if (url.searchParams.get('v')) return url.searchParams.get('v');
+      const match = /\/(embed|shorts)\/([a-zA-Z0-9_-]{11})/.exec(url.pathname);
+      if (match) return match[2];
+    }
+  } catch {
+    // not a valid URL at all
+  }
+  return null;
+}
+
+/**
+ * Fetches a single video's details for a mentor pasting a YouTube URL when
+ * uploading a course. Unlike getCourseForSkill this doesn't search or rank
+ * — it looks up exactly the video the mentor linked and reports back
+ * enough to preview + store it (title/thumbnail/duration/chapters).
+ * Returns { video, chapters } with video: null if the URL/id didn't
+ * resolve to a real, public video.
+ */
+export async function getVideoByUrl(rawUrl) {
+  const videoId = extractVideoId(rawUrl);
+  if (!videoId) {
+    const err = new Error('That doesn\'t look like a valid YouTube video URL.');
+    err.status = 400;
+    throw err;
+  }
+
+  const details = await fetchVideoDetails([videoId]);
+  if (details.length === 0) {
+    const err = new Error('Could not find a public YouTube video at that URL.');
+    err.status = 404;
+    throw err;
+  }
+
+  const video = toVideoSummary(details[0]);
+  const chapters = parseChaptersFromDescription(video.description, video.durationSeconds);
+  const finalChapters = chapters.length >= 3 ? chapters : syntheticChapters(video.durationSeconds);
+
+  return {
+    video,
+    chapters: finalChapters.map((c, i) => ({
+      id: `${video.id}-ch${i}`,
+      title: c.title,
+      startSeconds: c.startSeconds,
+      endSeconds: c.endSeconds,
+      duration: formatSecondsAsDuration(Math.max(0, c.endSeconds - c.startSeconds))
+    }))
+  };
+}
+
 /**
  * Fetches, filters, dedupes, and ranks candidate videos for a skill, then
  * settles on a single course video + its chapter list. Cached per skill

@@ -119,6 +119,25 @@ export async function listMyReviews(req, res, next) {
   }
 }
 
+// GET /api/reviews/mentor?page=&limit=  (protected) — reviews learners left
+// on this mentor's courses (as opposed to /mine, which is reviews *they*
+// wrote as a learner).
+export async function listMentorReviews(req, res, next) {
+  try {
+    const filter = { mentorUser: req.user._id };
+    const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 20 });
+
+    const [reviews, total] = await Promise.all([
+      Review.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).populate('user', 'name').lean(),
+      Review.countDocuments(filter)
+    ]);
+
+    res.json({ reviews: reviews.map(leanReview), ...paginationMeta({ page, limit, total }) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // GET /api/reviews/reviewable  (protected)
 // Completed sessions the current user hasn't reviewed yet — powers a
 // "Leave a review" prompt without the frontend having to diff two lists.

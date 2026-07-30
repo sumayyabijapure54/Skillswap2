@@ -7,7 +7,9 @@ import {
   listMentorBookings,
   mentorCancelBooking,
   completeBooking,
-  getMentorEarnings
+  getMentorEarnings,
+  getMentorStudents,
+  getMentorAnalytics
 } from '../controllers/bookingsController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -20,6 +22,8 @@ router.post('/checkout', requireAuth, validate(checkoutBookingSchema), checkoutB
 router.get('/', requireAuth, listBookings);
 router.get('/mentor', requireAuth, listMentorBookings);
 router.get('/mentor/earnings', requireAuth, getMentorEarnings);
+router.get('/mentor/students', requireAuth, getMentorStudents);
+router.get('/mentor/analytics', requireAuth, getMentorAnalytics);
 router.patch('/:id/cancel', requireAuth, cancelBooking);
 router.patch('/:id/mentor-cancel', requireAuth, mentorCancelBooking);
 router.patch('/:id/complete', requireAuth, completeBooking);

@@ -3,6 +3,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { skills, categories } from '../data/skills.js';
 import { mentors } from '../data/mentors.js';
 import { useCommunity } from '../context/CommunityContext.jsx';
+import SkillIcon3D from '../components/SkillIcon3D.jsx';
 
 const TABS = [
   { key:'all', label:'All' },
@@ -79,7 +80,8 @@ export default function Search(){
                       const cat = categories.find(c=>c.key===s.category);
                       return (
                         <Link to={`/skill/${s.id}`} className="explore-card" key={s.id}>
-                          <span className="cat">{cat?.icon} {cat?.label}</span>
+                          <SkillIcon3D category={s.category} />
+                          <span className="cat">{cat?.label}</span>
                           <h3>{s.title}</h3>
                           <div className="desc">{s.description.slice(0,90)}…</div>
                           <div className="meta"><span>★ <b>{s.rating}</b></span><span><b>{s.students.toLocaleString()}</b> students</span></div>

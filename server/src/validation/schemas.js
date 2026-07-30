@@ -115,6 +115,17 @@ const lessonSchema = z.object({
   type: z.enum(['Video', 'Quiz']).optional()
 });
 
+const youtubeVideoSchema = z.object({
+  videoId: z.string().trim().min(1),
+  title: z.string().trim().min(1),
+  url: z.string().trim().min(1),
+  embedUrl: z.string().trim().min(1),
+  thumbnail: z.string().trim().optional(),
+  channelTitle: z.string().trim().optional(),
+  duration: z.string().trim().optional(),
+  durationSeconds: z.coerce.number().optional()
+}).nullable();
+
 export const createSkillSchema = z.object({
   title: z.string().trim().min(1, 'title is required').max(150),
   category: z.string().trim().min(1, 'category is required'),
@@ -124,7 +135,8 @@ export const createSkillSchema = z.object({
   mentorRole: z.string().max(100).optional(),
   prerequisites: z.array(z.string().trim().min(1)).max(20).optional(),
   tags: z.array(z.string().trim().min(1)).max(20).optional(),
-  lessons: z.array(lessonSchema).max(100).optional()
+  lessons: z.array(lessonSchema).max(100).optional(),
+  youtubeVideo: youtubeVideoSchema.optional()
 });
 
 export const updateSkillSchema = z.object({
@@ -133,7 +145,8 @@ export const updateSkillSchema = z.object({
   duration: z.string().max(50).optional(),
   prerequisites: z.array(z.string().trim().min(1)).max(20).optional(),
   tags: z.array(z.string().trim().min(1)).max(20).optional(),
-  lessons: z.array(lessonSchema).max(100).optional()
+  lessons: z.array(lessonSchema).max(100).optional(),
+  youtubeVideo: youtubeVideoSchema.optional()
 });
 
 // --- mentor applications ---

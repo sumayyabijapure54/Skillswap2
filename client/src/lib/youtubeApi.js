@@ -7,7 +7,7 @@
 // API on every request, but this layer means repeat visits to the same
 // lesson page render instantly with zero network round-trip too.
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 const LOCAL_CACHE_PREFIX = 'skillswap_yt_cache_v2:';
 const LOCAL_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 

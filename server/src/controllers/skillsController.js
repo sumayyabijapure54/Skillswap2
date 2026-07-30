@@ -239,7 +239,7 @@ async function uniqueSlug(title) {
 // distinct from /skills/:id/claim, which attaches to an existing seeded skill.
 export async function createSkill(req, res, next) {
   try {
-    const { title, category, level, description, duration, mentorRole, prerequisites, tags, lessons } = req.body;
+    const { title, category, level, description, duration, mentorRole, prerequisites, tags, lessons, youtubeVideo } = req.body;
 
     if (!title || !category || !level || !description) {
       return res.status(400).json({ message: 'title, category, level, and description are required' });
@@ -284,7 +284,8 @@ export async function createSkill(req, res, next) {
       mentorUser: req.user._id,
       prerequisites: Array.isArray(prerequisites) ? prerequisites.filter(Boolean) : [],
       tags: Array.isArray(tags) ? tags.filter(Boolean) : [],
-      lessons: cleanLessons
+      lessons: cleanLessons,
+      youtubeVideo: youtubeVideo || null
     });
 
     res.status(201).json({ skill });
@@ -293,7 +294,7 @@ export async function createSkill(req, res, next) {
   }
 }
 
-const EDITABLE_SKILL_FIELDS = ['title', 'description', 'duration', 'prerequisites', 'tags', 'lessons'];
+const EDITABLE_SKILL_FIELDS = ['title', 'description', 'duration', 'prerequisites', 'tags', 'lessons', 'youtubeVideo'];
 
 // PATCH /api/skills/:id  (protected — only the mentor who posted it)
 // category/level are intentionally not editable here to keep Explore's
