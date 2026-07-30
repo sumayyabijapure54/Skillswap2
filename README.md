@@ -19,7 +19,7 @@ Fill in `.env`:
 
 ```bash
 npm run seed   # first time only, populates the skills catalog
-npm run dev    # listens on http://localhost:5000
+npm run dev    # listens on http://localhost:5002
 ```
 
 ## 2. Frontend
@@ -28,7 +28,7 @@ npm run dev    # listens on http://localhost:5000
 cd client
 npm install
 cp .env.example .env
-npm run dev    # http://localhost:5173, already pointed at :5000
+npm run dev    # http://localhost:5173, already pointed at :5002
 ```
 
 ## What changed for the YouTube integration
@@ -44,7 +44,7 @@ npm run dev    # http://localhost:5173, already pointed at :5000
 - `src/components/YouTubePlayer.jsx`, `src/components/CourseSkeleton.jsx` — new
 - `src/lib/youtubeApi.js` — new, calls the backend above
 - `src/context/UserContext.jsx` — added save-for-later / continue-watching state (backward-compatible with existing localStorage)
-- `.env.example` / `src/lib/api.js` — fixed to point at `:5000` (your real backend's port) instead of the placeholder `:4000`
+- `.env.example` / `src/lib/api.js` — fixed to point at `:5002` (your real backend's port) instead of the placeholder `:4000`
 
 ## Note on the skills catalog
 

@@ -288,18 +288,28 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 /* ── 3D skill icon (course cards only) ─────────────────────────────
    Scoped to .explore-card so no other card style on the site changes. */
 .skill-icon-3d{
+  position:relative;
   margin-bottom:14px;
-  filter:drop-shadow(0 8px 18px var(--icon-glow));
   animation:si3d-float 4.5s ease-in-out infinite;
-  transition:transform .35s ease, filter .35s ease;
+  transition:transform .35s ease;
 }
-.explore-card:hover .skill-icon-3d{
-  transform:translateY(-3px) rotate(-3deg) scale(1.04);
-  filter:drop-shadow(0 12px 22px var(--icon-glow));
+.skill-icon-3d img{
+  width:100%; height:100%; object-fit:contain; display:block; position:relative; z-index:1;
+  filter:drop-shadow(0 10px 16px var(--icon-glow));
 }
+.skill-icon-3d-shadow{
+  position:absolute; left:50%; bottom:-6px; width:60%; height:10px;
+  transform:translateX(-50%);
+  background:var(--icon-glow);
+  border-radius:50%;
+  filter:blur(8px);
+  opacity:0.7;
+}
+.explore-card:hover .skill-icon-3d{ transform:translateY(-4px); }
+.explore-card:hover .skill-icon-3d img{ filter:drop-shadow(0 14px 22px var(--icon-glow)); }
 @keyframes si3d-float{
   0%,100%{ transform:translateY(0); }
-  50%{ transform:translateY(-4px); }
+  50%{ transform:translateY(-5px); }
 }
 @media (prefers-reduced-motion: reduce){
   .skill-icon-3d{ animation:none; }

@@ -5,9 +5,11 @@ const UserContext = createContext(null);
 const STORAGE_KEY = 'skillswap_user_v1';
 
 // Maps a backend User document (see server/src/models/User.js) onto the
-// slice of local state that's now server-driven. Everything else in
-// state (notifications, messages, bookings, wallet transactions, etc.)
-// is still local-only mock data — see the README note on what's wired up.
+// slice of local state that's server-driven. Progress (enrolled) and
+// notifications are hydrated separately via hydrateUserCollections, since
+// they live in their own collections. Messages, bookings, wallet
+// transactions, etc. are still local-only mock data — see the README note
+// on what's wired up.
 function userToProfileState(user) {
   return {
     authed: true,
@@ -25,8 +27,29 @@ function userToProfileState(user) {
       interests: user.interests || [],
       goal: user.goal || null
     },
-    wallet: { balance: user.wallet?.balance ?? 0 }
+    wallet: { balance: user.wallet?.balance ?? 0 },
+    wishlist: user.wishlist || []
   };
+}
+
+// Pulls the two collections that live outside the User document itself
+// (Progress, Notification) and merges them in. Called after any successful
+// auth event — best-effort: a hydration failure leaves whatever was already
+// in state rather than wiping it out.
+async function hydrateUserCollections(setState) {
+  try {
+    const [progressData, notifData] = await Promise.all([
+      api.get('/api/progress'),
+      api.get('/api/notifications')
+    ]);
+    setState(s => ({
+      ...s,
+      enrolled: progressData.enrolled || [],
+      notifications: notifData.notifications || []
+    }));
+  } catch {
+    // best-effort — keep existing state
+  }
 }
 
 const SEED_NOTIFICATIONS = [
@@ -34,19 +57,6 @@ const SEED_NOTIFICATIONS = [
   { id:2, type:'message', text:'Alex Johnson replied to your question in React Fundamentals.', time:'5h ago', read:false },
   { id:3, type:'recommendation', text:'New skill match: "SEO & Growth Marketing" fits what you\'ve been learning.', time:'1d ago', read:false },
   { id:4, type:'system', text:'Welcome to SkillSwap! Complete your profile to get better matches.', time:'3d ago', read:true }
-];
-
-// Stands in for a real-time channel (Socket.IO/WebSocket) pushing events
-// from a backend. The interval below simulates that push — swapping it for
-// a real `socket.on('notification', ...)` listener later doesn't change
-// anything downstream, since it lands through the same `notifications`
-// state and `markNotifRead`/`markAllNotifsRead` actions.
-const LIVE_NOTIF_POOL = [
-  { type:'message', text:'Sarah Williams sent you a new message.' },
-  { type:'booking', text:'A mentor just accepted your session request.' },
-  { type:'recommendation', text:'New skill match found based on your recent activity.' },
-  { type:'system', text:'Someone in the community replied to your post.' },
-  { type:'booking', text:'Reminder: you have a session starting soon.' }
 ];
 
 const SEED_CONVERSATIONS = [
@@ -133,6 +143,7 @@ export function UserProvider({ children }){
         const data = await api.get('/api/auth/me');
         if(cancelled) return;
         setState(s => ({ ...s, ...userToProfileState(data.user) }));
+        hydrateUserCollections(setState);
       }catch{
         if(cancelled) return;
         clearTokens();
@@ -144,22 +155,23 @@ export function UserProvider({ children }){
     return () => { cancelled = true; };
   }, []);
 
-  // Simulated real-time notification stream — only "connects" once the
-  // member is signed in, same as a real socket would only subscribe post-auth.
+  // Polls the real notifications API once signed in. This is a stand-in for
+  // a proper Socket.IO `socket.on('notification', ...)` push — swapping this
+  // interval for a live socket listener later doesn't change anything
+  // downstream, since it lands through the same `notifications` state and
+  // `markNotifRead`/`markAllNotifsRead` actions.
   useEffect(()=>{
     if(!state.authed) { setLiveConnected(false); return; }
     setLiveConnected(true);
-    const interval = setInterval(()=>{
-      if(Math.random() > 0.45) return; // not every tick — feels organic, not spammy
-      const template = LIVE_NOTIF_POOL[Math.floor(Math.random()*LIVE_NOTIF_POOL.length)];
-      setState(s => ({
-        ...s,
-        notifications: [
-          { id: Date.now(), type: template.type, text: template.text, time: 'Just now', read: false },
-          ...s.notifications
-        ].slice(0, 30)
-      }));
-    }, 40000);
+    const poll = async () => {
+      try{
+        const data = await api.get('/api/notifications');
+        setState(s => ({ ...s, notifications: data.notifications || s.notifications }));
+      }catch{
+        // best-effort — a failed poll just tries again next tick
+      }
+    };
+    const interval = setInterval(poll, 40000);
     return () => clearInterval(interval);
   }, [state.authed]);
 
@@ -170,6 +182,7 @@ export function UserProvider({ children }){
       const data = await api.post('/api/auth/signup', { name, email, password });
       setTokens(data);
       setState(s => ({ ...s, ...userToProfileState(data.user) }));
+      hydrateUserCollections(setState);
       return { ok:true };
     }catch(err){
       return { ok:false, error: err.message };
@@ -181,6 +194,7 @@ export function UserProvider({ children }){
       const data = await api.post('/api/auth/login', { email, password });
       setTokens(data);
       setState(s => ({ ...s, ...userToProfileState(data.user) }));
+      hydrateUserCollections(setState);
       return { ok:true, verified: !!data.user.verified, onboarded: !!data.user.onboarded };
     }catch(err){
       return { ok:false, error: err.message };
@@ -286,31 +300,58 @@ export function UserProvider({ children }){
     }
   };
 
-  const enroll = (skillId) => setState(s => {
-    if(s.enrolled.some(e=>e.skillId===skillId)) return s;
-    return { ...s, enrolled:[...s.enrolled, { skillId, completedLessons:[], enrolledAt:new Date().toISOString() }] };
-  });
+  const enroll = (skillId) => {
+    setState(s => {
+      if(s.enrolled.some(e=>e.skillId===skillId)) return s;
+      return { ...s, enrolled:[...s.enrolled, { skillId, completedLessons:[], enrolledAt:new Date().toISOString() }] };
+    });
+    api.post(`/api/progress/${skillId}/enroll`, {}).catch(()=>{ /* optimistic — will re-sync on next hydration */ });
+  };
 
-  const markLessonComplete = (skillId, lessonId) => setState(s => ({
-    ...s,
-    enrolled: s.enrolled.some(e=>e.skillId===skillId)
-      ? s.enrolled.map(e => e.skillId===skillId && !e.completedLessons.includes(lessonId)
-          ? { ...e, completedLessons:[...e.completedLessons, lessonId] }
-          : e)
-      : [...s.enrolled, { skillId, completedLessons:[lessonId], enrolledAt:new Date().toISOString() }]
-  }));
+  const markLessonComplete = (skillId, lessonId) => {
+    setState(s => ({
+      ...s,
+      enrolled: s.enrolled.some(e=>e.skillId===skillId)
+        ? s.enrolled.map(e => e.skillId===skillId && !e.completedLessons.includes(lessonId)
+            ? { ...e, completedLessons:[...e.completedLessons, lessonId] }
+            : e)
+        : [...s.enrolled, { skillId, completedLessons:[lessonId], enrolledAt:new Date().toISOString() }]
+    }));
+    api.post(`/api/progress/${skillId}/lessons/${lessonId}/complete`, {})
+      .then(data => {
+        // The backend auto-issues a certificate if this was the skill's last
+        // lesson — surface that as a real notification instead of silently
+        // dropping it (the frontend has no other signal a cert was issued).
+        if(data && data.certificate){
+          setState(s => ({
+            ...s,
+            notifications: [
+              { id: Date.now(), type:'system', text:`Certificate issued for completing ${skillId}!`, time:'Just now', read:false },
+              ...s.notifications
+            ]
+          }));
+        }
+      })
+      .catch(()=>{ /* optimistic — will re-sync on next hydration */ });
+  };
 
-  const recordQuizScore = (skillId, lessonId, score, total) => setState(s => ({
-    ...s,
-    enrolled: s.enrolled.map(e => e.skillId===skillId
-      ? { ...e, quizScores: { ...(e.quizScores||{}), [lessonId]: { score, total } } }
-      : e)
-  }));
+  const recordQuizScore = (skillId, lessonId, score, total) => {
+    setState(s => ({
+      ...s,
+      enrolled: s.enrolled.map(e => e.skillId===skillId
+        ? { ...e, quizScores: { ...(e.quizScores||{}), [lessonId]: { score, total } } }
+        : e)
+    }));
+    api.post(`/api/progress/${skillId}/lessons/${lessonId}/quiz`, { score, total }).catch(()=>{});
+  };
 
-  const toggleWishlist = (skillId) => setState(s => ({
-    ...s,
-    wishlist: s.wishlist.includes(skillId) ? s.wishlist.filter(id=>id!==skillId) : [...s.wishlist, skillId]
-  }));
+  const toggleWishlist = (skillId) => {
+    setState(s => ({
+      ...s,
+      wishlist: s.wishlist.includes(skillId) ? s.wishlist.filter(id=>id!==skillId) : [...s.wishlist, skillId]
+    }));
+    api.post(`/api/wishlist/${skillId}/toggle`, {}).catch(()=>{ /* optimistic — will re-sync on next hydration */ });
+  };
 
   // --- YouTube lesson player: save-for-later + continue-watching --------
 
@@ -339,13 +380,19 @@ export function UserProvider({ children }){
     lastWatched: { ...s.lastWatched, [skillId]: { videoId, lessonIndex, updatedAt: new Date().toISOString() } }
   }));
 
-  const markNotifRead = (id) => setState(s => ({
-    ...s, notifications: s.notifications.map(n => n.id===id ? { ...n, read:true } : n)
-  }));
+  const markNotifRead = (id) => {
+    setState(s => ({
+      ...s, notifications: s.notifications.map(n => n.id===id ? { ...n, read:true } : n)
+    }));
+    api.patch(`/api/notifications/${id}/read`, {}).catch(()=>{});
+  };
 
-  const markAllNotifsRead = () => setState(s => ({
-    ...s, notifications: s.notifications.map(n => ({ ...n, read:true }))
-  }));
+  const markAllNotifsRead = () => {
+    setState(s => ({
+      ...s, notifications: s.notifications.map(n => ({ ...n, read:true }))
+    }));
+    api.patch('/api/notifications/read-all', {}).catch(()=>{});
+  };
 
   const getOrCreateConversation = (mentorId) => {
     let convo = state.conversations.find(c=>c.mentorId===mentorId);
