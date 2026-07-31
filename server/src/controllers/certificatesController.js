@@ -4,6 +4,7 @@ import Skill from '../models/Skill.js';
 import { generateCertificateNumber } from '../utils/tokens.js';
 import { parsePagination, paginationMeta } from '../utils/pagination.js';
 import { notifyUser } from '../utils/notify.js';
+import { streamCertificatePdf } from '../utils/certificatePdf.js';
 
 // Mirrors Certificate's toJSON transform for .lean() results.
 function leanCertificate(c) {
@@ -68,6 +69,26 @@ export async function issueCertificate(req, res, next) {
     }
 
     res.status(justIssued ? 201 : 200).json({ certificate });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/certificates/:skillId/pdf  (protected — the certificate holder only)
+// Streams a server-rendered PDF of the certificate, so download doesn't
+// depend on the browser's print-to-PDF dialog. Does NOT issue a new
+// certificate — the learner must already have earned one (via the
+// lesson-complete auto-issue hook or the manual /issue endpoint above).
+export async function downloadCertificatePdf(req, res, next) {
+  try {
+    const { skillId } = req.params;
+    const certificate = await Certificate.findOne({ user: req.user._id, skillId });
+    if (!certificate) {
+      return res.status(404).json({ message: "You haven't earned a certificate for this skill yet" });
+    }
+
+    const skill = await Skill.findOne({ id: skillId }).lean();
+    streamCertificatePdf(certificate, skill, res);
   } catch (err) {
     next(err);
   }

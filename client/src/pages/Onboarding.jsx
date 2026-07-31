@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { categories } from '../data/skills.js';
+import { useCategories } from '../lib/skillsApi.js';
 import { useUser } from '../context/UserContext.jsx';
 
 const ROLES = [
@@ -18,6 +18,7 @@ const GOALS = [
 const TOTAL_STEPS = 3;
 
 export default function Onboarding(){
+  const { categories } = useCategories();
   const navigate = useNavigate();
   const { completeOnboarding } = useUser();
   const [step, setStep] = React.useState(0);

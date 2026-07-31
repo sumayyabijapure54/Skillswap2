@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
-import { getSkillById, skills, categories } from '../data/skills.js';
+import { useSkillsById, useSkills, useCategories } from '../lib/skillsApi.js';
 import { MiniBarChart } from '../components/MiniChart.jsx';
 import ScrollReveal from '../components/ScrollReveal.jsx';
 
@@ -10,6 +10,9 @@ const WEEK_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 export default function Dashboard(){
   const { profile, enrolled, wishlist, notifications } = useUser();
+  const { getSkillById } = useSkillsById(enrolled.map(e => e.skillId));
+  const { skills } = useSkills();
+  const { categories } = useCategories();
 
   const withSkill = enrolled.map(e => ({ ...e, skill:getSkillById(e.skillId) })).filter(e=>e.skill);
   const inProgress = withSkill.filter(e => e.completedLessons.length < e.skill.lessons.length);

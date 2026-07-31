@@ -1,14 +1,16 @@
 // AI-driven skill recommendation engine.
 //
-// This runs entirely client-side today, scoring the local skills.js catalog
-// against a member's profile/interests/wishlist/learning history and
-// producing a ranked list with a human-readable "why" for each pick — the
-// same shape a POST /api/recommendations backend (wrapping an LLM call, e.g.
-// Claude) would return. Swapping the body of `getAIRecommendations` for a
-// real `fetch('/api/recommendations', ...)` call later is mechanical: the
+// This runs entirely client-side today, scoring a skills catalog against a
+// member's profile/interests/wishlist/learning history and producing a
+// ranked list with a human-readable "why" for each pick — the same shape a
+// POST /api/recommendations backend (wrapping an LLM call, e.g. Claude)
+// would return. Swapping the body of `getAIRecommendations` for a real
+// `fetch('/api/recommendations', ...)` call later is mechanical: the
 // function signature and return shape stay the same.
-
-import { skills, categories } from '../data/skills.js';
+//
+// NOTE: this is a plain utility function, not a component/hook, so it can't
+// call useSkills()/useCategories() itself — callers fetch the catalog via
+// those hooks and pass it in here as `catalog`.
 
 function tagOverlap(tagsA = [], tagsB = []) {
   const setB = new Set(tagsB.map(t => t.toLowerCase()));
@@ -40,9 +42,12 @@ function complementScore(myTags = [], candidateTags = []) {
 /**
  * @param {object} user - shape: { profile, enrolled, wishlist }
  * @param {object} opts - { limit }
+ * @param {object} catalog - { skills, categories } from useSkills()/useCategories()
  * @returns {Array<{ skill, score, reasons: string[] }>}
  */
-export function getAIRecommendations(user, { limit = 6 } = {}) {
+export function getAIRecommendations(user, { limit = 6 } = {}, catalog = {}) {
+  const { skills = [], categories = [] } = catalog;
+  if (!skills.length) return [];
   const { profile = {}, enrolled = [], wishlist = [] } = user;
   const interestKeys = profile.interests || [];
   const wantedTags = profile.skillsWanted || [];

@@ -8,7 +8,7 @@ import SplitTextReveal from '../components/SplitTextReveal.jsx';
 import Marquee from '../components/Marquee.jsx';
 import TestimonialCarousel from '../components/TestimonialCarousel.jsx';
 import useParallax from '../hooks/useParallax.js';
-import { categories, skills } from '../data/skills.js';
+import { useCategories } from '../lib/skillsApi.js';
 import { mentors } from '../data/mentors.js';
 
 const communityTestimonials = [
@@ -20,6 +20,7 @@ const communityTestimonials = [
 
 export default function Home(){
   const navigate = useNavigate();
+  const { categories } = useCategories();
   const [query, setQuery] = React.useState('');
   const orbParallaxRef = useParallax(0.08);
 
@@ -83,7 +84,7 @@ export default function Home(){
             <TiltCard as={Link} to={`/explore?cat=${c.key}`} className="skill-tile" key={c.key}>
               <div className="ic">{c.icon}</div>
               <b>{c.label}</b>
-              <span>{skills.filter(s=>s.category===c.key).length}+ Skills</span>
+              <span>{c.count}+ Skills</span>
             </TiltCard>
           ))}
         </ScrollReveal>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { api, getToken, setTokens, clearTokens } from '../lib/api.js';
+import { getSocket, disconnectSocket } from '../lib/socket.js';
 
 const UserContext = createContext(null);
 const STORAGE_KEY = 'skillswap_user_v1';
@@ -155,6 +156,7 @@ export function UserProvider({ children }){
     return () => { cancelled = true; };
   }, []);
 
+<<<<<<< HEAD
   // Polls the real notifications API once signed in. This is a stand-in for
   // a proper Socket.IO `socket.on('notification', ...)` push — swapping this
   // interval for a live socket listener later doesn't change anything
@@ -163,6 +165,19 @@ export function UserProvider({ children }){
   useEffect(()=>{
     if(!state.authed) { setLiveConnected(false); return; }
     setLiveConnected(true);
+=======
+  // Real-time notifications: the backend pushes `notification:new` over
+  // socket.io the moment something happens (see server/src/utils/notify.js)
+  // rather than us finding out up to 40s later. `liveConnected` reflects the
+  // actual socket state now, not just "we're logged in" — the UI can use it
+  // to show a live/offline indicator. A slow fallback poll stays in place
+  // for the rare case the socket can't establish (e.g. corporate proxy
+  // blocking websockets) so notifications still arrive, just less promptly.
+  useEffect(()=>{
+    if(!state.authed) { setLiveConnected(false); return; }
+
+    const socket = getSocket();
+>>>>>>> 9a28602 (Update SkillSwap project)
     const poll = async () => {
       try{
         const data = await api.get('/api/notifications');
@@ -171,8 +186,44 @@ export function UserProvider({ children }){
         // best-effort — a failed poll just tries again next tick
       }
     };
+<<<<<<< HEAD
     const interval = setInterval(poll, 40000);
     return () => clearInterval(interval);
+=======
+    const fallbackInterval = setInterval(poll, 40000);
+
+    if(!socket){
+      setLiveConnected(false);
+      return () => clearInterval(fallbackInterval);
+    }
+
+    const onConnect = () => setLiveConnected(true);
+    const onDisconnect = () => setLiveConnected(false);
+    const onNotification = (notification) => {
+      setState(s => {
+        if(s.notifications.some(n => n.id === notification.id || n._id === notification._id)) return s;
+        return { ...s, notifications: [notification, ...s.notifications] };
+      });
+    };
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('notification:new', onNotification);
+    if(socket.connected) onConnect();
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('notification:new', onNotification);
+      clearInterval(fallbackInterval);
+    };
+  }, [state.authed]);
+
+  // Disconnect the socket on logout so a stale connection (and its auth
+  // token) doesn't linger past the session that created it.
+  useEffect(()=>{
+    if(!state.authed) disconnectSocket();
+>>>>>>> 9a28602 (Update SkillSwap project)
   }, [state.authed]);
 
   // --- real auth/profile actions, backed by the Express API (server/) ---
@@ -200,6 +251,25 @@ export function UserProvider({ children }){
       return { ok:false, error: err.message };
     }
   };
+
+  // Shared by the Google/Facebook buttons — `path` is the provider-specific
+  // endpoint, `payload` is whatever profile token that provider handed us.
+  // Same response shape as email/password login, so callers don't need to
+  // know which provider was used.
+  const socialLogin = async (path, payload) => {
+    try{
+      const data = await api.post(path, payload);
+      setTokens(data);
+      setState(s => ({ ...s, ...userToProfileState(data.user) }));
+      hydrateUserCollections(setState);
+      return { ok:true, verified: !!data.user.verified, onboarded: !!data.user.onboarded };
+    }catch(err){
+      return { ok:false, error: err.message };
+    }
+  };
+
+  const logInWithGoogle = (credential) => socialLogin('/api/auth/google', { credential });
+  const logInWithFacebook = (accessToken) => socialLogin('/api/auth/facebook', { accessToken });
 
   // POST /api/auth/verify-email { otp } — requires the token issued at
   // signup, which is already stored by the time this is called.
@@ -517,7 +587,7 @@ export function UserProvider({ children }){
     ...state,
     liveConnected,
     authLoading,
-    signUp, logIn, verifyEmail: verifyEmailOtp, resendOtp,
+    signUp, logIn, logInWithGoogle, logInWithFacebook, verifyEmail: verifyEmailOtp, resendOtp,
     requestPasswordReset, confirmPasswordReset,
     completeOnboarding, logOut,
     updateProfile, enroll, markLessonComplete, recordQuizScore, toggleWishlist,

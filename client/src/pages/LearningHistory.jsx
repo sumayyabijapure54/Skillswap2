@@ -2,10 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
-import { getSkillById, categories } from '../data/skills.js';
+import { useSkillsById, useCategories } from '../lib/skillsApi.js';
 
 export default function LearningHistory(){
   const { enrolled } = useUser();
+  const { getSkillById } = useSkillsById(enrolled.map(e => e.skillId));
+  const { categories } = useCategories();
 
   const withSkill = enrolled.map(e => ({ ...e, skill:getSkillById(e.skillId) })).filter(e=>e.skill);
   const completed = withSkill.filter(e => e.completedLessons.length >= e.skill.lessons.length && e.skill.lessons.length>0);

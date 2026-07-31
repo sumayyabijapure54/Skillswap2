@@ -32,6 +32,34 @@ export const logoutSchema = z.object({
 
 // --- users ---
 
+// All fields optional (PATCH — partial update), but constrained/typed when
+// present. Previously this endpoint had no schema at all — the controller's
+// manual PROFILE_FIELDS allow-list kept out unexpected keys, but let through
+// anything of any length/type for the keys it did allow (e.g. an
+// arbitrarily long bio, or a non-URL/non-relative-path avatar string).
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(1, 'name cannot be empty').max(100).optional(),
+  email: z.string().trim().toLowerCase().email('must be a valid email').max(190).optional(),
+  bio: z.string().trim().max(500, 'bio must be 500 characters or fewer').optional(),
+  avatar: z
+    .string()
+    .trim()
+    .max(500)
+    .refine(
+      (v) => v === '' || /^https?:\/\//i.test(v) || v.startsWith('/uploads/'),
+      'avatar must be an http(s) URL, an /uploads/ path, or empty'
+    )
+    .optional(),
+  skillsOffered: z.array(z.string().trim().min(1).max(60)).max(20, 'skillsOffered can have at most 20 entries').optional(),
+  skillsWanted: z.array(z.string().trim().min(1).max(60)).max(20, 'skillsWanted can have at most 20 entries').optional()
+});
+
+export const completeOnboardingSchema = z.object({
+  role: z.enum(['learn', 'teach', 'both'], { errorMap: () => ({ message: "role must be 'learn', 'teach', or 'both'" }) }),
+  interests: z.array(z.string().trim().min(1).max(60)).max(20, 'interests can have at most 20 entries').optional(),
+  goal: z.enum(['casual', 'regular', 'intense']).optional()
+});
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'currentPassword is required'),
   newPassword: z.string().min(8, 'New password must be at least 8 characters').max(72)
@@ -173,4 +201,30 @@ export const createReportSchema = z.object({
   targetId: z.string().trim().max(200).optional(),
   reportedUserName: z.string().trim().min(1, 'reportedUserName is required').max(150),
   reason: z.string().trim().min(1, 'reason is required').max(1000)
+});
+
+// --- AI Mentor chatbot ---
+
+// Loose on purpose — this rides along as extra grounding for the system
+// prompt (current lesson/skill/code/error the learner is looking at), not
+// data that's persisted or trusted for anything security-sensitive.
+const chatContextSchema = z.object({
+  skillId: z.string().trim().max(150).optional(),
+  skillTitle: z.string().trim().max(200).optional(),
+  lessonTitle: z.string().trim().max(200).optional(),
+  lessonTranscript: z.string().trim().max(8000).optional(),
+  codeSnippet: z.string().trim().max(6000).optional(),
+  errorMessage: z.string().trim().max(2000).optional()
+}).optional().nullable();
+
+export const chatMessageSchema = z.object({
+  message: z.string().trim().min(1, 'message is required').max(4000),
+  context: chatContextSchema
+});
+
+export const chatQuickActionSchema = z.object({
+  type: z.enum(['quiz', 'flashcards', 'summary', 'study-plan', 'hint'], {
+    errorMap: () => ({ message: 'type must be one of: quiz, flashcards, summary, study-plan, hint' })
+  }),
+  context: chatContextSchema
 });

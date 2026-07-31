@@ -20,3 +20,14 @@ export const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many attempts — please wait a few minutes and try again.' }
 });
+
+// Each message/quick-action is a paid Anthropic API call — capped tighter
+// than general API traffic so one chatty tab (or a scripted abuse attempt)
+// can't run up the bill or starve other users of quota.
+export const aiChatLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'You\'re sending messages to the AI Mentor a bit fast — please wait a minute and try again.' }
+});

@@ -8,7 +8,9 @@ import {
   forgotPassword,
   resetPassword,
   refresh,
-  logout
+  logout,
+  googleLogin,
+  facebookLogin
 } from '../controllers/authController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimit.js';
@@ -26,6 +28,8 @@ const router = Router();
 
 router.post('/signup', authLimiter, validate(signupSchema), signup);
 router.post('/login', authLimiter, validate(loginSchema), login);
+router.post('/google', authLimiter, googleLogin);
+router.post('/facebook', authLimiter, facebookLogin);
 router.get('/me', requireAuth, getMe);
 
 router.post('/verify-email', requireAuth, verifyEmail);

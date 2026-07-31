@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { issueCertificate, listMyCertificates, verifyCertificate } from '../controllers/certificatesController.js';
+import { issueCertificate, listMyCertificates, verifyCertificate, downloadCertificatePdf } from '../controllers/certificatesController.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -10,5 +10,6 @@ const router = Router();
 router.get('/', requireAuth, listMyCertificates);
 router.get('/verify/:certificateNumber', verifyCertificate);
 router.post('/:skillId/issue', requireAuth, issueCertificate);
+router.get('/:skillId/pdf', requireAuth, downloadCertificatePdf);
 
 export default router;

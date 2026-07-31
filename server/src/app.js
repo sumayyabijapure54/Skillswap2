@@ -1,0 +1,79 @@
+import 'dotenv/config';
+import path from 'path';
+import express from 'express';
+import cors from 'cors';
+import compression from 'compression';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { apiLimiter } from './middleware/rateLimit.js';
+import skillsRoutes from './routes/skillsRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import usersRoutes from './routes/usersRoutes.js';
+import progressRoutes from './routes/progressRoutes.js';
+import wishlistRoutes from './routes/wishlistRoutes.js';
+import notificationsRoutes from './routes/notificationsRoutes.js';
+import bookingsRoutes from './routes/bookingsRoutes.js';
+import walletRoutes from './routes/walletRoutes.js';
+import paymentsRoutes from './routes/paymentsRoutes.js';
+import { handleWebhook } from './controllers/paymentsController.js';
+import reviewsRoutes from './routes/reviewsRoutes.js';
+import messagesRoutes from './routes/messagesRoutes.js';
+import certificatesRoutes from './routes/certificatesRoutes.js';
+import communityRoutes from './routes/communityRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import mentorApplicationsRoutes from './routes/mentorApplicationsRoutes.js';
+import reportsRoutes from './routes/reportsRoutes.js';
+import youtubeRoutes from './routes/youtubeRoutes.js';
+import chatbotRoutes from './routes/chatbotRoutes.js';
+import { notFound, errorHandler } from './middleware/errorHandler.js';
+
+// Pulled out of server.js so tests (and anything else that just wants to
+// exercise HTTP behavior) can import a ready-to-use Express app without
+// triggering a real MongoDB connection or starting a listening socket —
+// server.js is now the only place that does either of those.
+export const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim());
+
+const app = express();
+
+app.use(helmet());
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+}
+app.use(cors({ origin: allowedOrigins }));
+app.use(compression());
+
+// Razorpay's webhook signature is computed over the exact raw request
+// bytes — this must be registered BEFORE express.json() below, and with
+// express.raw() instead of it, or req.body would already be a parsed object
+// by the time handleWebhook tries to verify the signature against it.
+app.post('/api/payments/razorpay/webhook', express.raw({ type: 'application/json' }), handleWebhook);
+
+app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+app.use('/api', apiLimiter);
+app.use('/api/skills', skillsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/bookings', bookingsRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/payments', paymentsRoutes);
+app.use('/api/reviews', reviewsRoutes);
+app.use('/api/messages', messagesRoutes);
+app.use('/api/certificates', certificatesRoutes);
+app.use('/api/community', communityRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/mentor-applications', mentorApplicationsRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/youtube', youtubeRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+export default app;

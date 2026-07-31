@@ -6,6 +6,7 @@ import { UserProvider } from './context/UserContext.jsx';
 import { CommunityProvider } from './context/CommunityContext.jsx';
 import { AdminProvider } from './context/AdminContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { AiMentorProvider } from './context/AiMentorContext.jsx';
 import './index.css';
 
 // A hard refresh can restore the browser's previous scroll position before
@@ -25,11 +26,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ThemeProvider>
         <UserProvider>
-          <CommunityProvider>
-            <AdminProvider>
-              <App />
-            </AdminProvider>
-          </CommunityProvider>
+          <AiMentorProvider>
+            <CommunityProvider>
+              <AdminProvider>
+                <App />
+              </AdminProvider>
+            </CommunityProvider>
+          </AiMentorProvider>
         </UserProvider>
       </ThemeProvider>
     </BrowserRouter>

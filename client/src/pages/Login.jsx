@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
+import SocialLoginButtons from '../components/SocialLoginButtons.jsx';
 
 export default function Login(){
   const navigate = useNavigate();
@@ -43,10 +44,12 @@ export default function Login(){
       <h1>Log in to SkillSwap</h1>
       <div className="sub">New here? <Link to="/signup">Create an account</Link></div>
 
-      <div className="social-row">
-        <button className="social-btn" type="button">G Google</button>
-        <button className="social-btn" type="button">in LinkedIn</button>
-      </div>
+      <SocialLoginButtons onResult={(res)=>{
+        if(!res.ok){ setErrors({ form: res.error || 'Social login failed.' }); return; }
+        if(!res.verified) navigate('/verify-email');
+        else if(!res.onboarded) navigate('/onboarding');
+        else navigate(location.state?.from || '/dashboard');
+      }} />
       <div className="auth-divider">or log in with email</div>
 
       <form onSubmit={onSubmit} noValidate>

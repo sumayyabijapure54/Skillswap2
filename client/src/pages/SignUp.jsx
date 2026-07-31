@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
+import SocialLoginButtons from '../components/SocialLoginButtons.jsx';
 
 function passwordScore(pw){
   let score = 0;
@@ -56,10 +57,12 @@ export default function SignUp(){
       <h1>Create your account</h1>
       <div className="sub">Already have an account? <Link to="/login">Log in</Link></div>
 
-      <div className="social-row">
-        <button className="social-btn" type="button">G Google</button>
-        <button className="social-btn" type="button">in LinkedIn</button>
-      </div>
+      <SocialLoginButtons onResult={(res)=>{
+        if(!res.ok){ setErrors(e => ({ ...e, form: res.error || 'Social sign up failed.' })); return; }
+        if(!res.verified) navigate('/verify-email');
+        else if(!res.onboarded) navigate('/onboarding');
+        else navigate('/dashboard');
+      }} />
       <div className="auth-divider">or sign up with email</div>
 
       <form onSubmit={onSubmit} noValidate>

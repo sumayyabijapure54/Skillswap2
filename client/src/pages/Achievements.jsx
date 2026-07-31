@@ -1,10 +1,11 @@
 import React from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
-import { getSkillById } from '../data/skills.js';
+import { useSkillsById } from '../lib/skillsApi.js';
 
 export default function Achievements() {
   const { enrolled, bookings, reviews, wishlist, transactions } = useUser();
+  const { getSkillById } = useSkillsById(enrolled.map(e => e.skillId));
 
   const withSkill = enrolled.map(e => ({ ...e, skill: getSkillById(e.skillId) })).filter(e => e.skill);
   const completedSkills = withSkill.filter(e => e.completedLessons.length >= e.skill.lessons.length && e.skill.lessons.length > 0);

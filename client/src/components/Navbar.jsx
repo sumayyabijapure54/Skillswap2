@@ -7,20 +7,39 @@ export default function Navbar(){
   const navigate = useNavigate();
   const { authed, profile, notifications, logOut } = useUser();
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
   const menuRef = React.useRef(null);
+  const mobileRef = React.useRef(null);
 
   const unread = notifications.filter(n=>!n.read).length;
   const initials = (profile.name || 'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 
   React.useEffect(()=>{
-    const onClick = (e)=>{ if(menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
+    const onClick = (e)=>{
+      if(menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+      if(mobileRef.current && !mobileRef.current.contains(e.target) && !e.target.closest('.nav-mobile-toggle')) setMobileOpen(false);
+    };
+    const onKey = (e)=>{ if(e.key === 'Escape'){ setMenuOpen(false); setMobileOpen(false); } };
+    const onResize = ()=>{ if(window.innerWidth > 900) setMobileOpen(false); };
     document.addEventListener('mousedown', onClick);
-    return ()=>document.removeEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return ()=>{
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+    };
   }, []);
+
+  // Close the mobile menu on route change (it re-renders since NavLink
+  // stays mounted, so this listens to the same click events the links
+  // themselves fire rather than needing a route effect).
+  const closeMobile = () => setMobileOpen(false);
 
   const doLogout = ()=>{
     logOut();
     setMenuOpen(false);
+    closeMobile();
     navigate('/');
   };
 
@@ -35,16 +54,19 @@ export default function Navbar(){
       </Link>
 
       <ul>
-        <li><NavLink to="/" end className={({isActive})=>isActive?'active':''}>Home</NavLink></li>
-        <li><NavLink to="/explore" className={({isActive})=>isActive?'active':''}>Explore</NavLink></li>
-        {authed && <li><NavLink to="/community" className={({isActive})=>isActive?'active':''}>Community</NavLink></li>}
-        <li><NavLink to="/help" className={({isActive})=>isActive?'active':''}>How It Works</NavLink></li>
-        {!authed && <li><NavLink to="/pricing" className={({isActive})=>isActive?'active':''}>Pricing</NavLink></li>}
+        <li><NavLink to="/" end onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Home</NavLink></li>
+        <li><NavLink to="/explore" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Explore</NavLink></li>
+        {authed && <li><NavLink to="/community" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Community</NavLink></li>}
+        <li><NavLink to="/help" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>How It Works</NavLink></li>
+        {!authed && <li><NavLink to="/pricing" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Pricing</NavLink></li>}
       </ul>
 
       {authed ? (
         <div className="nav-right">
           <ThemeToggle />
+          <button className="icon-btn nav-mobile-toggle" onClick={()=>setMobileOpen(o=>!o)} aria-label="Menu" aria-expanded={mobileOpen}>
+            {mobileOpen ? '×' : '☰'}
+          </button>
           <button className="icon-btn" onClick={()=>navigate('/search')} aria-label="Search">⌕</button>
           <Link to="/notifications" className="icon-btn" style={{position:'relative'}} aria-label="Notifications">
             🔔
@@ -72,9 +94,32 @@ export default function Navbar(){
       ) : (
         <div className="nav-right">
           <ThemeToggle />
+          <button className="icon-btn nav-mobile-toggle" onClick={()=>setMobileOpen(o=>!o)} aria-label="Menu" aria-expanded={mobileOpen}>
+            {mobileOpen ? '×' : '☰'}
+          </button>
           <button className="icon-btn" onClick={()=>navigate('/search')} aria-label="Search">⌕</button>
-          <Link to="/login" className="btn-outline">Log in</Link>
-          <Link to="/signup" className="btn-solid">Join Now</Link>
+          <Link to="/login" className="btn-outline nav-desktop-only">Log in</Link>
+          <Link to="/signup" className="btn-solid nav-desktop-only">Join Now</Link>
+        </div>
+      )}
+
+      {mobileOpen && (
+        <div className="nav-mobile-panel" ref={mobileRef}>
+          <NavLink to="/" end onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Home</NavLink>
+          <NavLink to="/explore" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Explore</NavLink>
+          {authed && <NavLink to="/community" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Community</NavLink>}
+          <NavLink to="/help" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>How It Works</NavLink>
+          <NavLink to="/pricing" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>Pricing</NavLink>
+          {authed && <NavLink to="/ai-mentor" onClick={closeMobile} className={({isActive})=>isActive?'active':''}>✨ AI Mentor</NavLink>}
+          <div className="nav-mobile-sep"></div>
+          {authed ? (
+            <button className="nav-mobile-logout" onClick={doLogout}>⎋ Log out</button>
+          ) : (
+            <div className="nav-mobile-auth">
+              <Link to="/login" className="btn-outline" onClick={closeMobile}>Log in</Link>
+              <Link to="/signup" className="btn-solid" onClick={closeMobile}>Join Now</Link>
+            </div>
+          )}
         </div>
       )}
     </nav>

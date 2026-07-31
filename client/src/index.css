@@ -420,6 +420,9 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
   .hero{grid-template-columns:1fr;}
   .ai-panel{grid-template-columns:1fr;}
   nav.topnav ul{display:none;}
+  nav.topnav{padding:16px 20px;}
+  .nav-mobile-toggle{display:flex;}
+  .nav-desktop-only{display:none;}
   .foot-grid{grid-template-columns:1fr 1fr;}
   section{padding:90px 24px;}
   .explore-wrap{grid-template-columns:1fr; padding:0 24px 100px;}
@@ -546,6 +549,30 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .nav-badge{position:absolute; top:-3px; right:-3px; background:var(--accent); color:#04140e; font-size:10px; font-weight:800; min-width:16px; height:16px; border-radius:100px; display:flex; align-items:center; justify-content:center; padding:0 3px; box-shadow:0 0 6px rgba(20,240,180,0.6);}
 .nav-avatar-wrap{position:relative;}
 .nav-avatar{width:38px; height:38px; border-radius:50%; background:var(--grad); color:#04140e; border:none; font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+
+/* ── Mobile nav (hamburger + slide-down panel) ──────────────────────
+   Hidden entirely on desktop; the <900px media query block below flips
+   .nav-mobile-toggle to visible and hides the inline <ul> instead. */
+.nav-mobile-toggle{display:none; font-size:18px;}
+.nav-mobile-panel{
+  position:absolute; top:100%; left:0; right:0; background:var(--navbar-bg); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); display:flex; flex-direction:column; padding:10px 20px 20px;
+  box-shadow:var(--shadow-lg); animation:navMobileIn .22s cubic-bezier(.2,.9,.3,1); z-index:150;
+}
+@keyframes navMobileIn{ 0%{ opacity:0; transform:translateY(-8px); } 100%{ opacity:1; transform:translateY(0); } }
+.nav-mobile-panel a{
+  color:var(--muted); text-decoration:none; font-size:15px; font-weight:600; padding:14px 4px;
+  border-bottom:1px solid var(--border);
+}
+.nav-mobile-panel a.active, .nav-mobile-panel a:hover{ color:var(--accent); }
+.nav-mobile-panel a:last-of-type{ border-bottom:none; }
+.nav-mobile-sep{ height:1px; background:var(--border); margin:10px 0; }
+.nav-mobile-logout{
+  background:none; border:1px solid var(--border); color:var(--danger); border-radius:10px; padding:12px;
+  font-size:14px; font-weight:700; cursor:pointer; text-align:center;
+}
+.nav-mobile-auth{ display:flex; gap:10px; }
+.nav-mobile-auth a{ flex:1; text-align:center; border-bottom:none; padding:12px; }
 .nav-dropdown{position:absolute; top:calc(100% + 12px); right:0; width:210px; background:#0c0e13; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-lg); padding:8px; z-index:200; display:flex; flex-direction:column; backdrop-filter:blur(10px);}
 .nav-dropdown a, .nav-dropdown button{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; color:var(--text); text-decoration:none; font-size:13px; background:none; border:none; cursor:pointer; text-align:left; width:100%;}
 .nav-dropdown a:hover, .nav-dropdown button:hover{background:var(--panel-2); color:var(--accent);}
@@ -955,4 +982,290 @@ button, .btn-solid, .btn-primary-lg, .btn-ghost-lg, .btn-white, .btn-outline{ po
   @keyframes theme-reveal{
     to{ clip-path:circle(var(--vt-radius,150%) at var(--vt-x,50%) var(--vt-y,50%)); }
   }
+}
+
+/* ---- Certificate print stylesheet ----
+   Chrome/site furniture is hidden site-wide when printing (nothing else in
+   the app expects to be printed). Certificate-specific layout cleanup is
+   scoped to .certificate-print-page so it doesn't touch other pages. */
+@media print {
+  .topnav, footer, .bg-fx-canvas, .custom-cursor-dot, .custom-cursor-ring, .fab-wrap {
+    display: none !important;
+  }
+  html, body {
+    background: #fff !important;
+  }
+
+  .certificate-print-page {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  .certificate-print-page .crumbs,
+  .certificate-print-page .cta-row,
+  .certificate-print-page .notice-banner {
+    display: none !important;
+  }
+  .certificate-print-page .certificate-card {
+    box-shadow: none !important;
+    border: 2px solid #c9a34c !important;
+    background: #fff !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 0 auto !important;
+  }
+  .certificate-print-page .certificate-card * {
+    color: #1c1c1c !important;
+  }
+  .certificate-print-page .certificate-eyebrow,
+  .certificate-print-page .certificate-skill {
+    color: #c9a34c !important;
+  }
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+}
+
+/* ── AI Learning Mentor ─────────────────────────────────────────────── */
+.btn-primary-sm{background:var(--grad); color:#04140e; padding:10px 18px; border-radius:10px; font-weight:700; font-size:13px; border:none; cursor:pointer; transition:all .2s;}
+.btn-primary-sm:hover{transform:translateY(-1px); box-shadow:var(--shadow-glow);}
+.btn-primary-sm:disabled{opacity:.5; cursor:not-allowed; transform:none; box-shadow:none;}
+
+.mentor-widget-wrap{ position:fixed; left:28px; bottom:28px; z-index:70; display:flex; flex-direction:column; align-items:flex-start; gap:14px; }
+@media (max-width:700px){ .mentor-widget-wrap{ left:16px; bottom:16px; } }
+
+.mentor-fab{
+  width:58px; height:58px; border-radius:50%; border:none; cursor:pointer;
+  background:var(--grad); color:#04140e; font-size:24px; position:relative;
+  box-shadow:var(--shadow-glow), var(--shadow-glow2); transition:transform .25s;
+  display:flex; align-items:center; justify-content:center;
+}
+.mentor-fab:hover{ transform:scale(1.08) translateY(-2px); }
+.mentor-fab.open{ transform:rotate(90deg); }
+.mentor-fab-badge{
+  position:absolute; top:-4px; right:-4px; background:var(--danger); color:#fff;
+  font-size:10.5px; font-weight:800; min-width:18px; height:18px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center; padding:0 4px;
+  border:2px solid var(--bg); animation:mentorPulse 1.6s ease-in-out infinite;
+}
+@keyframes mentorPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.15); } }
+
+.mentor-panel{
+  width:380px; max-width:calc(100vw - 32px); height:min(600px, 70vh);
+  background:var(--panel); border:1px solid var(--border); border-radius:20px;
+  box-shadow:var(--shadow-lg); backdrop-filter:blur(16px); overflow:hidden;
+  display:flex; flex-direction:column; animation:mentorPanelIn .28s cubic-bezier(.2,.9,.3,1);
+}
+@keyframes mentorPanelIn{ 0%{ opacity:0; transform:translateY(16px) scale(.97); } 100%{ opacity:1; transform:translateY(0) scale(1); } }
+
+.mentor-panel-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); }
+.mentor-panel-title{ display:flex; align-items:center; gap:10px; min-width:0; }
+.mentor-panel-glow{
+  width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  background:var(--grad); font-size:16px; flex-shrink:0; box-shadow:var(--shadow-glow);
+}
+.mentor-panel-title b{ font-size:13.5px; display:block; }
+.mentor-panel-sub{ font-size:11px; color:var(--muted); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:230px; }
+.mentor-panel-actions{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.mentor-expand-btn, .mentor-close-btn{
+  width:28px; height:28px; border-radius:8px; border:1px solid var(--border); background:var(--panel-2);
+  color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px;
+  text-decoration:none; transition:border-color .15s, color .15s;
+}
+.mentor-expand-btn:hover, .mentor-close-btn:hover{ border-color:var(--accent); color:var(--accent); }
+
+.mentor-quick-row{ display:flex; gap:8px; padding:12px 14px; overflow-x:auto; border-bottom:1px solid var(--border); flex-shrink:0; }
+.mentor-quick-chip{
+  flex-shrink:0; display:flex; align-items:center; gap:6px; background:var(--panel-2); border:1px solid var(--border);
+  color:var(--text); padding:7px 12px; border-radius:100px; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap;
+  transition:border-color .15s, color .15s;
+}
+.mentor-quick-chip:hover:not(:disabled){ border-color:var(--accent); color:var(--accent); }
+.mentor-quick-chip:disabled{ opacity:.5; cursor:not-allowed; }
+
+.mentor-messages{ flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px; }
+.mentor-messages-page{ min-height:420px; }
+
+.mentor-empty{ text-align:center; padding:26px 10px; color:var(--muted); }
+.mentor-empty-icon{ font-size:26px; margin-bottom:10px; }
+.mentor-empty p{ font-size:12.5px; line-height:1.6; max-width:280px; margin:0 auto; }
+
+.mentor-msg-row{ display:flex; align-items:flex-start; gap:8px; max-width:92%; }
+.mentor-msg-row.me{ align-self:flex-end; flex-direction:row-reverse; max-width:88%; }
+.mentor-avatar{
+  width:26px; height:26px; border-radius:8px; background:var(--grad); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:12px; margin-top:2px;
+}
+.mentor-bubble{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:14px 14px 14px 4px;
+  padding:11px 14px; font-size:13px; line-height:1.55; min-width:0;
+}
+.mentor-msg-row.me .mentor-bubble{ background:var(--grad); color:#04140e; border:none; border-radius:14px 14px 4px 14px; font-weight:500; }
+.mentor-bubble.error{ border-color:var(--danger); color:var(--danger); background:var(--danger-soft); }
+.mentor-bubble.rich{ width:100%; }
+.mentor-bubble-tag{ font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--accent); font-weight:800; margin-bottom:6px; }
+
+.mentor-para{ margin:0 0 8px; }
+.mentor-para:last-child{ margin-bottom:0; }
+.mentor-heading{ margin:10px 0 6px; font-size:13.5px; }
+.mentor-heading:first-child{ margin-top:0; }
+.mentor-list{ margin:0 0 8px 18px; padding:0; }
+.mentor-list li{ margin-bottom:4px; }
+.mentor-inline-link{ color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
+
+.mentor-typing{ display:flex; gap:4px; align-items:center; padding:14px 16px; }
+.mentor-typing span{ width:6px; height:6px; border-radius:50%; background:var(--muted); animation:mentorTyping 1.1s infinite ease-in-out; }
+.mentor-typing span:nth-child(2){ animation-delay:.15s; }
+.mentor-typing span:nth-child(3){ animation-delay:.3s; }
+@keyframes mentorTyping{ 0%,60%,100%{ transform:translateY(0); opacity:.5; } 30%{ transform:translateY(-4px); opacity:1; } }
+
+.mentor-input-row{ display:flex; gap:8px; padding:14px; border-top:1px solid var(--border); flex-shrink:0; }
+.mentor-input-row input{
+  flex:1; background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:10px 14px;
+  color:var(--text); font-size:13px; outline:none;
+}
+.mentor-input-row input:focus{ border-color:var(--accent); }
+.mentor-send-btn{
+  width:38px; height:38px; border-radius:10px; border:none; background:var(--grad); color:#04140e;
+  font-size:15px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+}
+.mentor-send-btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+/* Quiz rendered inline in a mentor bubble */
+.mentor-quiz{ display:flex; flex-direction:column; gap:14px; }
+.mentor-quiz-q b{ display:block; font-size:12.5px; margin-bottom:8px; }
+.mentor-quiz-opts{ display:flex; flex-direction:column; gap:6px; }
+.mentor-quiz-opt{
+  text-align:left; background:var(--panel); border:1px solid var(--border); border-radius:9px; padding:9px 12px;
+  color:var(--text); font-size:12px; cursor:pointer; transition:border-color .15s;
+}
+.mentor-quiz-opt:hover:not(:disabled){ border-color:var(--accent); }
+.mentor-quiz-opt.selected{ border-color:var(--accent2); background:var(--accent2-soft); }
+.mentor-quiz-opt.correct{ border-color:var(--success); background:var(--accent-soft); color:var(--success); font-weight:700; }
+.mentor-quiz-opt.wrong{ border-color:var(--danger); background:var(--danger-soft); color:var(--danger); }
+.mentor-quiz-explain{ margin-top:8px; font-size:11.5px; color:var(--muted); background:var(--panel); border-radius:8px; padding:8px 10px; }
+.mentor-quiz-score{ font-weight:800; font-size:13px; color:var(--accent); }
+
+/* Flashcards rendered inline in a mentor bubble */
+.mentor-flashcards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px; }
+.mentor-flashcard{
+  position:relative; height:100px; border-radius:12px; border:1px solid var(--border); background:var(--panel);
+  cursor:pointer; perspective:800px; padding:0;
+}
+.mentor-flashcard-face{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
+  padding:10px; font-size:11.5px; line-height:1.4; border-radius:12px; backface-visibility:hidden;
+  transition:transform .5s cubic-bezier(.4,.2,.2,1); color:var(--text);
+}
+.mentor-flashcard-face.front{ font-weight:700; background:var(--panel-2); }
+.mentor-flashcard-face.back{ transform:rotateY(180deg); background:var(--accent-soft); color:var(--text); }
+.mentor-flashcard.flipped .front{ transform:rotateY(180deg); }
+.mentor-flashcard.flipped .back{ transform:rotateY(360deg); }
+.mentor-flashcard-hint{ grid-column:1/-1; font-size:10.5px; color:var(--muted); text-align:center; margin-top:2px; }
+
+/* Full AI Mentor page */
+.mentor-page{ display:grid; grid-template-columns:280px 1fr; gap:22px; align-items:start; }
+.mentor-page-sidebar{ display:flex; flex-direction:column; gap:16px; position:sticky; top:100px; }
+.mentor-page-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:var(--shadow-sm); }
+.mentor-page-card h3{ font-size:13.5px; margin-bottom:4px; }
+.mentor-page-card-sub{ font-size:11.5px; color:var(--muted); margin-bottom:12px; }
+.mentor-page-actions{ display:flex; flex-direction:column; gap:8px; }
+.mentor-page-action{
+  display:flex; align-items:center; gap:10px; text-align:left; background:var(--panel-2); border:1px solid var(--border);
+  border-radius:11px; padding:10px 12px; cursor:pointer; transition:border-color .15s;
+}
+.mentor-page-action:hover:not(:disabled){ border-color:var(--accent); }
+.mentor-page-action:disabled{ opacity:.5; cursor:not-allowed; }
+.mentor-page-action-icon{ font-size:16px; flex-shrink:0; }
+.mentor-page-action b{ display:block; font-size:12px; }
+.mentor-page-action small{ display:block; font-size:10.5px; color:var(--muted); margin-top:1px; }
+.mentor-page-starters{ display:flex; flex-direction:column; gap:6px; }
+.mentor-page-starter{
+  text-align:left; background:var(--panel-2); border:1px solid var(--border); border-radius:9px; padding:9px 11px;
+  font-size:11.5px; color:var(--muted); cursor:pointer; transition:border-color .15s, color .15s;
+}
+.mentor-page-starter:hover:not(:disabled){ border-color:var(--accent); color:var(--text); }
+.mentor-page-clear{
+  background:none; border:1px solid var(--border); color:var(--muted); border-radius:11px; padding:10px;
+  font-size:12px; cursor:pointer; transition:border-color .15s, color .15s;
+}
+.mentor-page-clear:hover{ border-color:var(--danger); color:var(--danger); }
+
+.mentor-page-chat{
+  background:var(--panel); border:1px solid var(--border); border-radius:18px; overflow:hidden;
+  display:flex; flex-direction:column; min-height:600px; box-shadow:var(--shadow-md);
+}
+.mentor-input-row-page{ padding:16px 20px; }
+.mentor-input-row-page input{ padding:12px 16px; font-size:13.5px; }
+
+@media (max-width:900px){
+  .mentor-page{ grid-template-columns:1fr; }
+  .mentor-page-sidebar{ position:static; }
+}
+
+/* ── Small phone refinements (<=480px) ────────────────────────────────
+   The 900px breakpoint above handles tablet/large-phone layout (single
+   column, mobile nav). This tier tightens things further for narrow
+   phones (iPhone SE/mini and similar ~360-390px viewports) where two
+   compressed columns or desktop-scale spacing/icon rows still crowd. */
+@media (max-width:480px){
+  /* Navbar: 5 icon-buttons + brand no longer fit comfortably at full size */
+  .brand .tag{display:none;}
+  .brand .mark{width:34px; height:34px;}
+  .nav-right{gap:6px;}
+  .icon-btn, .nav-avatar{width:34px; height:34px; font-size:14px;}
+  nav.topnav{padding:14px 16px;}
+
+  section{padding:64px 18px;}
+  .page-header{padding:110px 18px 32px;}
+  .hero{padding:80px 18px 90px;}
+  .hero p.sub{font-size:14.5px;}
+  .search-box{flex-wrap:wrap; padding:10px;}
+  .search-box select{border-left:none; border-top:1px solid var(--border); width:100%;}
+
+  .foot-grid{grid-template-columns:1fr; gap:28px;}
+  .dash-stat-row{grid-template-columns:1fr;}
+  .dash-main{padding:24px 16px 60px;}
+  .explore-grid, .three-col, .mentor-grid, .cert-grid, .continue-grid{grid-template-columns:1fr;}
+  .steps{grid-template-columns:1fr;}
+  .ai-feature-grid{grid-template-columns:1fr;}
+
+  .skill-hero, .player-shell{padding-left:16px; padding-right:16px;}
+  .auth-shell, .onboard-shell{padding-left:16px; padding-right:16px;}
+
+  .cert-card{padding:20px;}
+  .certificate-card{padding:28px 16px;}
+  .certificate-footer{flex-direction:column; align-items:flex-start;}
+
+  .wallet-balance-card{padding:22px 20px;}
+  .wallet-balance-card b{font-size:28px;}
+
+  .mentor-page-sidebar{gap:12px;}
+  .mentor-panel{width:calc(100vw - 24px); height:min(520px, 78vh);}
+  .mentor-widget-wrap{left:12px; bottom:12px;}
+  .mentor-flashcards{grid-template-columns:1fr 1fr;}
+
+  /* Fixed-ratio data tables (payment history, admin lists): let them
+     scroll horizontally rather than squeeze fr-columns into unreadable
+     slivers — safer than trying to hide columns per-instance since some
+     pages set grid-template-columns inline (see AdminUsers.jsx etc.). */
+  .invoice-table{overflow-x:auto;}
+  .invoice-row{min-width:480px; font-size:11.5px; padding:12px 14px;}
+
+  .quiz-review-item{flex-direction:column; gap:6px;}
+  .avail-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ── Laptop / small-desktop tightening (901-1180px) ───────────────────
+   Between the tablet breakpoint and full desktop, the fixed-width side
+   columns (skill sidebar, video player rail, dashboard sidebar) still
+   fit, but the outer section padding was tuned for >=1240px containers
+   and starts eating into content width on 13" laptop viewports. */
+@media (min-width:901px) and (max-width:1180px){
+  section{padding:110px 32px;}
+  .explore-wrap{padding:0 32px 120px; gap:24px;}
+  .player-shell{padding:110px 32px 90px; gap:22px;}
+  .skill-hero{padding:32px; gap:26px;}
+  .dash-shell{grid-template-columns:230px 1fr;}
 }

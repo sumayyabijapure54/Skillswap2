@@ -1,8 +1,8 @@
-import crypto from 'crypto';
 import mongoose from 'mongoose';
 import razorpay from '../lib/razorpayClient.js';
 import User from '../models/User.js';
 import Transaction from '../models/Transaction.js';
+import { verifyOrderPaymentSignature, verifyWebhookSignature } from '../utils/razorpaySignature.js';
 
 const MAX_TOPUP = 50000; // ₹50,000 — matches the drop-in kit's limit
 
@@ -111,12 +111,7 @@ export async function verifyPayment(req, res, next) {
     // Recompute the signature ourselves — this is what stops someone from
     // just calling this endpoint directly and claiming they paid without
     // actually paying.
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
+    if (!verifyOrderPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, process.env.RAZORPAY_KEY_SECRET)) {
       return res.status(400).json({ message: 'Payment verification failed.' });
     }
 
@@ -156,8 +151,8 @@ export async function handleWebhook(req, res) {
       return res.status(500).end();
     }
 
-    const expected = crypto.createHmac('sha256', secret).update(req.body).digest('hex');
-    if (expected !== signature) {
+    const signatureValid = verifyWebhookSignature(req.body, signature, secret);
+    if (!signatureValid) {
       return res.status(400).json({ message: 'Invalid webhook signature' });
     }
 

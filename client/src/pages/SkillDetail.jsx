@@ -1,14 +1,27 @@
 import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { categories, getSkillById } from '../data/skills.js';
+import { useCategories, useSkill } from '../lib/skillsApi.js';
 import { useUser } from '../context/UserContext.jsx';
+import { useAiMentor } from '../context/AiMentorContext.jsx';
 import ComingSoon from './ComingSoon.jsx';
 
 export default function SkillDetail(){
   const { id } = useParams();
   const navigate = useNavigate();
-  const skill = getSkillById(id);
+  const { categories } = useCategories();
+  const { skill, loading } = useSkill(id);
   const { authed, wishlist, toggleWishlist } = useUser();
+  const { setPageContext } = useAiMentor();
+
+  React.useEffect(() => {
+    if (!skill) return undefined;
+    setPageContext({ skillId: skill.id, skillTitle: skill.title });
+    return () => setPageContext(null);
+  }, [skill, setPageContext]);
+
+  if(loading){
+    return <ComingSoon title="Loading skill…" text="Just a moment while we fetch this skill." />;
+  }
 
   if(!skill){
     return <ComingSoon title="Skill not found" text="We couldn't find that skill. It may have been renamed or removed." />;

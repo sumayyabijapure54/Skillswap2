@@ -14,9 +14,25 @@ const UserSchema = new Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address']
     },
-    password: { type: String, required: true, minlength: 8, select: false },
+    // Not required for social-login accounts (Google/Facebook) — those
+    // users authenticate via the provider and never set a local password
+    // unless they later use "forgot password" to add one.
+    password: {
+      type: String,
+      required: function passwordRequired() { return !this.googleId && !this.facebookId; },
+      minlength: 8,
+      select: false
+    },
 
-    // Email verification (OTP)
+    // Social login — a user can have arrived via email/password, Google,
+    // Facebook, or (having started one way) linked another later, so these
+    // are independent optional fields rather than a single "provider" enum.
+    googleId: { type: String, select: false, index: true, sparse: true },
+    facebookId: { type: String, select: false, index: true, sparse: true },
+    authProviders: { type: [String], default: ['password'] },
+
+    // Email verification (OTP). Social logins arrive pre-verified since the
+    // provider already confirmed the email address.
     verified: { type: Boolean, default: false },
     emailVerifyOTP: { type: String, select: false },
     emailVerifyExpires: { type: Date, select: false },
@@ -56,13 +72,14 @@ const UserSchema = new Schema(
 );
 
 UserSchema.pre('save', async function hashPassword(next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
 UserSchema.methods.comparePassword = function comparePassword(candidate) {
+  if (!this.password) return Promise.resolve(false);
   return bcrypt.compare(candidate, this.password);
 };
 
@@ -74,6 +91,8 @@ UserSchema.set('toJSON', {
     delete ret.emailVerifyExpires;
     delete ret.passwordResetToken;
     delete ret.passwordResetExpires;
+    delete ret.googleId;
+    delete ret.facebookId;
     delete ret.__v;
     return ret;
   }

@@ -10,6 +10,7 @@ import Skill from '../models/Skill.js';
 import RefreshToken from '../models/RefreshToken.js';
 import CommunityPost from '../models/CommunityPost.js';
 import { AVATAR_DIR_ABS, AVATAR_URL_PREFIX } from '../middleware/upload.js';
+import { matchesImageSignature } from '../utils/fileSignature.js';
 
 const PROFILE_FIELDS = ['name', 'email', 'bio', 'avatar', 'skillsOffered', 'skillsWanted'];
 
@@ -121,6 +122,20 @@ export async function uploadUserAvatar(req, res, next) {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded — send it as multipart/form-data under field "avatar"' });
+    }
+
+    // The client's declared Content-Type (already checked by multer's
+    // fileFilter) costs nothing to spoof — confirm the bytes on disk are
+    // actually a JPEG/PNG/WEBP before trusting this upload any further.
+    const filePath = path.join(AVATAR_DIR_ABS, req.file.filename);
+    const header = Buffer.alloc(16);
+    const fd = fs.openSync(filePath, 'r');
+    fs.readSync(fd, header, 0, 16, 0);
+    fs.closeSync(fd);
+
+    if (!matchesImageSignature(header, req.file.mimetype)) {
+      fs.unlink(filePath, () => {}); // best-effort — don't leave the rejected file behind
+      return res.status(400).json({ message: "File content doesn't match a valid JPEG, PNG, or WEBP image" });
     }
 
     const user = await User.findById(req.user._id);

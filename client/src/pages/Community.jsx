@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useCommunity } from '../context/CommunityContext.jsx';
-import { categories } from '../data/skills.js';
+import { useCategories } from '../lib/skillsApi.js';
 
 const TYPE_FILTERS = [
   { key:'all', label:'All posts' },
@@ -13,6 +13,7 @@ const TYPE_FILTERS = [
 export default function Community(){
   const { posts, relativeTime } = useCommunity();
   const navigate = useNavigate();
+  const { categories } = useCategories();
   const [type, setType] = React.useState('all');
   const [cat, setCat] = React.useState('all');
   const [query, setQuery] = React.useState('');

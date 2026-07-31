@@ -4,7 +4,10 @@ import { useUser } from '../context/UserContext.jsx';
 import FloatingActionButton from './FloatingActionButton.jsx';
 
 const BASE_NAV = [
-  { section:null, items:[ { to:'/dashboard', label:'Overview', icon:'▦' } ] },
+  { section:null, items:[
+    { to:'/dashboard', label:'Overview', icon:'▦' },
+    { to:'/ai-mentor', label:'AI Learning Mentor', icon:'✨' }
+  ] },
   { section:'My Learning', items:[
     { to:'/my-learning', label:'In Progress', icon:'▶' },
     { to:'/learning-history', label:'Learning History', icon:'✓' },
@@ -52,7 +55,11 @@ export default function DashboardLayout({ title, subtitle, children }){
   const isAdmin = realIsAdmin || profile.role === 'admin';
 
   const nav = isMentor
+<<<<<<< HEAD
     ? [{ section:null, items:[ BASE_NAV[0].items[0] ] }, { section:'Teaching', items: MENTOR_ITEMS }, ...BASE_NAV.slice(1)]
+=======
+    ? [{ section:null, items: BASE_NAV[0].items }, { section:'Teaching', items: MENTOR_ITEMS }, ...BASE_NAV.slice(1)]
+>>>>>>> 9a28602 (Update SkillSwap project)
     : BASE_NAV;
 
   const navWithAdmin = isAdmin

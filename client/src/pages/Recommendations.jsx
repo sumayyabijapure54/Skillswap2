@@ -2,20 +2,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
-import { categories } from '../data/skills.js';
+import { useCategories, useSkills } from '../lib/skillsApi.js';
 import { getAIRecommendations } from '../lib/aiRecommendations.js';
 
 export default function Recommendations(){
   const user = useUser();
   const { profile, wishlist, toggleWishlist } = user;
+  const { categories } = useCategories();
+  const { skills, loading: skillsLoading } = useSkills();
 
   const [thinking, setThinking] = React.useState(false);
   const [seed, setSeed] = React.useState(0);
 
   const recs = React.useMemo(
-    () => getAIRecommendations(user, { limit: 6 }),
+    () => getAIRecommendations(user, { limit: 6 }, { skills, categories }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user.enrolled, user.wishlist, profile.interests, profile.skillsWanted, seed]
+    [user.enrolled, user.wishlist, profile.interests, profile.skillsWanted, seed, skills, categories]
   );
 
   const regenerate = () => {
@@ -45,7 +47,7 @@ export default function Recommendations(){
         </button>
       </div>
 
-      {thinking ? (
+      {thinking || skillsLoading ? (
         <div className="dash-empty">Analyzing your profile and learning history…</div>
       ) : recs.length === 0 ? (
         <div className="dash-empty">

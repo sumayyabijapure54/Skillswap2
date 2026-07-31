@@ -1,10 +1,11 @@
 import React from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
-import { categories } from '../data/skills.js';
+import { useCategories } from '../lib/skillsApi.js';
 
 export default function Profile(){
   const { profile, updateProfile } = useUser();
+  const { categories } = useCategories();
   const isAdmin = profile.role === 'admin';
   const [form, setForm] = React.useState({
     name: profile.name || '',

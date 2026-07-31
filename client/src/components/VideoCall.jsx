@@ -1,16 +1,13 @@
 import React from 'react';
+import { useCallPeer } from '../lib/useCallPeer.js';
 
 // A real, working video-call surface: it requests the actual camera/mic via
-// getUserMedia and renders a live local preview with working mute/camera/
-// screen-share controls — this is genuine WebRTC media capture, not a mock.
-//
-// What it does NOT do (yet) is connect to another browser peer-to-peer.
-// Doing that needs a signaling channel (e.g. a small socket.io/WebSocket
-// backend that exchanges SDP offers/answers + ICE candidates between the two
-// participants) plus an RTCPeerConnection on each side. That's a backend/
-// infra piece, not a frontend one — everything here is written so wiring a
-// real peer connection in later is additive: swap `remoteStream` for the one
-// your RTCPeerConnection hands you in `ontrack`, and the UI needs no changes.
+// getUserMedia, renders a live local preview with working mute/camera/
+// screen-share controls, and — given a `bookingId` — negotiates a genuine
+// peer-to-peer WebRTC connection to the other participant of that session
+// via useCallPeer (signaling relayed through the existing socket.io server;
+// see server/src/realtime/callSignaling.js). Without a bookingId it still
+// works as a local camera preview only.
 
 function formatDuration(sec) {
   const m = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -18,8 +15,9 @@ function formatDuration(sec) {
   return `${m}:${s}`;
 }
 
-export default function VideoCall({ mentorName = 'your mentor', onEnd }) {
+export default function VideoCall({ mentorName = 'your mentor', bookingId, onEnd }) {
   const localVideoRef = React.useRef(null);
+  const remoteVideoRef = React.useRef(null);
   const streamRef = React.useRef(null);
 
   const [status, setStatus] = React.useState('connecting'); // connecting | live | denied | ended
@@ -27,6 +25,17 @@ export default function VideoCall({ mentorName = 'your mentor', onEnd }) {
   const [camOn, setCamOn] = React.useState(true);
   const [sharing, setSharing] = React.useState(false);
   const [seconds, setSeconds] = React.useState(0);
+  const [localStreamReady, setLocalStreamReady] = React.useState(null);
+
+  const { remoteStream, peerConnected, signalingError } = useCallPeer({
+    bookingId,
+    localStream: localStreamReady,
+    enabled: status === 'live'
+  });
+
+  React.useEffect(() => {
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream || null;
+  }, [remoteStream]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -38,6 +47,7 @@ export default function VideoCall({ mentorName = 'your mentor', onEnd }) {
         streamRef.current = stream;
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
         setStatus('live');
+        setLocalStreamReady(stream);
       } catch (err) {
         if (!cancelled) setStatus('denied');
       }
@@ -75,6 +85,7 @@ export default function VideoCall({ mentorName = 'your mentor', onEnd }) {
         streamRef.current = camStream;
         if (localVideoRef.current) localVideoRef.current.srcObject = camStream;
         setSharing(false);
+        setLocalStreamReady(camStream); // re-negotiates the peer connection with the camera track
       } catch { /* leave sharing state as-is if this fails */ }
       return;
     }
@@ -84,6 +95,7 @@ export default function VideoCall({ mentorName = 'your mentor', onEnd }) {
       streamRef.current = screenStream;
       if (localVideoRef.current) localVideoRef.current.srcObject = screenStream;
       setSharing(true);
+      setLocalStreamReady(screenStream); // re-negotiates the peer connection with the screen track
       // If the user stops sharing from the browser's native UI.
       screenStream.getVideoTracks()[0].onended = () => toggleShare();
     } catch { /* user cancelled the share picker */ }
@@ -116,21 +128,45 @@ export default function VideoCall({ mentorName = 'your mentor', onEnd }) {
 
       {status === 'live' && (
         <>
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: sharing ? 'none' : 'scaleX(-1)' }}
-          />
+          {peerConnected && remoteStream ? (
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{ width: '100%', height: '100%', objectFit: 'cover', transform: sharing ? 'none' : 'scaleX(-1)' }}
+            />
+          )}
+
+          {peerConnected && remoteStream && (
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{
+                position: 'absolute', bottom: '18px', right: '14px', width: '110px', height: '80px',
+                objectFit: 'cover', borderRadius: '10px', border: '2px solid rgba(255,255,255,0.6)',
+                transform: sharing ? 'none' : 'scaleX(-1)'
+              }}
+            />
+          )}
+
           <div style={{ position: 'absolute', top: '14px', left: '14px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff5f5f', boxShadow: '0 0 8px #ff5f5f' }} />
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: peerConnected ? '#2ecc71' : '#ff5f5f', boxShadow: peerConnected ? '0 0 8px #2ecc71' : '0 0 8px #ff5f5f' }} />
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.4)', padding: '4px 10px', borderRadius: '100px' }}>
               {formatDuration(seconds)}
             </span>
           </div>
           <div style={{ position: 'absolute', top: '14px', right: '14px', fontSize: '12px', color: '#fff', background: 'rgba(0,0,0,0.4)', padding: '4px 12px', borderRadius: '100px' }}>
-            Waiting for {mentorName} to join…
+            {peerConnected ? `Connected with ${mentorName}` : signalingError ? signalingError : `Waiting for ${mentorName} to join…`}
           </div>
 
           <div style={{ position: 'absolute', bottom: '18px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '10px' }}>

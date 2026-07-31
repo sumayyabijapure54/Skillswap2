@@ -6,6 +6,8 @@ import BackgroundFX from './components/BackgroundFX.jsx';
 import CustomCursor from './components/CustomCursor.jsx';
 import RippleEffect from './components/RippleEffect.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
+import AiMentorWidget from './components/AiMentorWidget.jsx';
+import { useUser } from './context/UserContext.jsx';
 import { initSmoothScroll, scrollToTop } from './lib/smoothScroll.js';
 import { ScrollTrigger } from './lib/gsap.js';
 
@@ -45,6 +47,7 @@ import Wallet from './pages/Wallet.jsx';
 import PaymentHistory from './pages/PaymentHistory.jsx';
 import Certificates from './pages/Certificates.jsx';
 import CertificateDetail from './pages/CertificateDetail.jsx';
+import CertificateVerify from './pages/CertificateVerify.jsx';
 import MentorDashboard from './pages/MentorDashboard.jsx';
 import MentorCourses from './pages/MentorCourses.jsx';
 import MentorCourseForm from './pages/MentorCourseForm.jsx';
@@ -53,6 +56,7 @@ import MentorAnalytics from './pages/MentorAnalytics.jsx';
 import Recommendations from './pages/Recommendations.jsx';
 import Achievements from './pages/Achievements.jsx';
 import AccountSettings from './pages/AccountSettings.jsx';
+import AiMentor from './pages/AiMentor.jsx';
 import RequireAdmin from './components/RequireAdmin.jsx';
 import AdminOverview from './pages/admin/AdminOverview.jsx';
 import AdminUsers from './pages/admin/AdminUsers.jsx';
@@ -74,6 +78,7 @@ const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/certificate/', '/admin', '/
 
 export default function App(){
   const { pathname } = useLocation();
+  const { authed } = useUser();
 
   React.useEffect(()=>{ initSmoothScroll(); }, []);
 
@@ -129,6 +134,8 @@ export default function App(){
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/verify" element={<CertificateVerify />} />
+          <Route path="/verify/:certificateNumber" element={<CertificateVerify />} />
 
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/my-learning" element={<RequireAuth><MyLearning /></RequireAuth>} />
@@ -158,6 +165,7 @@ export default function App(){
           <Route path="/recommendations" element={<RequireAuth><Recommendations /></RequireAuth>} />
           <Route path="/achievements" element={<RequireAuth><Achievements /></RequireAuth>} />
           <Route path="/account-settings" element={<RequireAuth><AccountSettings /></RequireAuth>} />
+          <Route path="/ai-mentor" element={<RequireAuth><AiMentor /></RequireAuth>} />
 
           <Route path="/admin" element={<RequireAdmin><AdminOverview /></RequireAdmin>} />
           <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
@@ -169,6 +177,8 @@ export default function App(){
       </div>
 
       {showFooter && <Footer />}
+
+      {authed && pathname !== '/ai-mentor' && <AiMentorWidget />}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import RefreshToken from '../models/RefreshToken.js';
 import { sendMail, otpEmailHtml, resetPasswordEmailHtml } from '../utils/email.js';
 import { generateOTP, generateResetToken, generateRefreshToken, hashToken } from '../utils/tokens.js';
 import { notifyUser } from '../utils/notify.js';
+import { verifyGoogleToken, verifyFacebookToken } from '../lib/socialAuth.js';
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const RESET_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -262,6 +263,88 @@ export async function resetPassword(req, res, next) {
     await RefreshToken.deleteMany({ user: user._id });
 
     res.json({ message: 'Password updated — you can now log in' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Shared by googleLogin/facebookLogin below: given a verified provider
+// profile, find-or-create the User and hand back the same {token,
+// refreshToken, user} shape the password login/signup routes return, so
+// the frontend doesn't need a separate code path once it has a profile.
+async function loginOrCreateFromProvider({ provider, providerIdField, profile, res }) {
+  const email = profile.email.toLowerCase().trim();
+
+  let user = await User.findOne({ $or: [{ [providerIdField]: profile.providerId }, { email }] }).select(`+${providerIdField}`);
+
+  if (user) {
+    // Existing account (possibly created via password signup, or via the
+    // other provider) — link this provider to it rather than making a
+    // second account for the same email.
+    if (!user[providerIdField]) {
+      user[providerIdField] = profile.providerId;
+      if (!user.authProviders.includes(provider)) user.authProviders.push(provider);
+    }
+    if (profile.emailVerified) user.verified = true;
+    if (profile.avatar && !user.avatar) user.avatar = profile.avatar;
+    await user.save();
+  } else {
+    user = await User.create({
+      name: profile.name,
+      email,
+      password: undefined,
+      [providerIdField]: profile.providerId,
+      authProviders: [provider],
+      verified: profile.emailVerified,
+      avatar: profile.avatar || ''
+    });
+
+    const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+    if (adminEmails.includes(user.email.toLowerCase())) {
+      user.isAdmin = true;
+      await user.save();
+    }
+
+    await notifyUser({
+      user: user._id,
+      type: 'system',
+      text: 'Welcome to SkillSwap! Complete your profile to get better matches.'
+    });
+  }
+
+  if (user.status === 'suspended') {
+    return res.status(403).json({ message: 'This account has been suspended' });
+  }
+
+  const token = signToken(user);
+  const refreshToken = await issueRefreshToken(user);
+  user.password = undefined;
+  res.json({ token, refreshToken, user });
+}
+
+// POST /api/auth/google  { credential }  — credential is the Google
+// Identity Services ID token from the frontend's Sign in with Google button.
+export async function googleLogin(req, res, next) {
+  try {
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ message: 'credential is required' });
+
+    const profile = await verifyGoogleToken(credential);
+    await loginOrCreateFromProvider({ provider: 'google', providerIdField: 'googleId', profile, res });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/auth/facebook  { accessToken }  — accessToken is what the
+// Facebook Login JS SDK hands the frontend after the user approves.
+export async function facebookLogin(req, res, next) {
+  try {
+    const { accessToken } = req.body;
+    if (!accessToken) return res.status(400).json({ message: 'accessToken is required' });
+
+    const profile = await verifyFacebookToken(accessToken);
+    await loginOrCreateFromProvider({ provider: 'facebook', providerIdField: 'facebookId', profile, res });
   } catch (err) {
     next(err);
   }

@@ -1,10 +1,17 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+<<<<<<< HEAD
 import { categories, levels, skills } from '../data/skills.js';
+=======
+import { useCategories, useLevels, useSkills } from '../lib/skillsApi.js';
+>>>>>>> 9a28602 (Update SkillSwap project)
 import SkillIcon3D from '../components/SkillIcon3D.jsx';
 
 export default function Explore(){
   const [params, setParams] = useSearchParams();
+  const { categories } = useCategories();
+  const { levels } = useLevels();
+  const { skills, loading: skillsLoading } = useSkills();
   const [query, setQuery] = React.useState(params.get('q') || '');
   const [activeCats, setActiveCats] = React.useState(params.get('cat') ? [params.get('cat')] : []);
   const [activeLevels, setActiveLevels] = React.useState([]);
@@ -51,7 +58,7 @@ export default function Explore(){
           <div className="filter-group">
             <h4>Category</h4>
             {categories.map(c=>{
-              const count = skills.filter(s=>s.category===c.key).length;
+              const count = c.count ?? 0;
               return (
                 <label className="filter-option" key={c.key}>
                   <input type="checkbox" checked={activeCats.includes(c.key)} onChange={()=>toggleCat(c.key)} />
@@ -84,7 +91,7 @@ export default function Explore(){
           </div>
 
           <div className="explore-toolbar">
-            <div className="count">{filtered.length} skill{filtered.length!==1?'s':''} found</div>
+            <div className="count">{skillsLoading ? 'Loading…' : `${filtered.length} skill${filtered.length!==1?'s':''} found`}</div>
             <select value={sort} onChange={e=>setSort(e.target.value)}>
               <option value="popular">Most Popular</option>
               <option value="rating">Highest Rated</option>
@@ -93,7 +100,9 @@ export default function Explore(){
             </select>
           </div>
 
-          {filtered.length===0 ? (
+          {skillsLoading ? (
+            <div className="explore-empty">Loading skills…</div>
+          ) : filtered.length===0 ? (
             <div className="explore-empty">No skills match your filters yet. Try clearing a filter or searching a different term.</div>
           ) : (
             <div className="explore-grid">

@@ -1,10 +1,11 @@
 import React from 'react';
 import AdminLayout from '../../components/AdminLayout.jsx';
 import { useAdmin } from '../../context/AdminContext.jsx';
-import { categories } from '../../data/skills.js';
+import { useCategories } from '../../lib/skillsApi.js';
 
 export default function AdminMentorApplications() {
   const { mentorApplications, approveMentorApplication, rejectMentorApplication } = useAdmin();
+  const { categories } = useCategories();
 
   const pending = mentorApplications.filter(a => a.status === 'pending');
   const decided = mentorApplications.filter(a => a.status !== 'pending');

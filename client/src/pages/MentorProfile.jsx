@@ -1,19 +1,21 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getMentorById } from '../data/mentors.js';
-import { skills, categories } from '../data/skills.js';
+import { useSkills, useCategories } from '../lib/skillsApi.js';
 import ComingSoon from './ComingSoon.jsx';
 import TestimonialCarousel from '../components/TestimonialCarousel.jsx';
 
 export default function MentorProfile(){
   const { id } = useParams();
   const mentor = getMentorById(id);
+  const { skills, loading: skillsLoading } = useSkills();
+  const { categories } = useCategories();
 
   if(!mentor){
     return <ComingSoon title="Mentor not found" text="We couldn't find that mentor profile." />;
   }
 
-  const taughtSkills = skills.filter(s => s.mentor?.id === mentor.id);
+  const taughtSkills = skillsLoading ? [] : skills.filter(s => s.mentor?.id === mentor.id);
 
   return (
     <div style={{maxWidth:'1100px', margin:'0 auto', padding:'150px 48px 100px', position:'relative', zIndex:1}}>

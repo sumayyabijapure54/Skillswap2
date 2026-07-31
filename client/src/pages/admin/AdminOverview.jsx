@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout.jsx';
 import { useAdmin } from '../../context/AdminContext.jsx';
-import { skills } from '../../data/skills.js';
+import { useSkills } from '../../lib/skillsApi.js';
 import { MiniLineChart } from '../../components/MiniChart.jsx';
 
 function weeklySignups(users) {
@@ -21,6 +21,7 @@ function weeklySignups(users) {
 
 export default function AdminOverview() {
   const { users, mentorApplications, reports } = useAdmin();
+  const { count: skillsCount } = useSkills();
 
   const activeUsers = users.filter(u => u.status === 'active').length;
   const suspended = users.filter(u => u.status === 'suspended').length;
@@ -36,7 +37,7 @@ export default function AdminOverview() {
       <div className="dash-stat-row">
         <div className="dash-stat"><b>{users.length}</b><span>Total users</span></div>
         <div className="dash-stat"><b>{mentors}</b><span>Active mentors</span></div>
-        <div className="dash-stat"><b>{skills.length}</b><span>Published skills</span></div>
+        <div className="dash-stat"><b>{skillsCount}</b><span>Published skills</span></div>
         <div className="dash-stat"><b>{suspended}</b><span>Suspended accounts</span></div>
       </div>
 

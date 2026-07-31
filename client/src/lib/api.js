@@ -91,3 +91,30 @@ export const api = {
   patch: (path, body) => request(path, { method: 'PATCH', body: body instanceof FormData ? body : JSON.stringify(body) }),
   del: (path) => request(path, { method: 'DELETE' })
 };
+
+// For binary responses (e.g. server-generated PDFs) that the JSON-only
+// `request()` above can't handle. Fetches with the same auth header,
+// triggers a browser download, and throws with the server's JSON error
+// message on failure (mirroring `request`'s error shape).
+export async function downloadFile(path, filename) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const err = new Error((data && data.message) || `Request failed (${res.status})`);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}

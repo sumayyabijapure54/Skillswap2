@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useCommunity } from '../context/CommunityContext.jsx';
-import { categories } from '../data/skills.js';
+import { useCategories } from '../lib/skillsApi.js';
 
 export default function PostSkill(){
   const navigate = useNavigate();
   const { profile } = useUser();
   const { addPost } = useCommunity();
+  const { categories } = useCategories();
 
   const [form, setForm] = React.useState({ type:'offer', category:'programming', title:'', description:'', tags:'' });
   const [errors, setErrors] = React.useState({});

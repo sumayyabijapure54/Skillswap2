@@ -42,7 +42,7 @@ export default function SessionDetail(){
         <div>
           {inCall ? (
             <div style={{marginBottom:'20px'}}>
-              <VideoCall mentorName={mentor?.name || 'your mentor'} onEnd={()=>setInCall(false)} />
+              <VideoCall mentorName={mentor?.name || 'your mentor'} bookingId={booking.id} onEnd={()=>setInCall(false)} />
             </div>
           ) : (
             <div className="video-frame" style={{marginBottom:'20px'}} onClick={()=>setInCall(true)}>

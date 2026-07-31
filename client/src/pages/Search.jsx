@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { skills, categories } from '../data/skills.js';
+import { useSkills, useCategories } from '../lib/skillsApi.js';
 import { mentors } from '../data/mentors.js';
 import { useCommunity } from '../context/CommunityContext.jsx';
 import SkillIcon3D from '../components/SkillIcon3D.jsx';
@@ -16,6 +16,8 @@ export default function Search(){
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { posts } = useCommunity();
+  const { skills } = useSkills();
+  const { categories } = useCategories();
   const q = params.get('q') || '';
   const [input, setInput] = React.useState(q);
   const [tab, setTab] = React.useState('all');

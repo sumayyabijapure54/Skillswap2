@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getSkillById } from '../data/skills.js';
+import { useSkill, useSkillsById } from '../lib/skillsApi.js';
 import { useUser } from '../context/UserContext.jsx';
+import { useAiMentor } from '../context/AiMentorContext.jsx';
 import { fetchCourseVideo } from '../lib/youtubeApi.js';
 import { getOverridesForSkill, setVideoOverride, clearVideoOverride, parseVideoInput } from '../lib/videoOverrides.js';
 import { gsap } from '../lib/gsap.js';
@@ -48,11 +49,15 @@ function buildCurriculum(skill, video, chapters, overrides) {
 
 export default function LessonPlayer() {
   const { id } = useParams();
-  const skill = getSkillById(id);
+  const { skill, loading: skillLoading } = useSkill(id);
   const {
     authed, isAdmin, profile, enrolled, enroll, markLessonComplete,
     recordQuizScore, toggleSavedLesson, isLessonSaved, setLastWatched
   } = useUser();
+  const { setPageContext } = useAiMentor();
+  const { getSkillById: getOtherSkillById } = useSkillsById(
+    enrolled.filter(e => e.skillId !== id).map(e => e.skillId)
+  );
 
   const enrolledEntry = enrolled.find(e => e.skillId === id);
   const [activeIdx, setActiveIdx] = React.useState(0);
@@ -129,6 +134,12 @@ export default function LessonPlayer() {
 
   const item = curriculum[activeIdx];
 
+  React.useEffect(() => {
+    if (!skill) return undefined;
+    setPageContext({ skillId: skill.id, skillTitle: skill.title, lessonTitle: item?.title || null });
+    return () => setPageContext(null);
+  }, [skill, item?.title, setPageContext]);
+
   // Navigating between chapters of the SAME video doesn't remount the
   // player (there's nothing to remount — it's the same iframe/video), so
   // moving the playhead is done imperatively via seekTo() here instead.
@@ -143,6 +154,10 @@ export default function LessonPlayer() {
     advancedForChapterRef.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.id, yt.video?.id]);
+
+  if (skillLoading) {
+    return <ComingSoon title="Loading lesson…" text="Just a moment while we fetch this course." />;
+  }
 
   if (!skill) {
     return <ComingSoon title="Lesson not found" text="We couldn't find that course. Head back to Explore to find something to learn." />;
@@ -249,7 +264,7 @@ export default function LessonPlayer() {
   const continueWatching = authed
     ? enrolled
         .filter(e => e.skillId !== skill.id)
-        .map(e => ({ entry: e, s: getSkillById(e.skillId) }))
+        .map(e => ({ entry: e, s: getOtherSkillById(e.skillId) }))
         .filter(x => x.s && x.entry.completedLessons.length < x.s.lessons.length)
         .slice(0, 3)
     : [];
