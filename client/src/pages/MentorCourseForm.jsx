@@ -2,19 +2,11 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { api } from '../lib/api.js';
-<<<<<<< HEAD
-import { levels } from '../data/skills.js';
-
-// The client's static category list (data/skills.js) has drifted from what
-// the backend's Skill schema actually accepts — fetch the live list from
-// the API instead so this form can never offer a category that fails to save.
-=======
 import { useCategories, useLevels } from '../lib/skillsApi.js';
 
 // Categories/levels come from the live API (useCategories/useLevels) rather
 // than any static list, so this form can never offer a category or level
 // that fails to save against the backend's Skill schema.
->>>>>>> 9a28602 (Update SkillSwap project)
 
 const EMPTY_FORM = {
   title: '', category: 'programming', level: 'Beginner', description: '',
@@ -31,27 +23,8 @@ export default function MentorCourseForm(){
   const [loading, setLoading] = React.useState(isEdit);
   const [saving, setSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState('');
-<<<<<<< HEAD
-  const [categories, setCategories] = React.useState([]);
-
-  React.useEffect(() => {
-    api.get('/api/skills/meta/categories')
-      .then(cats => setCategories(cats || []))
-      .catch(() => setCategories([
-        { key:'programming', label:'Programming', icon:'</>' },
-        { key:'design', label:'Design', icon:'🎨' },
-        { key:'languages', label:'Languages', icon:'🌐' },
-        { key:'business', label:'Business', icon:'💼' },
-        { key:'music', label:'Music', icon:'🎵' },
-        { key:'photography', label:'Photography', icon:'📷' },
-        { key:'cooking', label:'Cooking', icon:'🍳' },
-        { key:'fitness', label:'Fitness', icon:'🏋' }
-      ]));
-  }, []);
-=======
   const { categories } = useCategories();
   const { levels } = useLevels();
->>>>>>> 9a28602 (Update SkillSwap project)
 
   const [ytUrl, setYtUrl] = React.useState('');
   const [ytVideo, setYtVideo] = React.useState(null);

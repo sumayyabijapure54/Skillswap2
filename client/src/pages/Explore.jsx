@@ -1,10 +1,6 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-<<<<<<< HEAD
-import { categories, levels, skills } from '../data/skills.js';
-=======
 import { useCategories, useLevels, useSkills } from '../lib/skillsApi.js';
->>>>>>> 9a28602 (Update SkillSwap project)
 import SkillIcon3D from '../components/SkillIcon3D.jsx';
 
 export default function Explore(){

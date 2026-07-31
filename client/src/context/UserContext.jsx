@@ -156,16 +156,6 @@ export function UserProvider({ children }){
     return () => { cancelled = true; };
   }, []);
 
-<<<<<<< HEAD
-  // Polls the real notifications API once signed in. This is a stand-in for
-  // a proper Socket.IO `socket.on('notification', ...)` push — swapping this
-  // interval for a live socket listener later doesn't change anything
-  // downstream, since it lands through the same `notifications` state and
-  // `markNotifRead`/`markAllNotifsRead` actions.
-  useEffect(()=>{
-    if(!state.authed) { setLiveConnected(false); return; }
-    setLiveConnected(true);
-=======
   // Real-time notifications: the backend pushes `notification:new` over
   // socket.io the moment something happens (see server/src/utils/notify.js)
   // rather than us finding out up to 40s later. `liveConnected` reflects the
@@ -177,7 +167,6 @@ export function UserProvider({ children }){
     if(!state.authed) { setLiveConnected(false); return; }
 
     const socket = getSocket();
->>>>>>> 9a28602 (Update SkillSwap project)
     const poll = async () => {
       try{
         const data = await api.get('/api/notifications');
@@ -186,10 +175,6 @@ export function UserProvider({ children }){
         // best-effort — a failed poll just tries again next tick
       }
     };
-<<<<<<< HEAD
-    const interval = setInterval(poll, 40000);
-    return () => clearInterval(interval);
-=======
     const fallbackInterval = setInterval(poll, 40000);
 
     if(!socket){
@@ -223,7 +208,6 @@ export function UserProvider({ children }){
   // token) doesn't linger past the session that created it.
   useEffect(()=>{
     if(!state.authed) disconnectSocket();
->>>>>>> 9a28602 (Update SkillSwap project)
   }, [state.authed]);
 
   // --- real auth/profile actions, backed by the Express API (server/) ---

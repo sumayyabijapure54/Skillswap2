@@ -55,11 +55,7 @@ export default function DashboardLayout({ title, subtitle, children }){
   const isAdmin = realIsAdmin || profile.role === 'admin';
 
   const nav = isMentor
-<<<<<<< HEAD
-    ? [{ section:null, items:[ BASE_NAV[0].items[0] ] }, { section:'Teaching', items: MENTOR_ITEMS }, ...BASE_NAV.slice(1)]
-=======
     ? [{ section:null, items: BASE_NAV[0].items }, { section:'Teaching', items: MENTOR_ITEMS }, ...BASE_NAV.slice(1)]
->>>>>>> 9a28602 (Update SkillSwap project)
     : BASE_NAV;
 
   const navWithAdmin = isAdmin

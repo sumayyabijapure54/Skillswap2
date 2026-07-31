@@ -42,9 +42,18 @@ export async function completeOnboarding(req, res, next) {
 
     if (!role) return res.status(400).json({ message: 'role is required' });
 
+    // Only touch interests/goal when the caller actually sent them — this
+    // endpoint is also used later (e.g. Profile's "switch role" control) to
+    // update role alone, and previously always reset interests to [] and
+    // goal to null in that case, silently wiping data set during the
+    // original onboarding.
+    const update = { role, onboarded: true };
+    if (interests !== undefined) update.interests = interests;
+    if (goal !== undefined) update.goal = goal;
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { role, interests: interests || [], goal: goal || null, onboarded: true },
+      update,
       { new: true, runValidators: true }
     );
 

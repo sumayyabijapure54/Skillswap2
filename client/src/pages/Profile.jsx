@@ -3,8 +3,14 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useCategories } from '../lib/skillsApi.js';
 
+const TEACHING_ROLES = [
+  { key:'learn', icon:'🎓', title:'Learn', desc:'Pick up new skills from mentors and free lessons.' },
+  { key:'teach', icon:'🧑‍🏫', title:'Teach', desc:'Share what you know and mentor other members.' },
+  { key:'both', icon:'⇄', title:'Both', desc:'Learn some skills and teach others in exchange.' }
+];
+
 export default function Profile(){
-  const { profile, updateProfile } = useUser();
+  const { profile, updateProfile, completeOnboarding } = useUser();
   const { categories } = useCategories();
   const isAdmin = profile.role === 'admin';
   const [form, setForm] = React.useState({
@@ -15,6 +21,22 @@ export default function Profile(){
     skillsWanted: (profile.skillsWanted || []).join(', ')
   });
   const [saved, setSaved] = React.useState(false);
+  const [roleSaving, setRoleSaving] = React.useState(false);
+  const [roleError, setRoleError] = React.useState('');
+  const [roleSaved, setRoleSaved] = React.useState(false);
+
+  const currentTeachingRole = ['learn','teach','both'].includes(profile.role) ? profile.role : null;
+
+  const switchRole = async (key)=>{
+    if (key === currentTeachingRole || roleSaving) return;
+    setRoleSaving(true);
+    setRoleError('');
+    setRoleSaved(false);
+    const res = await completeOnboarding({ role: key });
+    setRoleSaving(false);
+    if (!res.ok) { setRoleError(res.error || 'Could not update your role — please try again.'); return; }
+    setRoleSaved(true);
+  };
 
   const set = (k,v)=>{ setForm(f=>({ ...f, [k]:v })); setSaved(false); };
 
@@ -75,6 +97,27 @@ export default function Profile(){
         </form>
 
         <div style={{display:'flex', flexDirection:'column', gap:'20px'}}>
+          <div className="col-card" style={{alignSelf:'flex-start'}}>
+            <h3>Teaching &amp; learning</h3>
+            <div className="desc">Switch any time — teaching unlocks the Mentor Dashboard in your sidebar.</div>
+            <div className="role-grid" style={{marginTop:'12px'}}>
+              {TEACHING_ROLES.map(r=>(
+                <div
+                  key={r.key}
+                  className={`role-card ${currentTeachingRole===r.key?'selected':''}`}
+                  onClick={()=>switchRole(r.key)}
+                  style={roleSaving?{opacity:0.6, pointerEvents:'none'}:{cursor:'pointer'}}
+                >
+                  <div className="ic">{r.icon}</div>
+                  <b>{r.title}</b>
+                  <span>{r.desc}</span>
+                </div>
+              ))}
+            </div>
+            {roleError && <div className="form-error" style={{marginTop:'10px'}}>{roleError}</div>}
+            {roleSaved && !roleError && <span style={{display:'block', marginTop:'10px', fontSize:'13px', color:'var(--accent)'}}>✓ Role updated</span>}
+          </div>
+
           <div className="col-card" style={{alignSelf:'flex-start'}}>
             <h3>Your interests</h3>
             <div className="desc">Set during onboarding — used for skill recommendations.</div>
