@@ -42,6 +42,17 @@ const LessonSchema = new Schema(
   { _id: false }
 );
 
+const YoutubeChapterSchema = new Schema(
+  {
+    id: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true },
+    startSeconds: { type: Number, required: true, min: 0 },
+    endSeconds: { type: Number, required: true, min: 0 },
+    duration: { type: String, default: '', trim: true }
+  },
+  { _id: false }
+);
+
 const YoutubeVideoSchema = new Schema(
   {
     videoId: { type: String, required: true, trim: true },
@@ -51,7 +62,13 @@ const YoutubeVideoSchema = new Schema(
     thumbnail: { type: String, default: '', trim: true },
     channelTitle: { type: String, default: '', trim: true },
     duration: { type: String, default: '', trim: true },
-    durationSeconds: { type: Number, default: 0 }
+    durationSeconds: { type: Number, default: 0 },
+    // The chapters the backend computed for THIS exact video at the moment
+    // the mentor pasted its URL (see getVideoByUrl in youtubeService.js) —
+    // stored here rather than recomputed later so a student always sees
+    // the same curriculum the mentor previewed and saved, and so the
+    // lesson player never needs to re-derive them from the description.
+    chapters: { type: [YoutubeChapterSchema], default: [] }
   },
   { _id: false }
 );

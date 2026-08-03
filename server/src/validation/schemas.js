@@ -143,6 +143,14 @@ const lessonSchema = z.object({
   type: z.enum(['Video', 'Quiz']).optional()
 });
 
+const youtubeChapterSchema = z.object({
+  id: z.string().trim().min(1),
+  title: z.string().trim().min(1),
+  startSeconds: z.coerce.number().min(0),
+  endSeconds: z.coerce.number().min(0),
+  duration: z.string().trim().optional()
+});
+
 const youtubeVideoSchema = z.object({
   videoId: z.string().trim().min(1),
   title: z.string().trim().min(1),
@@ -151,7 +159,8 @@ const youtubeVideoSchema = z.object({
   thumbnail: z.string().trim().optional(),
   channelTitle: z.string().trim().optional(),
   duration: z.string().trim().optional(),
-  durationSeconds: z.coerce.number().optional()
+  durationSeconds: z.coerce.number().optional(),
+  chapters: z.array(youtubeChapterSchema).max(60).optional()
 }).nullable();
 
 export const createSkillSchema = z.object({
