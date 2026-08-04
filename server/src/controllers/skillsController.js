@@ -39,6 +39,9 @@ export async function listSkills(req, res, next) {
     if (cats.length) filter.category = { $in: cats };
     if (lvls.length) filter.level = { $in: lvls };
     if (q) filter.$text = { $search: q };
+    // Every other skill this same real (claimed) mentor teaches — powers
+    // the "more from this mentor" section on the mentor profile page.
+    if (req.query.mentorUser) filter.mentorUser = req.query.mentorUser;
 
     const sortSpec = SORTS[sort] || SORTS.popular;
     // Generous default — the frontend doesn't send page/limit yet and

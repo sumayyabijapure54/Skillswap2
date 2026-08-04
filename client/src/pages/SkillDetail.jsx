@@ -62,7 +62,7 @@ export default function SkillDetail(){
         </div>
 
         <div className="skill-side">
-          <Link to={`/mentor/${skill.mentor.id}`} className="mentor-mini" style={{textDecoration:'none', color:'inherit'}}>
+          <Link to={`/mentor/${skill.id}`} className="mentor-mini" style={{textDecoration:'none', color:'inherit'}}>
             <div className="av">{skill.mentor.initials}</div>
             <div>
               <b>{skill.mentor.name}</b>
@@ -76,7 +76,7 @@ export default function SkillDetail(){
             <li>Format <b>Self-paced + live sessions</b></li>
           </ul>
           <Link to={`/learn/${skill.id}`} className="btn-solid" style={{width:'100%', textAlign:'center', display:'block', marginBottom:'10px'}}>Start Learning →</Link>
-          <Link to={`/book/${skill.mentor.id}`} className="btn-outline" style={{width:'100%', textAlign:'center', display:'block'}}>📅 Book a session</Link>
+          <Link to={`/book/${skill.id}`} className="btn-outline" style={{width:'100%', textAlign:'center', display:'block'}}>📅 Book a session</Link>
         </div>
       </div>
 

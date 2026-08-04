@@ -147,7 +147,7 @@ export default function App(){
           <Route path="/community" element={<RequireAuth><Community /></RequireAuth>} />
           <Route path="/messages" element={<RequireAuth><Messages /></RequireAuth>} />
           <Route path="/book-session" element={<RequireAuth><BookSession /></RequireAuth>} />
-          <Route path="/book/:mentorId" element={<RequireAuth><SessionBooking /></RequireAuth>} />
+          <Route path="/book/:skillId" element={<RequireAuth><SessionBooking /></RequireAuth>} />
           <Route path="/sessions" element={<RequireAuth><Sessions /></RequireAuth>} />
           <Route path="/session/:id" element={<RequireAuth><SessionDetail /></RequireAuth>} />
           <Route path="/reviews" element={<RequireAuth><Reviews /></RequireAuth>} />

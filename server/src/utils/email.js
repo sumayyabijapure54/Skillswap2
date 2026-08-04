@@ -1,41 +1,40 @@
-// Sends transactional email via the Resend HTTPS API (https://resend.com).
-// We use Resend instead of raw SMTP because outbound SMTP connections from
-// hosts like Render frequently time out or get blocked when talking to
-// Gmail — Resend sends over regular HTTPS (port 443), which avoids that
-// entirely and is purpose-built for transactional email like OTPs and
-// password resets.
+import nodemailer from 'nodemailer';
 
-const RESEND_API_URL = 'https://api.resend.com/emails';
+let transporter = null;
 
-// Sends an email if RESEND_API_KEY is configured in .env. Otherwise, logs
-// the content to the console so signup/verification/reset flows still work
+function getTransporter() {
+  if (transporter) return transporter;
+  if (!process.env.SMTP_HOST) return null;
+
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: process.env.SMTP_USER
+      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      : undefined
+  });
+  return transporter;
+}
+
+// Sends an email if SMTP_HOST is configured in .env. Otherwise, logs the
+// content to the console so signup/verification/reset flows still work
 // end-to-end in local dev without any email provider set up.
 export async function sendMail({ to, subject, html }) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const t = getTransporter();
 
-  if (!apiKey) {
-    console.log('\n📧 [DEV EMAIL — no RESEND_API_KEY configured, logging instead of sending]');
+  if (!t) {
+    console.log('\n📧 [DEV EMAIL — no SMTP configured, logging instead of sending]');
     console.log(`To: ${to}\nSubject: ${subject}\n${html.replace(/<[^>]+>/g, ' ').trim()}\n`);
     return { devMode: true };
   }
 
-  const from = process.env.EMAIL_FROM || 'SkillSwap <onboarding@resend.dev>';
-
-  const res = await fetch(RESEND_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ from, to, subject, html })
+  return t.sendMail({
+    from: process.env.EMAIL_FROM || 'SkillSwap <no-reply@skillswap.dev>',
+    to,
+    subject,
+    html
   });
-
-  if (!res.ok) {
-    const errBody = await res.text().catch(() => '');
-    throw new Error(`Resend API error (${res.status}): ${errBody}`);
-  }
-
-  return res.json();
 }
 
 export function otpEmailHtml(name, otp) {

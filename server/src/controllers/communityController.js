@@ -17,6 +17,7 @@ function leanPost(p, viewerId) {
   return {
     id: _id,
     ...rest,
+    authorId: user,
     likeCount: likes.length,
     likedByMe: !!(viewerId && likes.some((id) => id.equals(viewerId))),
     comments: comments.map((c) => ({ id: c._id, authorName: c.authorName, text: c.text, createdAt: c.createdAt }))

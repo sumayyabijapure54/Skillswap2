@@ -46,6 +46,7 @@ CommunityPostSchema.set('toJSON', {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
+    ret.authorId = ret.user;
     delete ret.user;
 
     ret.likeCount = doc.likes.length;

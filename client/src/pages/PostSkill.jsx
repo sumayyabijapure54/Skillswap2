@@ -1,23 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
-import { useUser } from '../context/UserContext.jsx';
-import { useCommunity } from '../context/CommunityContext.jsx';
 import { useCategories } from '../lib/skillsApi.js';
+import { api } from '../lib/api.js';
 
 export default function PostSkill(){
   const navigate = useNavigate();
-  const { profile } = useUser();
-  const { addPost } = useCommunity();
   const { categories } = useCategories();
 
   const [form, setForm] = React.useState({ type:'offer', category:'programming', title:'', description:'', tags:'' });
   const [errors, setErrors] = React.useState({});
   const [posted, setPosted] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
 
   const set = (k,v)=>{ setForm(f=>({ ...f, [k]:v })); setErrors(e=>({ ...e, [k]:null })); };
 
-  const onSubmit = (e)=>{
+  const onSubmit = async (e)=>{
     e.preventDefault();
     const errs = {};
     if(!form.title.trim()) errs.title = 'Give your post a short title.';
@@ -25,16 +23,20 @@ export default function PostSkill(){
     setErrors(errs);
     if(Object.keys(errs).length) return;
 
-    const initials = (profile.name || 'You').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-    addPost({
-      type: form.type,
-      author: { name: profile.name || 'You', initials },
-      category: form.category,
-      title: form.title.trim(),
-      description: form.description.trim(),
-      tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean)
-    });
-    setPosted(true);
+    setSubmitting(true);
+    try{
+      await api.post('/api/community', {
+        type: form.type,
+        category: form.category,
+        title: form.title.trim(),
+        text: form.description.trim(),
+        tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean)
+      });
+      setPosted(true);
+    }catch(err){
+      setErrors({ form: err.message });
+    }
+    setSubmitting(false);
   };
 
   if(posted){
@@ -94,7 +96,8 @@ export default function PostSkill(){
           <div className="form-hint">Helps other members find your post when searching.</div>
         </div>
 
-        <button type="submit" className="btn-primary-lg">Post to Community →</button>
+        {errors.form && <div className="form-error">{errors.form}</div>}
+        <button type="submit" className="btn-primary-lg" disabled={submitting}>{submitting ? 'Posting…' : 'Post to Community →'}</button>
       </form>
     </DashboardLayout>
   );

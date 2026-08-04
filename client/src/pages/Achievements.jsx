@@ -2,17 +2,28 @@ import React from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById } from '../lib/skillsApi.js';
+import { api } from '../lib/api.js';
 
 export default function Achievements() {
-  const { enrolled, bookings, reviews, wishlist, transactions } = useUser();
+  const { enrolled, wishlist } = useUser();
   const { getSkillById } = useSkillsById(enrolled.map(e => e.skillId));
+
+  const [bookings, setBookings] = React.useState([]);
+  const [reviews, setReviews] = React.useState([]);
+  const [transactions, setTransactions] = React.useState([]);
+
+  React.useEffect(() => {
+    api.get('/api/bookings').then(d => setBookings(d.bookings || [])).catch(()=>{});
+    api.get('/api/reviews/mine').then(d => setReviews(d.reviews || [])).catch(()=>{});
+    api.get('/api/wallet/transactions').then(d => setTransactions(d.transactions || [])).catch(()=>{});
+  }, []);
 
   const withSkill = enrolled.map(e => ({ ...e, skill: getSkillById(e.skillId) })).filter(e => e.skill);
   const completedSkills = withSkill.filter(e => e.completedLessons.length >= e.skill.lessons.length && e.skill.lessons.length > 0);
   const categoriesTouched = new Set(withSkill.map(e => e.skill.category));
-  const completedSessions = bookings.filter(b => b.status === 'completed' || b.status === 'reviewed');
+  const completedSessions = bookings.filter(b => b.status === 'completed');
   const perfectQuiz = withSkill.some(e => Object.values(e.quizScores || {}).some(q => q.score === q.total && q.total > 0));
-  const toppedUp = transactions.some(t => t.type === 'topup' && t.description !== 'Welcome bonus credit');
+  const toppedUp = transactions.some(t => t.type === 'topup');
 
   const achievements = [
     { key: 'first-step', icon: '🚀', title: 'First Step', desc: 'Enroll in your first skill.', unlocked: enrolled.length >= 1 },

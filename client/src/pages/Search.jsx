@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useSkills, useCategories } from '../lib/skillsApi.js';
-import { mentors } from '../data/mentors.js';
-import { useCommunity } from '../context/CommunityContext.jsx';
+import { api } from '../lib/api.js';
 import SkillIcon3D from '../components/SkillIcon3D.jsx';
 
 const TABS = [
@@ -15,7 +14,7 @@ const TABS = [
 export default function Search(){
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { posts } = useCommunity();
+  const [posts, setPosts] = React.useState([]);
   const { skills } = useSkills();
   const { categories } = useCategories();
   const q = params.get('q') || '';
@@ -23,6 +22,9 @@ export default function Search(){
   const [tab, setTab] = React.useState('all');
 
   React.useEffect(()=>{ setInput(q); }, [q]);
+  React.useEffect(()=>{
+    api.get('/api/community').then(data => setPosts(data.posts || [])).catch(()=>{});
+  }, []);
 
   const onSubmit = (e)=>{
     e.preventDefault();
@@ -34,11 +36,25 @@ export default function Search(){
   const skillResults = needle ? skills.filter(s =>
     s.title.toLowerCase().includes(needle) || s.description.toLowerCase().includes(needle) || s.tags.some(t=>t.toLowerCase().includes(needle))
   ) : [];
-  const mentorResults = needle ? mentors.filter(m =>
-    m.name.toLowerCase().includes(needle) || m.role.toLowerCase().includes(needle) || m.tags.some(t=>t.toLowerCase().includes(needle))
-  ) : [];
+
+  // One card per mentor, deduped by mentor.id (same approach as
+  // BookSession.jsx — a mentor's `id` is stable across every skill they
+  // teach, see server/src/models/Skill.js).
+  const mentorResults = [];
+  if (needle){
+    const seen = new Set();
+    for (const s of skills){
+      const m = s.mentor;
+      if (!m?.id || seen.has(m.id)) continue;
+      const matches = m.name.toLowerCase().includes(needle) || m.role.toLowerCase().includes(needle);
+      if (!matches) continue;
+      seen.add(m.id);
+      mentorResults.push({ ...m, skillId: s.id });
+    }
+  }
+
   const postResults = needle ? posts.filter(p =>
-    p.title.toLowerCase().includes(needle) || p.description.toLowerCase().includes(needle)
+    (p.title||'').toLowerCase().includes(needle) || (p.text||'').toLowerCase().includes(needle)
   ) : [];
 
   const totalCount = skillResults.length + mentorResults.length + postResults.length;
@@ -99,8 +115,8 @@ export default function Search(){
                   <h3 style={{fontSize:'14px', marginBottom:'14px', color:'var(--muted)'}}>Mentors</h3>
                   <div className="mentor-grid">
                     {mentorResults.map(m=>(
-                      <Link to={`/mentor/${m.id}`} className="mentor-card" key={m.id} style={{textDecoration:'none', color:'inherit'}}>
-                        <div className="mentor-top"><div className="mentor-badge">${m.rate}/session</div><div className="mentor-avatar">{m.avatar ? <img src={m.avatar} alt={m.name} /> : m.initials}</div></div>
+                      <Link to={`/mentor/${m.skillId}`} className="mentor-card" key={m.id} style={{textDecoration:'none', color:'inherit'}}>
+                        <div className="mentor-top"><div className="mentor-avatar">{m.initials}</div></div>
                         <div className="mentor-body">
                           <b>{m.name}</b>
                           <div className="role">{m.role}</div>
@@ -120,13 +136,13 @@ export default function Search(){
                       <div className="community-post" key={p.id}>
                         <div className="community-post-head">
                           <div className="feed-item" style={{padding:0, borderBottom:'none'}}>
-                            <div className="dot">{p.author.avatar ? <img src={p.author.avatar} alt={p.author.name} /> : p.author.initials}</div>
-                            <p><b>{p.author.name}</b></p>
+                            <div className="dot">{p.authorInitials}</div>
+                            <p><b>{p.authorName}</b></p>
                           </div>
                           <span className={`post-type-badge ${p.type}`}>{p.type==='offer' ? '🎓 Offering' : '🔍 Looking for'}</span>
                         </div>
-                        <h3>{p.title}</h3>
-                        <p className="desc">{p.description}</p>
+                        {p.title && <h3>{p.title}</h3>}
+                        <p className="desc">{p.text}</p>
                         <div className="community-post-actions">
                           <button className="btn-outline" onClick={()=>navigate('/community')}>View in feed</button>
                         </div>

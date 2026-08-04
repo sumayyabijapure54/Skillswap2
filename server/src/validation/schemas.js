@@ -88,6 +88,21 @@ export const checkoutBookingSchema = z.object({
   method: z.enum(['card', 'wallet'], { errorMap: () => ({ message: "method must be 'card' or 'wallet'" }) })
 });
 
+export const createBookingOrderSchema = z.object({
+  skillId: z.string().trim().min(1, 'skillId is required'),
+  scheduledAt: z.coerce
+    .date({ invalid_type_error: 'scheduledAt must be a valid date' })
+    .refine((d) => d.getTime() > Date.now(), 'scheduledAt must be in the future'),
+  durationMinutes: z.coerce.number().int().positive().max(480).optional(),
+  notes: z.string().max(1000).optional(),
+  sessionType: z.string().trim().min(1, 'sessionType is required').max(100),
+  price: z.coerce.number().positive('price must be greater than 0')
+});
+
+export const updateBookingNotesSchema = z.object({
+  notes: z.string().max(1000).optional()
+});
+
 // --- wallet ---
 
 export const topUpSchema = z.object({
@@ -143,14 +158,6 @@ const lessonSchema = z.object({
   type: z.enum(['Video', 'Quiz']).optional()
 });
 
-const youtubeChapterSchema = z.object({
-  id: z.string().trim().min(1),
-  title: z.string().trim().min(1),
-  startSeconds: z.coerce.number().min(0),
-  endSeconds: z.coerce.number().min(0),
-  duration: z.string().trim().optional()
-});
-
 const youtubeVideoSchema = z.object({
   videoId: z.string().trim().min(1),
   title: z.string().trim().min(1),
@@ -159,8 +166,7 @@ const youtubeVideoSchema = z.object({
   thumbnail: z.string().trim().optional(),
   channelTitle: z.string().trim().optional(),
   duration: z.string().trim().optional(),
-  durationSeconds: z.coerce.number().optional(),
-  chapters: z.array(youtubeChapterSchema).max(60).optional()
+  durationSeconds: z.coerce.number().optional()
 }).nullable();
 
 export const createSkillSchema = z.object({

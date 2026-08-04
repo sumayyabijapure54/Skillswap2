@@ -8,8 +8,7 @@ import SplitTextReveal from '../components/SplitTextReveal.jsx';
 import Marquee from '../components/Marquee.jsx';
 import TestimonialCarousel from '../components/TestimonialCarousel.jsx';
 import useParallax from '../hooks/useParallax.js';
-import { useCategories } from '../lib/skillsApi.js';
-import { mentors } from '../data/mentors.js';
+import { useCategories, useSkills } from '../lib/skillsApi.js';
 
 const communityTestimonials = [
   { author: 'Rohan Mehta', rating: 5, text: 'SkillSwap helped me learn React in just 2 weeks! The community is amazing and so supportive.' },
@@ -21,6 +20,20 @@ const communityTestimonials = [
 export default function Home(){
   const navigate = useNavigate();
   const { categories } = useCategories();
+  const { skills } = useSkills();
+
+  const topMentors = React.useMemo(() => {
+    const seen = new Set();
+    const out = [];
+    for (const s of [...skills].sort((a,b)=> (b.mentor?.rating||0) - (a.mentor?.rating||0))){
+      const m = s.mentor;
+      if (!m?.id || seen.has(m.id)) continue;
+      seen.add(m.id);
+      out.push({ ...m, skillId: s.id });
+      if (out.length >= 4) break;
+    }
+    return out;
+  }, [skills]);
   const [query, setQuery] = React.useState('');
   const orbParallaxRef = useParallax(0.08);
 
@@ -93,14 +106,13 @@ export default function Home(){
       <section id="mentors">
         <div className="section-head"><h2>Top Rated Mentors</h2><Link to="/explore">View all mentors →</Link></div>
         <ScrollReveal className="mentor-grid" as="div" stagger>
-          {mentors.slice(0,4).map(m=>(
-            <TiltCard as={Link} to={`/mentor/${m.id}`} className="mentor-card" key={m.id} style={{textDecoration:'none', color:'inherit'}}>
+          {topMentors.map(m=>(
+            <TiltCard as={Link} to={`/mentor/${m.skillId}`} className="mentor-card" key={m.id} style={{textDecoration:'none', color:'inherit'}}>
               <div className="mentor-top"><div className="mentor-badge">Top Mentor</div><div className="mentor-avatar">{m.initials}</div></div>
               <div className="mentor-body">
                 <b>{m.name}</b>
                 <div className="role">{m.role}</div>
                 <div className="rating">★ {m.rating} ({m.reviews})</div>
-                <div className="mentor-tags">{m.tags.slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
                 <div className="mentor-avail">Available</div>
               </div>
             </TiltCard>

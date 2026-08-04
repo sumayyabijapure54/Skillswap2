@@ -8,11 +8,18 @@ import { openRazorpayCheckout } from '../lib/razorpay.js';
 const TOPUP_AMOUNTS = [10, 25, 50, 100];
 
 export default function Wallet(){
-  const { wallet, transactions, profile, syncWalletFromPayment } = useUser();
+  const { wallet, profile, refreshWallet } = useUser();
+  const [transactions, setTransactions] = React.useState([]);
   const [custom, setCustom] = React.useState('');
   const [justAdded, setJustAdded] = React.useState(null);
   const [processing, setProcessing] = React.useState(false);
   const [payError, setPayError] = React.useState('');
+
+  React.useEffect(()=>{
+    api.get('/api/wallet/transactions')
+      .then(data => setTransactions(data.transactions || []))
+      .catch(()=>{});
+  }, []);
 
   const walletTx = transactions.filter(t=>t.type==='topup' || (t.type==='session_payment' && t.method==='wallet') || (t.type==='refund'));
 
@@ -39,7 +46,8 @@ export default function Wallet(){
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
             });
-            syncWalletFromPayment({ balance: result.balance, transaction: result.transaction });
+            await refreshWallet();
+            setTransactions(t => [result.transaction, ...t]);
             setJustAdded(amount);
             setCustom('');
             setTimeout(()=>setJustAdded(null), 2500);
