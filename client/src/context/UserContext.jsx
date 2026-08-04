@@ -8,9 +8,11 @@ const STORAGE_KEY = 'skillswap_user_v1';
 // Maps a backend User document (see server/src/models/User.js) onto the
 // slice of local state that's server-driven. Progress (enrolled) and
 // notifications are hydrated separately via hydrateUserCollections, since
-// they live in their own collections. Messages, bookings, wallet
-// transactions, etc. are still local-only mock data — see the README note
-// on what's wired up.
+// they live in their own collections. Bookings, messages, and wallet
+// transaction history each live on their own pages now (Sessions/
+// SessionDetail, Messages, PaymentHistory) and fetch straight from their
+// real API endpoints rather than going through this context — only the
+// wallet *balance* stays here since it's shown in a few places at once.
 function userToProfileState(user) {
   return {
     authed: true,
@@ -18,6 +20,7 @@ function userToProfileState(user) {
     onboarded: !!user.onboarded,
     isAdmin: !!user.isAdmin,
     profile: {
+      id: user._id || user.id,
       name: user.name || '',
       email: user.email || '',
       bio: user.bio || '',
@@ -60,23 +63,6 @@ const SEED_NOTIFICATIONS = [
   { id:4, type:'system', text:'Welcome to SkillSwap! Complete your profile to get better matches.', time:'3d ago', read:true }
 ];
 
-const SEED_CONVERSATIONS = [
-  {
-    id: 'c-alex-johnson', mentorId: 'alex-johnson',
-    messages: [
-      { id:1, from:'them', text:"Hey! Saw you started React Fundamentals — happy to help if you get stuck on hooks.", time:'Yesterday' },
-      { id:2, from:'me', text:"That'd be great, thank you! I'm a little lost on useEffect dependency arrays.", time:'Yesterday' },
-      { id:3, from:'them', text:"Totally normal to trip on that one. Want to book a quick session and I'll walk through it live?", time:'10:14 AM' }
-    ]
-  },
-  {
-    id: 'c-sarah-williams', mentorId: 'sarah-williams',
-    messages: [
-      { id:1, from:'them', text:"Looking forward to our Figma components session — bring a design you're working on if you have one!", time:'2 days ago' }
-    ]
-  }
-];
-
 function loadState(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -97,27 +83,15 @@ function emptyState(){
     verified: false,
     onboarded: false,
     isAdmin: false,
-    profile: { name:'', email:'', bio:'', avatar:'', role:null, interests:[], goal:null, skillsOffered:[], skillsWanted:[] },
+    profile: { id:null, name:'', email:'', bio:'', avatar:'', role:null, interests:[], goal:null, skillsOffered:[], skillsWanted:[] },
     enrolled: [],      // [{ skillId, completedLessons:[lessonId,...], enrolledAt, quizScores:{lessonId:{score,total}} }]
     wishlist: [],       // [skillId, ...]
     notifications: SEED_NOTIFICATIONS,
-    conversations: SEED_CONVERSATIONS,   // [{ id, mentorId, messages:[{id,from,text,time}] }]
-    bookings: [],          // [{ id, mentorId, skillId, day, time, sessionType, price, status, paid, createdAt, notes }]
-    reviews: [],            // [{ id, mentorId, skillId, bookingId, rating, text, createdAt }]
     savedLessons: [],  // [{ skillId, videoId, title, thumbnail, channelTitle, savedAt }]
     lastWatched: {},   // { [skillId]: { videoId, lessonIndex, updatedAt } }
-    wallet: { balance: 50 },
-    transactions: [
-      { id:'tx-seed-1', type:'topup', amount:50, method:'card', description:'Welcome bonus credit', createdAt: daysAgo(10) }
-    ],
+    wallet: { balance: 0 },
     settings: { emailNotifs:true, pushNotifs:true, smsNotifs:false, connectedGoogle:false, connectedGithub:false }
   };
-}
-
-function daysAgo(n){
-  const d = new Date();
-  d.setDate(d.getDate()-n);
-  return d.toISOString();
 }
 
 export function UserProvider({ children }){
@@ -448,117 +422,20 @@ export function UserProvider({ children }){
     api.patch('/api/notifications/read-all', {}).catch(()=>{});
   };
 
-  const getOrCreateConversation = (mentorId) => {
-    let convo = state.conversations.find(c=>c.mentorId===mentorId);
-    if(!convo){
-      convo = { id:`c-${mentorId}-${Date.now()}`, mentorId, messages:[] };
-      setState(s => ({ ...s, conversations:[...s.conversations, convo] }));
+  // Bookings/messages/reviews were moved off local mock state onto their
+  // own pages, which call the real API directly (see Sessions/
+  // SessionDetail, Messages, Reviews). Wallet *balance* stays here since
+  // it's shown in a few places at once (Wallet, Checkout, Navbar) — this
+  // re-pulls the authoritative value from the backend after anything that
+  // could have changed it (a real Razorpay top-up, a paid booking, a
+  // cancellation refund).
+  const refreshWallet = async () => {
+    try{
+      const data = await api.get('/api/wallet');
+      setState(s => ({ ...s, wallet: { balance: data.wallet?.balance ?? s.wallet.balance } }));
+    }catch{
+      // best-effort — whatever's already in state stays
     }
-    return convo;
-  };
-
-  const sendMessage = (conversationId, text) => {
-    const now = new Date();
-    const time = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-    setState(s => ({
-      ...s,
-      conversations: s.conversations.map(c => c.id===conversationId
-        ? { ...c, messages:[...c.messages, { id:c.messages.length+1, from:'me', text, time }] }
-        : c)
-    }));
-  };
-
-  const bookSession = ({ mentorId, skillId, day, time, sessionType }) => {
-    const id = `bk-${Date.now()}`;
-    setState(s => ({
-      ...s,
-      bookings: [...s.bookings, { id, mentorId, skillId, day, time, sessionType, status:'upcoming', createdAt:new Date().toISOString(), notes:'' }],
-      notifications: [
-        { id: Date.now(), type:'booking', text:`Your ${sessionType} session is booked for ${day} at ${time}.`, time:'Just now', read:false },
-        ...s.notifications
-      ]
-    }));
-    return id;
-  };
-
-  // Checkout flow: books the session AND records the payment in one atomic
-  // action, so a booking can never exist in an unpaid state. Returns
-  // { ok:false, error } if a wallet payment can't cover the price.
-  const payAndBookSession = ({ mentorId, skillId, day, time, sessionType, price, method }) => {
-    if(method === 'wallet' && state.wallet.balance < price){
-      return { ok:false, error:'Insufficient wallet balance.' };
-    }
-    const bookingId = `bk-${Date.now()}`;
-    const txId = `tx-${Date.now()}`;
-    setState(s => ({
-      ...s,
-      bookings: [...s.bookings, { id:bookingId, mentorId, skillId, day, time, sessionType, price, status:'upcoming', paid:true, createdAt:new Date().toISOString(), notes:'' }],
-      wallet: method==='wallet' ? { ...s.wallet, balance: +(s.wallet.balance - price).toFixed(2) } : s.wallet,
-      transactions: [
-        { id:txId, type:'session_payment', amount:-price, method, description:`${sessionType} session booking`, bookingId, createdAt:new Date().toISOString() },
-        ...s.transactions
-      ],
-      notifications: [
-        { id: Date.now(), type:'booking', text:`Your ${sessionType} session is booked for ${day} at ${time}.`, time:'Just now', read:false },
-        ...s.notifications
-      ]
-    }));
-    return { ok:true, bookingId };
-  };
-
-  const topUpWallet = (amount, method='card') => {
-    const txId = `tx-${Date.now()}`;
-    setState(s => ({
-      ...s,
-      wallet: { ...s.wallet, balance: +(s.wallet.balance + amount).toFixed(2) },
-      transactions: [
-        { id:txId, type:'topup', amount, method, description:'Wallet top-up', createdAt:new Date().toISOString() },
-        ...s.transactions
-      ]
-    }));
-  };
-
-  // Called after the backend verifies a real Razorpay payment. The server
-  // is the source of truth for the new balance and the transaction record
-  // (never trust a client-computed amount) — this just mirrors that
-  // confirmed result into local state so the rest of the app (which reads
-  // wallet/transactions from here) reflects it immediately.
-  const syncWalletFromPayment = ({ balance, transaction }) => setState(s => ({
-    ...s,
-    wallet: { ...s.wallet, balance },
-    transactions: [transaction, ...s.transactions]
-  }));
-
-  const cancelBooking = (id) => setState(s => {
-    const booking = s.bookings.find(b=>b.id===id);
-    const shouldRefund = booking && booking.paid && booking.status==='upcoming';
-    return {
-      ...s,
-      bookings: s.bookings.map(b => b.id===id ? { ...b, status:'cancelled' } : b),
-      wallet: shouldRefund ? { ...s.wallet, balance: +(s.wallet.balance + booking.price).toFixed(2) } : s.wallet,
-      transactions: shouldRefund ? [
-        { id:`tx-${Date.now()}`, type:'refund', amount:booking.price, method:'wallet', description:`Refund for cancelled ${booking.sessionType} session`, bookingId:id, createdAt:new Date().toISOString() },
-        ...s.transactions
-      ] : s.transactions
-    };
-  });
-
-  const updateBookingNotes = (id, notes) => setState(s => ({
-    ...s, bookings: s.bookings.map(b => b.id===id ? { ...b, notes } : b)
-  }));
-
-  const markBookingCompleted = (id) => setState(s => ({
-    ...s, bookings: s.bookings.map(b => b.id===id ? { ...b, status:'completed' } : b)
-  }));
-
-  const addReview = ({ mentorId, skillId, bookingId, rating, text }) => {
-    const id = `rv-${Date.now()}`;
-    setState(s => ({
-      ...s,
-      reviews: [...s.reviews, { id, mentorId, skillId, bookingId, rating, text, createdAt:new Date().toISOString() }],
-      bookings: bookingId ? s.bookings.map(b => b.id===bookingId ? { ...b, status:'reviewed' } : b) : s.bookings
-    }));
-    return id;
   };
 
   const updateSettings = (patch) => setState(s => ({ ...s, settings:{ ...s.settings, ...patch } }));
@@ -577,10 +454,7 @@ export function UserProvider({ children }){
     updateProfile, enroll, markLessonComplete, recordQuizScore, toggleWishlist,
     toggleSavedLesson, isLessonSaved, setLastWatched,
     markNotifRead, markAllNotifsRead,
-    getOrCreateConversation, sendMessage,
-    bookSession, payAndBookSession, cancelBooking, updateBookingNotes, markBookingCompleted, addReview,
-    topUpWallet,
-    syncWalletFromPayment,
+    refreshWallet,
     updateSettings, toggleConnectedAccount, changePassword, deleteAccount
   };
 

@@ -6,6 +6,8 @@ import Transaction from '../models/Transaction.js';
 import Review from '../models/Review.js';
 import { parsePagination, paginationMeta } from '../utils/pagination.js';
 import { notifyUser } from '../utils/notify.js';
+import razorpay from '../lib/razorpayClient.js';
+import { verifyOrderPaymentSignature } from '../utils/razorpaySignature.js';
 
 // Mirrors Booking's toJSON transform, for use with .lean() query results
 // (plain objects, so the schema-level transform doesn't run automatically).
@@ -140,6 +142,35 @@ export async function checkoutBooking(req, res, next) {
     next(err);
   } finally {
     session.endSession();
+  }
+}
+
+// PATCH /api/bookings/:id/notes  { notes }  (protected — the learner who booked it)
+// Private to the learner — never shown to the mentor.
+export async function updateBookingNotes(req, res, next) {
+  try {
+    const booking = await Booking.findOne({ _id: req.params.id, user: req.user._id });
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    booking.notes = req.body.notes || '';
+    await booking.save();
+    res.json({ booking });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/bookings/:id  (protected — the learner who booked it, or the mentor)
+export async function getBooking(req, res, next) {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.id,
+      $or: [{ user: req.user._id }, { mentorUser: req.user._id }]
+    }).lean();
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    res.json({ booking: leanBooking(booking) });
+  } catch (err) {
+    next(err);
   }
 }
 
@@ -491,5 +522,158 @@ export async function getMentorAnalytics(req, res, next) {
     });
   } catch (err) {
     next(err);
+  }
+}
+
+// --- Real Razorpay flow for paid ("card") session checkout, mirroring the
+// wallet top-up flow in paymentsController.js. Wallet-method checkout stays
+// on POST /api/bookings/checkout above (no external gateway needed since
+// the balance is already ours). A booking has more fields than a wallet
+// top-up (skill, schedule, session type) that all need to survive the round
+// trip to Razorpay and back, so they're carried in the order's `notes` —
+// then re-validated against the DB before a booking is ever created from
+// them, never trusted as-is.
+
+// POST /api/bookings/checkout/razorpay/create-order
+// { skillId, scheduledAt, durationMinutes?, notes?, sessionType, price }
+export async function createBookingOrder(req, res, next) {
+  try {
+    const { skillId, scheduledAt, durationMinutes, notes, sessionType, price } = req.body;
+    const when = new Date(scheduledAt);
+
+    const skill = await Skill.findOne({ id: skillId });
+    if (!skill) {
+      return res.status(404).json({ message: `No skill found with id "${skillId}"` });
+    }
+
+    const order = await razorpay.orders.create({
+      amount: Math.round(price * 100),
+      currency: 'INR',
+      receipt: `booking_${Date.now()}`,
+      notes: {
+        userId: req.user._id.toString(),
+        purpose: 'session_booking',
+        skillId,
+        scheduledAt: when.toISOString(),
+        durationMinutes: String(durationMinutes || 45),
+        notes: notes || '',
+        sessionType,
+        price: String(price)
+      }
+    });
+
+    res.json({
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID
+    });
+  } catch (err) {
+    console.error('Razorpay booking order creation failed:', err);
+    res.status(500).json({ message: 'Could not start payment. Please try again.' });
+  }
+}
+
+// POST /api/bookings/checkout/razorpay/verify
+// { razorpay_order_id, razorpay_payment_id, razorpay_signature }
+// Only ever trusts: (a) a signature we recompute ourselves, (b) the paid
+// amount as fetched back from Razorpay, and (c) the order's own notes for
+// what was actually being booked — never anything resent by the client.
+export async function verifyBookingPayment(req, res, next) {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    if (!verifyOrderPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, process.env.RAZORPAY_KEY_SECRET)) {
+      return res.status(400).json({ message: 'Payment verification failed.' });
+    }
+
+    // Idempotency — a retried/double-clicked verify call for a payment
+    // that already produced a booking just returns it instead of creating
+    // a duplicate (mirrors creditWalletForPayment in paymentsController.js).
+    const existingTx = await Transaction.findOne({ providerPaymentId: razorpay_payment_id });
+    if (existingTx && existingTx.booking) {
+      const booking = await Booking.findById(existingTx.booking);
+      return res.json({ booking });
+    }
+
+    const order = await razorpay.orders.fetch(razorpay_order_id);
+    const orderNotes = order.notes || {};
+    if (orderNotes.purpose !== 'session_booking' || orderNotes.userId !== req.user._id.toString()) {
+      return res.status(400).json({ message: 'Order does not match this booking request.' });
+    }
+
+    const skill = await Skill.findOne({ id: orderNotes.skillId });
+    if (!skill) {
+      return res.status(404).json({ message: `No skill found with id "${orderNotes.skillId}"` });
+    }
+
+    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    const price = payment.amount / 100;
+
+    const session = await mongoose.startSession();
+    let booking;
+    try {
+      await session.withTransaction(async () => {
+        const [created] = await Booking.create(
+          [
+            {
+              user: req.user._id,
+              skillId: skill.id,
+              skillTitle: skill.title,
+              mentorName: skill.mentor.name,
+              mentorInitials: skill.mentor.initials,
+              mentorUser: skill.mentorUser || null,
+              scheduledAt: new Date(orderNotes.scheduledAt),
+              durationMinutes: Number(orderNotes.durationMinutes) || 45,
+              notes: orderNotes.notes || '',
+              sessionType: orderNotes.sessionType,
+              price,
+              paid: true,
+              paymentMethod: 'card'
+            }
+          ],
+          { session }
+        );
+        booking = created;
+
+        await Transaction.create(
+          [
+            {
+              user: req.user._id,
+              type: 'session_payment',
+              amount: -price,
+              method: 'razorpay',
+              description: `${orderNotes.sessionType} session booking`,
+              booking: booking._id,
+              providerOrderId: razorpay_order_id,
+              providerPaymentId: razorpay_payment_id
+            }
+          ],
+          { session }
+        );
+      });
+    } finally {
+      session.endSession();
+    }
+
+    await notifyUser({
+      user: req.user._id,
+      type: 'booking',
+      text: `Your ${orderNotes.sessionType} session is booked for ${new Date(orderNotes.scheduledAt).toLocaleDateString()}.`
+    });
+
+    res.status(201).json({ booking });
+  } catch (err) {
+    if (err.code === 11000) {
+      // Race: two concurrent verifies for the same payment — the loser
+      // just reports what the winner created instead of erroring out.
+      const tx = await Transaction.findOne({ providerPaymentId: req.body.razorpay_payment_id });
+      if (tx && tx.booking) {
+        const booking = await Booking.findById(tx.booking);
+        return res.json({ booking });
+      }
+    }
+    console.error('Razorpay booking verification failed:', err);
+    res.status(500).json({ message: 'Could not verify payment.' });
   }
 }

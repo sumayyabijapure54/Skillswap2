@@ -1,6 +1,6 @@
 import React from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
-import { useUser } from '../context/UserContext.jsx';
+import { api } from '../lib/api.js';
 
 const TYPE_LABEL = { topup:'Wallet top-up', session_payment:'Session payment', refund:'Refund' };
 const TYPE_FILTERS = [
@@ -11,8 +11,16 @@ const TYPE_FILTERS = [
 ];
 
 export default function PaymentHistory(){
-  const { transactions } = useUser();
+  const [transactions, setTransactions] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('all');
+
+  React.useEffect(()=>{
+    api.get('/api/wallet/transactions')
+      .then(data => setTransactions(data.transactions || []))
+      .catch(()=>{})
+      .finally(()=>setLoading(false));
+  }, []);
 
   const filtered = filter==='all' ? transactions : transactions.filter(t=>t.type===filter);
   const sorted = [...filtered].sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
@@ -25,7 +33,9 @@ export default function PaymentHistory(){
         ))}
       </div>
 
-      {sorted.length===0 ? (
+      {loading ? (
+        <div className="dash-empty">Loading transactions…</div>
+      ) : sorted.length===0 ? (
         <div className="dash-empty">No transactions in this category.</div>
       ) : (
         <div className="invoice-table">

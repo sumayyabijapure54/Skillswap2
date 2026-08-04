@@ -72,6 +72,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/mentor-applications', mentorApplicationsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/youtube', youtubeRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

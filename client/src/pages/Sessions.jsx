@@ -1,39 +1,56 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
-import { useUser } from '../context/UserContext.jsx';
-import { getMentorById } from '../data/mentors.js';
+import { api } from '../lib/api.js';
 
-const STATUS_LABEL = { upcoming:'Upcoming', completed:'Awaiting review', reviewed:'Reviewed', cancelled:'Cancelled' };
+const STATUS_LABEL = { confirmed:'Upcoming', completed:'Awaiting review', cancelled:'Cancelled' };
 
 export default function Sessions(){
-  const { bookings, cancelBooking } = useUser();
-  const sorted = [...bookings].sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+  const [bookings, setBookings] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const load = React.useCallback(() => {
+    setLoading(true);
+    api.get('/api/bookings')
+      .then(data => setBookings(data.bookings || []))
+      .catch(()=>{})
+      .finally(()=>setLoading(false));
+  }, []);
+
+  React.useEffect(()=>{ load(); }, [load]);
+
+  const cancel = async (id) => {
+    try{
+      await api.patch(`/api/bookings/${id}/cancel`, {});
+      load();
+    }catch{ /* best-effort — the row just won't update if this fails */ }
+  };
+
+  const sorted = [...bookings].sort((a,b)=> new Date(b.scheduledAt) - new Date(a.scheduledAt));
 
   return (
     <DashboardLayout title="Upcoming Sessions" subtitle="Everything you've booked with mentors.">
-      {sorted.length===0 ? (
+      {loading ? (
+        <div className="dash-empty">Loading sessions…</div>
+      ) : sorted.length===0 ? (
         <div className="dash-empty">
           No sessions booked yet. <Link to="/book-session">Book your first session</Link>.
         </div>
       ) : (
         <div className="my-learning-list">
-          {sorted.map(b=>{
-            const mentor = getMentorById(b.mentorId);
-            return (
-              <div className="learning-row" key={b.id}>
-                <div className="learning-row-icon">{mentor?.initials}</div>
-                <div className="learning-row-info">
-                  <b>{b.sessionType} with {mentor?.name}</b>
-                  <span>{b.day}, {b.time} · <span style={{color: b.status==='cancelled' ? 'var(--danger)' : 'var(--accent)'}}>{STATUS_LABEL[b.status]}</span></span>
-                </div>
-                <Link to={`/session/${b.id}`} className="btn-outline">View →</Link>
-                {b.status==='upcoming' && (
-                  <button className="btn-ghost-lg" style={{marginLeft:'8px'}} onClick={()=>cancelBooking(b.id)}>Cancel</button>
-                )}
+          {sorted.map(b=>(
+            <div className="learning-row" key={b.id}>
+              <div className="learning-row-icon">{b.mentorInitials}</div>
+              <div className="learning-row-info">
+                <b>{b.sessionType} with {b.mentorName}</b>
+                <span>{new Date(b.scheduledAt).toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' })} · <span style={{color: b.status==='cancelled' ? 'var(--danger)' : 'var(--accent)'}}>{STATUS_LABEL[b.status] || b.status}</span></span>
               </div>
-            );
-          })}
+              <Link to={`/session/${b.id}`} className="btn-outline">View →</Link>
+              {b.status==='confirmed' && (
+                <button className="btn-ghost-lg" style={{marginLeft:'8px'}} onClick={()=>cancel(b.id)}>Cancel</button>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </DashboardLayout>

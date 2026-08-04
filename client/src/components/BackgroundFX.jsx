@@ -120,7 +120,6 @@ export default function BackgroundFX() {
     <>
       <Canvas
         className="bg-fx-canvas"
-        style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', pointerEvents: 'none' }}
         camera={{ position: [0, 0, 9], fov: 55 }}
         gl={{ alpha: true, antialias: true }}
         dpr={[1, 1.75]}

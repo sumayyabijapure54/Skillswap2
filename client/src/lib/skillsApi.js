@@ -175,6 +175,41 @@ export function useSkill(id) {
   return { skill, loading, error };
 }
 
+// GET /api/skills/:id/full — the skill plus its most recent real reviews
+// (and, if logged in, a completed-but-unreviewed booking to prompt for a
+// review) in a single round trip. Not cached in skillCache since the
+// reviews/reviewableBooking slice is per-viewer, unlike the plain skill.
+export function useSkillFull(id) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(!!id);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!id) {
+      setData(null);
+      setLoading(false);
+      return undefined;
+    }
+    let alive = true;
+    setLoading(true);
+    setError(null);
+    api.get(`/api/skills/${id}/full`)
+      .then((res) => { if (alive) setData(res); })
+      .catch((err) => { if (alive) setError(err); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [id]);
+
+  return {
+    skill: data?.skill || null,
+    reviews: data?.reviews || [],
+    reviewsTotal: data?.reviewsTotal || 0,
+    reviewableBooking: data?.reviewableBooking || null,
+    loading,
+    error
+  };
+}
+
 // Batch-resolves multiple skill ids (Dashboard/MyLearning/LearningHistory/
 // Certificates/Achievements all map a list of enrollments to their skills).
 // Mirrors the old static `getSkillById(id)` helper's call shape — pages that

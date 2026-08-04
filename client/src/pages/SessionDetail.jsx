@@ -1,48 +1,81 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
-import { useUser } from '../context/UserContext.jsx';
-import { getMentorById } from '../data/mentors.js';
+import { api } from '../lib/api.js';
 import ComingSoon from './ComingSoon.jsx';
 import VideoCall from '../components/VideoCall.jsx';
 
 export default function SessionDetail(){
   const { id } = useParams();
-  const { bookings, updateBookingNotes, markBookingCompleted, addReview, reviews } = useUser();
-  const booking = bookings.find(b=>b.id===id);
+  const [booking, setBooking] = React.useState(null);
+  const [existingReview, setExistingReview] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [notFound, setNotFound] = React.useState(false);
 
-  const [notes, setNotes] = React.useState(booking?.notes || '');
+  const [notes, setNotes] = React.useState('');
+  const [savingNotes, setSavingNotes] = React.useState(false);
   const [rating, setRating] = React.useState(5);
   const [reviewText, setReviewText] = React.useState('');
+  const [submittingReview, setSubmittingReview] = React.useState(false);
+  const [reviewError, setReviewError] = React.useState('');
   const [inCall, setInCall] = React.useState(false);
 
-  if(!booking){
+  const load = React.useCallback(() => {
+    setLoading(true);
+    Promise.all([
+      api.get(`/api/bookings/${id}`),
+      api.get('/api/reviews/mine').catch(() => ({ reviews: [] }))
+    ])
+      .then(([bookingData, reviewsData]) => {
+        setBooking(bookingData.booking);
+        setNotes(bookingData.booking.notes || '');
+        setExistingReview((reviewsData.reviews || []).find(r => r.booking === bookingData.booking.id) || null);
+      })
+      .catch(() => setNotFound(true))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  React.useEffect(()=>{ load(); }, [load]);
+
+  if (loading) return null;
+  if (notFound || !booking){
     return <ComingSoon title="Session not found" text="We couldn't find that session." />;
   }
 
-  const mentor = getMentorById(booking.mentorId);
-  const existingReview = reviews.find(r=>r.bookingId===booking.id);
+  const saveNotes = async () => {
+    setSavingNotes(true);
+    try{
+      await api.patch(`/api/bookings/${booking.id}/notes`, { notes });
+    }catch{ /* best-effort */ }
+    setSavingNotes(false);
+  };
 
-  const saveNotes = ()=> updateBookingNotes(booking.id, notes);
-
-  const submitReview = (e)=>{
+  const submitReview = async (e) => {
     e.preventDefault();
     if(!reviewText.trim()) return;
-    addReview({ mentorId: booking.mentorId, skillId: booking.skillId, bookingId: booking.id, rating, text: reviewText.trim() });
+    setSubmittingReview(true);
+    setReviewError('');
+    try{
+      const data = await api.post('/api/reviews', { bookingId: booking.id, rating, comment: reviewText.trim() });
+      setExistingReview(data.review);
+    }catch(err){
+      setReviewError(err.message);
+    }
+    setSubmittingReview(false);
   };
 
   return (
     <DashboardLayout>
       <div className="crumbs" style={{marginBottom:'18px'}}>
         <Link to="/sessions">Sessions</Link><span>/</span>
-        <span style={{color:'var(--text)'}}>{booking.sessionType} with {mentor?.name}</span>
+        <span style={{color:'var(--text)'}}>{booking.sessionType} with {booking.mentorName}</span>
       </div>
 
       <div className="two-col-dash" style={{alignItems:'flex-start'}}>
         <div>
           {inCall ? (
             <div style={{marginBottom:'20px'}}>
-              <VideoCall mentorName={mentor?.name || 'your mentor'} bookingId={booking.id} onEnd={()=>setInCall(false)} />
+              <VideoCall mentorName={booking.mentorName} bookingId={booking.id} onEnd={()=>setInCall(false)} />
             </div>
           ) : (
             <div className="video-frame" style={{marginBottom:'20px'}} onClick={()=>setInCall(true)}>
@@ -53,10 +86,10 @@ export default function SessionDetail(){
           <div className="col-card" style={{marginBottom:'20px'}}>
             <h3>Session details</h3>
             <ul style={{listStyle:'none', marginTop:'10px'}}>
-              <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid var(--border)', fontSize:'12.5px', color:'var(--muted)'}}>Mentor <b style={{color:'var(--text)'}}>{mentor?.name}</b></li>
+              <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid var(--border)', fontSize:'12.5px', color:'var(--muted)'}}>Mentor <b style={{color:'var(--text)'}}>{booking.mentorName}</b></li>
               <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid var(--border)', fontSize:'12.5px', color:'var(--muted)'}}>Type <b style={{color:'var(--text)'}}>{booking.sessionType}</b></li>
-              <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid var(--border)', fontSize:'12.5px', color:'var(--muted)'}}>When <b style={{color:'var(--text)'}}>{booking.day}, {booking.time}</b></li>
-              <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:'12.5px', color:'var(--muted)'}}>Status <b style={{color:'var(--accent)'}}>{booking.status}</b></li>
+              <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid var(--border)', fontSize:'12.5px', color:'var(--muted)'}}>When <b style={{color:'var(--text)'}}>{new Date(booking.scheduledAt).toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' })}</b></li>
+              <li style={{display:'flex', justifyContent:'space-between', padding:'8px 0', fontSize:'12.5px', color:'var(--muted)'}}>Status <b style={{color:'var(--accent)', textTransform:'capitalize'}}>{booking.status}</b></li>
             </ul>
           </div>
 
@@ -64,28 +97,26 @@ export default function SessionDetail(){
             <h3>Your private notes</h3>
             <div className="desc">Only you can see this — jot down questions or what you covered.</div>
             <textarea className="form-input" rows={5} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Notes for this session…" />
-            <button className="btn-outline" style={{marginTop:'12px'}} onClick={saveNotes}>Save notes</button>
+            <button className="btn-outline" style={{marginTop:'12px'}} onClick={saveNotes} disabled={savingNotes}>{savingNotes ? 'Saving…' : 'Save notes'}</button>
           </div>
         </div>
 
         <div>
-          {mentor && (
-            <div className="col-card" style={{marginBottom:'20px'}}>
-              <h3>{mentor.name}</h3>
-              <div className="desc">{mentor.role}</div>
-              <Link to={`/mentor/${mentor.id}`} className="btn-outline" style={{marginTop:'10px', display:'inline-block'}}>View profile</Link>
-            </div>
-          )}
+          <div className="col-card" style={{marginBottom:'20px'}}>
+            <h3>{booking.mentorName}</h3>
+            {booking.mentorUser
+              ? <Link to={`/mentor/${booking.skillId}`} className="btn-outline" style={{marginTop:'10px', display:'inline-block'}}>View profile</Link>
+              : <div className="desc" style={{marginTop:'6px'}}>Booked via {booking.skillTitle}.</div>}
+          </div>
 
-          {booking.status==='upcoming' && (
+          {booking.status==='confirmed' && (
             <div className="col-card">
-              <h3>Wrap up this session</h3>
-              <div className="desc">Once your call is done, mark it complete to leave a review.</div>
-              <button className="btn-solid" onClick={()=>markBookingCompleted(booking.id)}>Mark as completed</button>
+              <h3>Session status</h3>
+              <div className="desc">Your mentor marks the session complete once it's done — you'll be able to leave a review right after.</div>
             </div>
           )}
 
-          {(booking.status==='completed') && !existingReview && (
+          {booking.status==='completed' && !existingReview && (
             <div className="col-card">
               <h3>Leave a review</h3>
               <form onSubmit={submitReview}>
@@ -95,18 +126,19 @@ export default function SessionDetail(){
                   ))}
                 </div>
                 <textarea className="form-input" rows={4} placeholder="How did the session go?" value={reviewText} onChange={e=>setReviewText(e.target.value)} style={{marginTop:'10px'}} />
-                <button type="submit" className="btn-primary-lg" style={{marginTop:'12px'}}>Submit review →</button>
+                {reviewError && <div className="field-error" style={{marginTop:'8px'}}>{reviewError}</div>}
+                <button type="submit" className="btn-primary-lg" style={{marginTop:'12px'}} disabled={submittingReview}>{submittingReview ? 'Submitting…' : 'Submit review →'}</button>
               </form>
             </div>
           )}
 
-          {(booking.status==='reviewed' || existingReview) && (
+          {existingReview && (
             <div className="col-card">
               <h3>Your review</h3>
               <div className="star-picker" style={{marginBottom:'8px'}}>
-                {[1,2,3,4,5].map(n=><span key={n} className={n<=(existingReview?.rating||0)?'on':''}>★</span>)}
+                {[1,2,3,4,5].map(n=><span key={n} className={n<=(existingReview.rating||0)?'on':''}>★</span>)}
               </div>
-              <p className="desc">{existingReview?.text}</p>
+              <p className="desc">{existingReview.comment}</p>
             </div>
           )}
         </div>

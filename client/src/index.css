@@ -104,9 +104,6 @@ nav.topnav a.active{color:var(--text);} nav.topnav a.active::after{width:100%;}
 .icon-btn{width:38px; height:38px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--muted); background:var(--panel); cursor:pointer;}
 .btn-outline{padding:10px 20px; border:1px solid var(--border); border-radius:10px; font-weight:600; font-size:13.5px; text-decoration:none; color:var(--text); transition:all .2s; background:var(--panel); cursor:pointer;}
 .btn-outline:hover{border-color:var(--accent); color:var(--accent);}
-.btn-danger-outline{padding:10px 20px; border:1px solid rgba(255,95,95,0.35); border-radius:10px; font-weight:600; font-size:13.5px; color:#ff5f5f; background:rgba(255,95,95,0.08); transition:all .2s; cursor:pointer;}
-.btn-danger-outline:hover{border-color:#ff5f5f; background:rgba(255,95,95,0.14);}
-.btn-danger-outline:disabled{opacity:0.6; cursor:not-allowed;}
 .btn-solid{padding:10px 22px; border-radius:10px; font-weight:700; font-size:13.5px; text-decoration:none; background:var(--grad); color:#04140e; box-shadow:var(--shadow-glow), var(--shadow-glow2); transition:all .25s; border:none; cursor:pointer; display:inline-block;}
 .btn-solid:hover{transform:translateY(-1px); box-shadow:0 0 30px rgba(20,240,180,0.5), 0 0 46px rgba(155,123,255,0.4);}
 
@@ -188,36 +185,6 @@ section{padding:140px 48px; max-width:1240px; margin:0 auto; position:relative; 
 .mentor-tags span{font-size:10.5px; background:var(--panel-2); color:var(--muted); padding:3px 9px; border-radius:100px; border:1px solid var(--border);}
 .mentor-avail{font-size:12px; color:var(--accent); display:flex; align-items:center; gap:6px;}
 .mentor-avail::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 6px var(--accent);}
-
-/* Mentor dashboard sub-nav (Overview / My Courses / Students / Analytics)
-   and its "N courses — + New course" toolbar row above the course grid. */
-.mentor-tabs{display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:24px; overflow-x:auto;}
-.mentor-tabs a{padding:12px 16px; font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; border-bottom:2px solid transparent; white-space:nowrap;}
-.mentor-tabs a:hover{color:var(--text);}
-.mentor-tabs a.active{color:var(--accent); border-bottom-color:var(--accent);}
-
-.mentor-toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; flex-wrap:wrap;}
-
-/* My Courses grid. Every card is a fixed-ratio thumbnail (object-fit:cover
-   crops to fill it, so a portrait photo and a 16:9 YouTube thumbnail both
-   end up the same size) + a fixed-height body — this is what was missing
-   before, which is why cards rendered at wildly different sizes: each
-   <img> was laid out at its own native pixel dimensions with nothing
-   constraining it. */
-.course-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:22px;}
-.course-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; overflow:hidden; transition:transform .25s ease, box-shadow .25s ease; display:flex; flex-direction:column;}
-.course-card:hover{box-shadow:var(--shadow-lg); transform:translateY(-4px);}
-.course-card-thumb{width:100%; aspect-ratio:16/9; background:var(--panel-2); overflow:hidden;}
-.course-card-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
-.course-card-thumb .no-video{width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); text-align:center; padding:0 16px;}
-.course-card-body{padding:18px 20px 20px; display:flex; flex-direction:column; flex:1;}
-.course-card-body h3{font-size:15px; margin-bottom:8px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
-.course-card-meta{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
-.course-card-meta span{font-size:10.5px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:4px 10px; border-radius:100px;}
-.course-card-stats{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); border-top:1px solid var(--border); padding-top:12px; margin-bottom:16px;}
-.course-card-stats b{color:var(--text);}
-.course-card-actions{display:flex; gap:10px; margin-top:auto;}
-.course-card-actions a, .course-card-actions button{flex:1; text-align:center; padding:9px 0; font-size:12.5px;}
 
 .steps{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:28px;}
 .step{text-align:center;}
@@ -518,22 +485,6 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .form-input.err{border-color:var(--danger); box-shadow:0 0 0 3px rgba(255,107,107,0.1);}
 .form-error{color:var(--danger); font-size:12px; margin-top:6px;}
 .form-hint{color:var(--muted); font-size:11.5px; margin-top:6px;}
-
-.form-input-row{display:flex; gap:10px;}
-.form-input-row .form-input{flex:1;}
-
-.yt-preview-card{display:flex; gap:14px; margin-top:14px; padding:14px; background:var(--panel-2); border:1px solid var(--border); border-radius:14px;}
-.yt-preview-card img{width:120px; height:68px; object-fit:cover; border-radius:8px; flex-shrink:0;}
-.yt-preview-info{display:flex; flex-direction:column; min-width:0;}
-.yt-preview-info b{font-size:13.5px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
-.yt-preview-info span{font-size:11.5px; color:var(--muted); margin-top:4px;}
-
-.yt-chapters-preview{margin-top:10px; font-size:12px;}
-.yt-chapters-preview summary{cursor:pointer; color:var(--accent); font-weight:600; font-size:11.5px;}
-.yt-chapters-preview ol{margin:10px 0 0; padding-left:18px; max-height:180px; overflow-y:auto;}
-.yt-chapters-preview li{color:var(--text); font-size:12px; padding:4px 0; border-bottom:1px solid var(--border);}
-.yt-chapters-preview li:last-child{border-bottom:none;}
-.yt-chapters-preview li span{color:var(--muted); font-size:11px; margin-left:8px;}
 .form-toggle-eye{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px;}
 .form-row-between{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; font-size:13px;}
 .form-check{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); cursor:pointer;}
@@ -1276,7 +1227,7 @@ button, .btn-solid, .btn-primary-lg, .btn-ghost-lg, .btn-white, .btn-outline{ po
   .foot-grid{grid-template-columns:1fr; gap:28px;}
   .dash-stat-row{grid-template-columns:1fr;}
   .dash-main{padding:24px 16px 60px;}
-  .explore-grid, .three-col, .mentor-grid, .cert-grid, .continue-grid, .course-grid{grid-template-columns:1fr;}
+  .explore-grid, .three-col, .mentor-grid, .cert-grid, .continue-grid{grid-template-columns:1fr;}
   .steps{grid-template-columns:1fr;}
   .ai-feature-grid{grid-template-columns:1fr;}
 

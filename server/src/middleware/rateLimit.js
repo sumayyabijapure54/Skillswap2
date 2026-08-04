@@ -15,7 +15,7 @@ export const apiLimiter = rateLimit({
 // actually hit. Applied on top of apiLimiter, not instead of it.
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 30,
+  limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many attempts — please wait a few minutes and try again.' }

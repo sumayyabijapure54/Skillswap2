@@ -4,7 +4,6 @@ import { useSkill, useSkillsById } from '../lib/skillsApi.js';
 import { useUser } from '../context/UserContext.jsx';
 import { useAiMentor } from '../context/AiMentorContext.jsx';
 import { fetchCourseVideo } from '../lib/youtubeApi.js';
-import { syntheticChaptersForVideo } from '../lib/chapters.js';
 import { getOverridesForSkill, setVideoOverride, clearVideoOverride, parseVideoInput } from '../lib/videoOverrides.js';
 import { gsap } from '../lib/gsap.js';
 import Quiz from '../components/Quiz.jsx';
@@ -96,43 +95,16 @@ export default function LessonPlayer() {
   // mount / whenever the skill changes. Falls back silently to the app's
   // own sample lessons if the backend/API isn't reachable — the page never
   // blocks on this.
-  //
-  // Priority order:
-  //   1. Per-lesson admin/mentor video overrides (hasAnyOverride) — the
-  //      most specific manual curation available, unchanged from before.
-  //   2. The mentor's own uploaded course video (skill.youtubeVideo), with
-  //      the chapters computed and saved at upload time — this is what
-  //      most courses should hit. No network call: everything needed is
-  //      already sitting on the skill document.
-  //   3. Only if neither of those exists: search YouTube automatically and
-  //      pick the best match.
   React.useEffect(() => {
     if (!skill) return;
-
+    // Once a mentor/admin has set at least one custom lesson video for
+    // this skill, treat it as manually curated: skip the auto YouTube
+    // search entirely and go straight to the per-lesson (sample/override)
+    // list below, so their choice isn't second-guessed by a fresh search.
     if (hasAnyOverride) {
       setYt({ loading: false, video: null, chapters: [], error: null, quotaExceeded: false });
       return;
     }
-
-    if (skill.youtubeVideo?.videoId) {
-      const v = skill.youtubeVideo;
-      setYt({
-        loading: false,
-        video: {
-          id: v.videoId,
-          title: v.title,
-          channelTitle: v.channelTitle || '',
-          thumbnail: v.thumbnail || '',
-          url: v.url,
-          embedUrl: v.embedUrl
-        },
-        chapters: v.chapters?.length > 0 ? v.chapters : syntheticChaptersForVideo(v.videoId, v.durationSeconds),
-        error: null,
-        quotaExceeded: false
-      });
-      return;
-    }
-
     let cancelled = false;
     setYt(s => ({ ...s, loading: true }));
     fetchCourseVideo(skill.title).then(result => {
@@ -140,7 +112,7 @@ export default function LessonPlayer() {
       setYt({ loading: false, video: result.video, chapters: result.chapters, error: result.error, quotaExceeded: result.quotaExceeded });
     });
     return () => { cancelled = true; };
-  }, [skill?.id, skill?.youtubeVideo, hasAnyOverride]);
+  }, [skill?.id, hasAnyOverride]);
 
   const curriculum = React.useMemo(
     () => skill ? buildCurriculum(skill, yt.video, yt.chapters, overrides) : [],
@@ -455,7 +427,9 @@ export default function LessonPlayer() {
               >{saved ? '★' : '☆'}</button>
             )}
             <button className="btn-ghost-lg" onClick={downloadNotes}>📝 Download notes</button>
-            <Link to={`/messages?mentor=${skill.mentor.id}`} className="btn-outline">💬 Ask mentor</Link>
+            {skill.mentorUser && (
+              <Link to={`/messages?user=${skill.mentorUser}`} className="btn-outline">💬 Ask mentor</Link>
+            )}
           </div>
         </div>
 

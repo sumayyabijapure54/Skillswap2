@@ -68,11 +68,7 @@ export default function MentorCourseForm(){
         thumbnail: v.thumbnail || '',
         channelTitle: v.channelTitle || '',
         duration: v.duration || '',
-        durationSeconds: v.durationSeconds || 0,
-        // Computed once, right now, against this specific video — saved
-        // alongside it so students always see the same curriculum the
-        // mentor previewed here, rather than it being recomputed later.
-        chapters: data.chapters || []
+        durationSeconds: v.durationSeconds || 0
       });
       setYtUrl('');
     } catch (err) {
@@ -202,7 +198,7 @@ export default function MentorCourseForm(){
               {ytFetching ? 'Fetching…' : 'Fetch video'}
             </button>
           </div>
-          <div className="form-hint">Paste a link and we'll pull in the title, thumbnail, duration, and a chapter breakdown automatically — students will watch this exact video.</div>
+          <div className="form-hint">Paste a link and we'll pull in the title, thumbnail, and duration automatically.</div>
           {ytError && <div className="form-error">{ytError}</div>}
 
           {ytVideo && (
@@ -211,23 +207,8 @@ export default function MentorCourseForm(){
               <div className="yt-preview-info">
                 <b>{ytVideo.title}</b>
                 <span>{ytVideo.channelTitle}{ytVideo.duration ? ` · ${ytVideo.duration}` : ''}</span>
-                {ytVideo.chapters?.length > 0 && (
-                  <details className="yt-chapters-preview">
-                    <summary>{ytVideo.chapters.length} chapter{ytVideo.chapters.length === 1 ? '' : 's'} — this is the curriculum students will see</summary>
-                    <ol>
-                      {ytVideo.chapters.map(c => (
-                        <li key={c.id}>{c.title} <span>{c.duration}</span></li>
-                      ))}
-                    </ol>
-                  </details>
-                )}
                 <button type="button" style={{ marginTop: '6px', color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, padding: 0 }} onClick={() => setYtVideo(null)}>Remove video</button>
               </div>
-            </div>
-          )}
-          {!ytVideo && (
-            <div className="form-hint" style={{ marginTop: '6px' }}>
-              No video attached yet — until you add one, students will see an automatically-selected YouTube video for this course's title instead.
             </div>
           )}
         </div>
