@@ -27,14 +27,14 @@ export default function MentorProfile(){
   const testimonials = reviews.map(r => ({ text: r.comment, author: r.reviewer?.name || 'Anonymous', rating: r.rating }));
 
   return (
-    <div style={{maxWidth:'1100px', margin:'0 auto', padding:'150px 48px 100px', position:'relative', zIndex:1}}>
+    <div className="detail-wrap detail-wrap-narrow">
       <div className="crumbs">
         <Link to="/">Home</Link><span>/</span>
         <Link to="/explore">Explore</Link><span>/</span>
         <span style={{color:'var(--text)'}}>{mentor.name}</span>
       </div>
 
-      <div className="skill-hero" style={{gridTemplateColumns:'auto 1fr 300px', alignItems:'flex-start', gap:'30px'}}>
+      <div className="skill-hero mentor-hero">
         <div className="profile-avatar-big" style={{width:'84px', height:'84px', fontSize:'26px'}}>{mentor.initials}</div>
 
         <div>

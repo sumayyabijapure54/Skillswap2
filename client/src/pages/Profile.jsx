@@ -100,7 +100,7 @@ export default function Profile(){
           <div className="col-card" style={{alignSelf:'flex-start'}}>
             <h3>Teaching &amp; learning</h3>
             <div className="desc">Switch any time — teaching unlocks the Mentor Dashboard in your sidebar.</div>
-            <div className="role-grid" style={{marginTop:'12px'}}>
+            <div className="role-grid role-grid-sidebar" style={{marginTop:'12px'}}>
               {TEACHING_ROLES.map(r=>(
                 <div
                   key={r.key}

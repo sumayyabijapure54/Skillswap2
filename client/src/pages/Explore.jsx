@@ -20,6 +20,12 @@ export default function Explore(){
     setActiveLevels(prev => prev.includes(lvl) ? prev.filter(l=>l!==lvl) : [...prev, lvl]);
   };
 
+  // BUG: `skills` was missing from this dependency array. `skills` starts as
+  // `[]` before the API call resolves, so `filtered` computed to `[]` on
+  // first render. Since React only recomputes a useMemo when a listed
+  // dependency changes, and `skills` wasn't listed, `filtered` stayed stuck
+  // at `[]` — showing "No skills match your filters" — even after the real
+  // skills arrived, until the user touched a filter/search/sort control.
   const filtered = React.useMemo(()=>{
     let list = skills.filter(s=>{
       const matchesQuery = !query || s.title.toLowerCase().includes(query.toLowerCase()) || s.tags.some(t=>t.toLowerCase().includes(query.toLowerCase()));
@@ -31,7 +37,7 @@ export default function Explore(){
     else if(sort==='students') list = [...list].sort((a,b)=>b.students-a.students);
     else if(sort==='az') list = [...list].sort((a,b)=>a.title.localeCompare(b.title));
     return list;
-  }, [query, activeCats, activeLevels, sort]);
+  }, [skills, query, activeCats, activeLevels, sort]);
 
   React.useEffect(()=>{
     const next = new URLSearchParams();

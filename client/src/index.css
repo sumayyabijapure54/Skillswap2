@@ -212,7 +212,16 @@ section{padding:140px 48px; max-width:1240px; margin:0 auto; position:relative; 
 .bot .antenna::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--accent); position:absolute; top:-6px; left:-2.5px; box-shadow:0 0 8px var(--accent);}
 
 .three-col{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:22px;}
-.col-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:24px;}
+/* Grid items default to min-width:auto, which lets their intrinsic content
+   size feed back into the auto-fit/minmax track-sizing calculation. The
+   Swiper carousel inside the middle card measures its container's width to
+   size its slides — with min-width:auto that measurement and the grid's
+   own column-width calculation could resolve inconsistently, and Swiper's
+   loop math would bake in an enormous (effectively divide-by-zero) slide
+   width that never got corrected. min-width:0 forces the column to size
+   purely from minmax(260px,1fr), giving Swiper a stable width to read. */
+.three-col > *{min-width:0;}
+.col-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:24px; min-width:0;}
 .col-card h3{font-size:15.5px; margin-bottom:4px;}
 .col-card .desc{font-size:12px; color:var(--muted); margin-bottom:18px;}
 .feed-item{display:flex; gap:10px; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--border);}
@@ -323,7 +332,30 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .explore-empty{text-align:center; padding:60px 20px; color:var(--muted); border:1px dashed var(--border); border-radius:18px;}
 
 /* ── Skill Detail page ──────────────────────────────────── */
+/* Shared wrapper for the SkillDetail/MentorProfile "detail" pages — was
+   previously duplicated as inline styles on each page (fixed 48px side
+   padding at every screen size, no responsive hook available). */
+.detail-wrap{margin:0 auto; padding:150px 48px 100px; position:relative; z-index:1;}
+.detail-wrap-wide{max-width:1240px;}
+.detail-wrap-narrow{max-width:1100px;}
+@media (max-width:900px){
+  .detail-wrap{padding:130px 24px 80px;}
+}
+@media (max-width:480px){
+  .detail-wrap{padding:120px 16px 60px;}
+}
+
 .skill-hero{background:var(--panel); border:1px solid var(--border); border-radius:24px; padding:44px; display:grid; grid-template-columns:1fr 320px; gap:40px; margin-bottom:60px; backdrop-filter:blur(10px);}
+/* MentorProfile reuses .skill-hero but needs a 3rd column (avatar | bio |
+   booking sidebar). That used to be set via an inline `style` prop on the
+   div, which — being inline — always won over the `.skill-hero{ grid-
+   template-columns:1fr }` mobile rule below, so the 3-column layout never
+   actually collapsed on phones and rendered squeezed/overlapping. Using a
+   real class instead lets the same mobile media query apply to it. */
+.mentor-hero{grid-template-columns:auto 1fr 300px; align-items:flex-start; gap:30px;}
+@media (max-width:900px){
+  .mentor-hero{grid-template-columns:1fr;}
+}
 .skill-hero .cat{display:inline-block; font-size:10.5px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:5px 12px; border-radius:100px; margin-bottom:16px;}
 .skill-hero h1{font-size:clamp(1.8rem,3vw,2.4rem); margin-bottom:14px;}
 .skill-hero .desc{color:var(--muted); font-size:14.5px; line-height:1.75; margin-bottom:22px; max-width:560px;}
@@ -382,6 +414,18 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 
 /* ── Legal page (tabbed) ────────────────────────────────── */
 .legal-wrap{max-width:960px; margin:0 auto; padding:0 48px 140px; position:relative; z-index:1;}
+/* .mentor-tabs had no styles at all, so the NavLinks rendered as bare
+   inline anchors with no gap — on every screen size they ran together as
+   "OverviewMy CoursesStudentsAnalytics" with no way to tell them apart. */
+.mentor-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:18px 0 24px; border-bottom:1px solid var(--border); padding-bottom:14px;}
+.mentor-tabs a{background:var(--panel); border:1px solid var(--border); color:var(--muted); padding:9px 16px; border-radius:100px; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; white-space:nowrap;}
+.mentor-tabs a.active{background:var(--grad); color:#04140e; border-color:transparent;}
+.mentor-tabs a:not(.active):hover{color:var(--text); border-color:var(--accent);}
+@media (max-width:480px){
+  .mentor-tabs{gap:6px;}
+  .mentor-tabs a{padding:8px 12px; font-size:12.5px;}
+}
+
 .legal-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:36px; border-bottom:1px solid var(--border); padding-bottom:16px;}
 .legal-tabs button{background:var(--panel); border:1px solid var(--border); color:var(--muted); padding:10px 18px; border-radius:100px; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;}
 .legal-tabs button.active{background:var(--grad); color:#04140e; border-color:transparent;}
@@ -530,7 +574,14 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .onboard-head p{color:var(--muted); font-size:14px; max-width:440px; margin:0 auto;}
 
 .role-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:40px;}
-.role-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:28px 20px; text-align:center; cursor:pointer; transition:all .2s;}
+.role-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:28px 20px; text-align:center; cursor:pointer; transition:all .2s; min-width:0;}
+/* Profile page reuses .role-grid, but confined to a fixed 280px sidebar
+   column instead of the full-width contexts (Onboarding/Checkout/PostSkill)
+   the shared class is also used in. 3-across at 280px leaves ~68px per
+   card, which forced the whole sidebar column wider than the page at
+   laptop/desktop widths. Scoped modifier so this doesn't affect the other
+   pages that reuse .role-grid full-width. */
+.role-grid-sidebar{grid-template-columns:1fr;}
 .role-card:hover{border-color:rgba(20,240,180,0.35); transform:translateY(-2px);}
 .role-card.selected{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), var(--shadow-glow); background:var(--accent-soft);}
 .role-card .ic{width:52px; height:52px; border-radius:14px; background:var(--panel-2); display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 16px;}
@@ -596,7 +647,7 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .dash-logout:hover{color:var(--danger); border-color:var(--danger);}
 .dash-mobile-toggle{display:none;}
 
-.dash-main{padding:44px 48px 90px; max-width:1080px;}
+.dash-main{padding:44px 48px 90px; max-width:1080px; min-width:0;}
 .dash-header{margin-bottom:32px;}
 .dash-header h1{font-size:1.6rem; margin-bottom:8px;}
 .dash-header p{color:var(--muted); font-size:14px;}
@@ -629,6 +680,12 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .learning-row-pct{font-size:15px; font-weight:700; color:var(--text); width:44px; text-align:right; flex-shrink:0;}
 
 .profile-shell{display:grid; grid-template-columns:1fr 280px; gap:24px; align-items:start;}
+/* Grid items default to min-width:auto (their content's intrinsic width),
+   not 0 — so if the form column's content pushed a min-width past what's
+   left for the fixed 280px sidebar, the whole grid silently grew past the
+   page instead of letting the form column shrink/wrap. Same underlying
+   issue as the .dash-main fix above, just one level deeper. */
+.profile-shell > *{min-width:0;}
 .profile-avatar-row{display:flex; align-items:center; gap:16px; margin-bottom:26px; padding-bottom:26px; border-bottom:1px solid var(--border);}
 .profile-avatar-big{width:64px; height:64px; border-radius:50%; background:var(--grad); color:#04140e; font-weight:700; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
 
@@ -697,11 +754,21 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
   .auth-visual{display:none;}
   .role-grid{grid-template-columns:1fr;}
   .dash-shell{grid-template-columns:1fr;}
-  .dash-mobile-toggle{display:flex; align-items:center; gap:10px; width:100%; order:0; background:var(--panel); border:1px solid var(--border); border-radius:12px; margin:16px 16px 0; padding:14px 16px; font-size:14px; font-weight:600; color:var(--text); cursor:pointer;}
+  /* was width:100% *plus* margin:16px each side, which overflowed the
+     viewport by 16px on every dashboard-layout page on mobile (causing a
+     persistent horizontal scroll). As a grid item it already stretches to
+     fill its column by default, so it doesn't need an explicit width. */
+  .dash-mobile-toggle{display:flex; align-items:center; gap:10px; order:0; background:var(--panel); border:1px solid var(--border); border-radius:12px; margin:16px 16px 0; padding:14px 16px; font-size:14px; font-weight:600; color:var(--text); cursor:pointer;}
   .dash-mobile-toggle .chev{margin-left:auto; font-size:10px; color:var(--muted);}
-  .dash-sidebar{order:2; position:relative; top:0; height:auto; border-right:none; border-bottom:1px solid var(--border); display:none;}
+  /* The nav drawer must render immediately after the toggle button (order:1)
+     and BEFORE the main content (order:3) — otherwise, since .dash-main has
+     no order of its own (defaults to 0, same as the toggle), the grid's
+     source-order tiebreak places the drawer after all page content, so
+     opening it on mobile scrolled you to the bottom of the page instead of
+     revealing the menu right under the button. */
+  .dash-sidebar{order:1; position:relative; top:0; height:auto; max-height:70vh; overflow-y:auto; border-right:none; border-bottom:1px solid var(--border); border-radius:12px; margin:10px 16px 0; padding:16px 14px; background:var(--panel); border:1px solid var(--border); box-shadow:0 12px 32px rgba(0,0,0,0.16); display:none;}
   .dash-sidebar.open{display:flex;}
-  .dash-main{padding:32px 24px 70px;}
+  .dash-main{order:3; padding:32px 24px 70px;}
   .dash-stat-row{grid-template-columns:1fr 1fr;}
   .two-col-dash{grid-template-columns:1fr;}
   .profile-shell{grid-template-columns:1fr;}
@@ -721,6 +788,27 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .invoice-row{display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:12px; padding:14px 20px; align-items:center; font-size:13px; border-bottom:1px solid var(--border);}
 .invoice-row:last-child{border-bottom:none;}
 .invoice-head{background:var(--panel-2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted);}
+
+/* ── Mentor toolbar (search + course filter above the students list) ──
+   Had no CSS at all — the input (max-width:280px) and select (max-width:
+   260px) are inline-block by default and don't wrap, so together they
+   forced a ~540px-wide row that blew out the whole page on mobile. */
+.mentor-toolbar{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;}
+.mentor-toolbar input, .mentor-toolbar select{flex:1 1 200px;}
+
+/* ── Mentor students table — also had no CSS at all (unstyled on every
+   screen size, not just mobile). Mirrors the .invoice-table/.invoice-row
+   pattern used elsewhere for visual consistency. */
+.students-table{display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden;}
+.students-row{display:grid; grid-template-columns:1.8fr 1.4fr 1fr 0.8fr 1fr; gap:12px; padding:14px 20px; align-items:center; font-size:13px; border-bottom:1px solid var(--border);}
+.students-row:last-child{border-bottom:none;}
+.students-row.head{background:var(--panel-2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted);}
+.learner-name{font-weight:600; font-size:13.5px;}
+.learner-email{font-size:11.5px; color:var(--muted); margin-top:1px;}
+@media (max-width:900px){
+  .students-row{grid-template-columns:1.6fr 1fr 1fr; font-size:12px;}
+  .students-row span:nth-child(4), .students-row span:nth-child(5){display:none;}
+}
 
 /* ── Certificates ────────────────────────────────────────────────── */
 .cert-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px;}

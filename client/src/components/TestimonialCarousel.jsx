@@ -25,6 +25,8 @@ export default function TestimonialCarousel({ testimonials = [], className = '' 
       pagination={{ clickable: true }}
       navigation
       loop={canLoop}
+      observer
+      observeParents
       className={`testimonial-swiper ${className}`}
     >
       {testimonials.map((t, i) => (

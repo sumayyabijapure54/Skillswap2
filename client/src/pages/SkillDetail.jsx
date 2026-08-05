@@ -36,7 +36,7 @@ export default function SkillDetail(){
   };
 
   return (
-    <div style={{maxWidth:'1240px', margin:'0 auto', padding:'150px 48px 0', position:'relative', zIndex:1}}>
+    <div className="detail-wrap detail-wrap-wide" style={{paddingBottom:0}}>
       <div className="crumbs">
         <Link to="/">Home</Link><span>/</span>
         <Link to="/explore">Explore</Link><span>/</span>
