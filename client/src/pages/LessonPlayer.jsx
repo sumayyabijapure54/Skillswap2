@@ -75,7 +75,7 @@ export default function LessonPlayer() {
   const [videoDrafts, setVideoDrafts] = React.useState({});
   const [videoErrors, setVideoErrors] = React.useState({});
   const hasAnyOverride = Object.keys(overrides).length > 0;
-  const canManageVideos = authed && (isAdmin || profile?.role === 'admin' || profile?.role === 'teach' || profile?.role === 'both');
+  const canManageVideos = authed && (isAdmin || profile?.role === 'teach' || profile?.role === 'both');
 
   React.useEffect(() => {
     setOverridesState(getOverridesForSkill(id));

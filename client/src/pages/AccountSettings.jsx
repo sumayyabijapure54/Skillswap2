@@ -5,8 +5,7 @@ import { useUser } from '../context/UserContext.jsx';
 
 export default function AccountSettings(){
   const navigate = useNavigate();
-  const { profile, isAdmin: realIsAdmin, settings, updateProfile, updateSettings, toggleConnectedAccount, changePassword, deleteAccount } = useUser();
-  const isAdmin = realIsAdmin || profile.role === 'admin';
+  const { profile, isAdmin, settings, updateProfile, updateSettings, toggleConnectedAccount, changePassword, deleteAccount } = useUser();
 
   const [email, setEmail] = React.useState(profile.email);
   const [pw, setPw] = React.useState({ current:'', next:'', confirm:'' });

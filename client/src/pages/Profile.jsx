@@ -12,7 +12,6 @@ const TEACHING_ROLES = [
 export default function Profile(){
   const { profile, updateProfile, completeOnboarding } = useUser();
   const { categories } = useCategories();
-  const isAdmin = profile.role === 'admin';
   const [form, setForm] = React.useState({
     name: profile.name || '',
     email: profile.email || '',
@@ -100,7 +99,7 @@ export default function Profile(){
           <div className="col-card" style={{alignSelf:'flex-start'}}>
             <h3>Teaching &amp; learning</h3>
             <div className="desc">Switch any time — teaching unlocks the Mentor Dashboard in your sidebar.</div>
-            <div className="role-grid role-grid-sidebar" style={{marginTop:'12px'}}>
+            <div className="role-grid" style={{marginTop:'12px'}}>
               {TEACHING_ROLES.map(r=>(
                 <div
                   key={r.key}
@@ -128,23 +127,6 @@ export default function Profile(){
                 return <span key={k}>{c?.icon} {c?.label}</span>;
               })}
             </div>
-          </div>
-
-          <div className="col-card" style={{alignSelf:'flex-start'}}>
-            <h3>Admin access</h3>
-            <div className="desc">
-              Demo-only toggle standing in for a real backend role system, where
-              admin access would be granted by another admin, not by the account
-              holder. Toggling this reveals the admin dashboard in the sidebar.
-            </div>
-            <label style={{display:'flex', alignItems:'center', gap:'10px', fontSize:'13.5px', cursor:'pointer'}}>
-              <input
-                type="checkbox"
-                checked={isAdmin}
-                onChange={(e)=> updateProfile({ role: e.target.checked ? 'admin' : 'learner' })}
-              />
-              Enable admin dashboard access
-            </label>
           </div>
         </div>
       </div>
