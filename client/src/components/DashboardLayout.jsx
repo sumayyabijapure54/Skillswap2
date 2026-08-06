@@ -45,13 +45,48 @@ const MENTOR_ITEMS = [
   { to:'/mentor-analytics', label:'Analytics', icon:'📊' }
 ];
 
+// Label overrides applied per nav item `to` when viewing as a mentor.
+// Same route/page — wording only, so it reads correctly for a mentor audience.
+const MENTOR_LABEL_OVERRIDES = {
+  '/sessions': 'Upcoming Teaching Sessions',
+  '/achievements': 'Mentor Achievements',
+  '/certificates': 'Certificates Issued',
+  '/reviews': 'Reviews Received',
+  '/wallet': 'Earnings / Wallet',
+  '/payments': 'Earnings History'
+};
+
 export default function DashboardLayout({ title, subtitle, children }){
   const { profile, isAdmin, logOut } = useUser();
   const [navOpen, setNavOpen] = React.useState(false);
   const isMentor = profile.role === 'teach' || profile.role === 'both';
+  // "Pure" mentor (teach-only) vs a dual-role user who is also still a learner.
+  const isMentorOnly = profile.role === 'teach';
+
+  const applyMentorLabels = (items) => items.map(item => (
+    MENTOR_LABEL_OVERRIDES[item.to] ? { ...item, label: MENTOR_LABEL_OVERRIDES[item.to] } : item
+  ));
 
   const nav = isMentor
-    ? [{ section:null, items: BASE_NAV[0].items }, { section:'Teaching', items: MENTOR_ITEMS }, ...BASE_NAV.slice(1)]
+    ? [
+        { section:null, items: BASE_NAV[0].items },
+        { section:'Teaching', items: MENTOR_ITEMS },
+        // Mentor-only users don't need the learner "My Learning" group (My Courses
+        // above already covers it) or "Book a Session" (they don't book themselves —
+        // "Students" in Teaching covers who's booked with them). Dual-role "both"
+        // users still learn too, so they keep the full learner section.
+        ...BASE_NAV.slice(1).map(group => {
+          if (isMentorOnly && group.section === 'My Learning') return null;
+          if (group.section === 'Sessions') {
+            const items = isMentorOnly ? group.items.filter(i => i.to !== '/book-session') : group.items;
+            return { ...group, items: applyMentorLabels(items) };
+          }
+          if (group.section === 'My Learning' || group.section === 'Payments') {
+            return { ...group, items: applyMentorLabels(group.items) };
+          }
+          return group;
+        }).filter(Boolean)
+      ]
     : BASE_NAV;
 
   const navWithAdmin = isAdmin
