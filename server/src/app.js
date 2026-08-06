@@ -5,6 +5,7 @@ import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { CLOUDINARY_ENABLED } from './lib/cloudinary.js';
 import { apiLimiter } from './middleware/rateLimit.js';
 import skillsRoutes from './routes/skillsRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -37,7 +38,13 @@ export const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:51
 
 const app = express();
 
-app.use(helmet());
+// Default helmet sends Cross-Origin-Resource-Policy: same-origin, which
+// blocks the browser from loading images/files (e.g. avatars) in an <img>
+// tag when the frontend is on a different origin than this API (e.g.
+// Vercel frontend + Render backend). "cross-origin" still keeps the other
+// helmet protections, it just stops blocking cross-origin GETs of our own
+// public static assets.
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
@@ -54,6 +61,18 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
+// Temporary diagnostic — confirms whether this deployed instance sees
+// Cloudinary env vars, WITHOUT leaking their values. Safe to leave in,
+// but fine to delete once avatar uploads are confirmed working.
+app.get('/api/health/avatar-storage', (_req, res) => {
+  res.json({
+    cloudinaryEnabled: CLOUDINARY_ENABLED,
+    hasCloudName: Boolean(process.env.CLOUDINARY_CLOUD_NAME),
+    hasApiKey: Boolean(process.env.CLOUDINARY_API_KEY),
+    hasApiSecret: Boolean(process.env.CLOUDINARY_API_SECRET)
+  });
+});
 app.use('/api', apiLimiter);
 app.use('/api/skills', skillsRoutes);
 app.use('/api/auth', authRoutes);
