@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
+import Avatar from './Avatar.jsx';
 
 export default function Navbar(){
   const navigate = useNavigate();
@@ -12,7 +13,6 @@ export default function Navbar(){
   const mobileRef = React.useRef(null);
 
   const unread = notifications.filter(n=>!n.read).length;
-  const initials = (profile.name || 'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 
   React.useEffect(()=>{
     const onClick = (e)=>{
@@ -75,7 +75,13 @@ export default function Navbar(){
           <Link to="/messages" className="icon-btn" aria-label="Messages">💬</Link>
 
           <div className="nav-avatar-wrap" ref={menuRef}>
-            <button className="nav-avatar" onClick={()=>setMenuOpen(o=>!o)}>{initials}</button>
+            <Avatar
+              as="button"
+              src={profile.avatar}
+              name={profile.name}
+              className="nav-avatar"
+              onClick={()=>setMenuOpen(o=>!o)}
+            />
             {menuOpen && (
               <div className="nav-dropdown">
                 <Link to="/dashboard" onClick={()=>setMenuOpen(false)}>▦ Dashboard</Link>

@@ -11,6 +11,20 @@ import RefreshToken from '../models/RefreshToken.js';
 import CommunityPost from '../models/CommunityPost.js';
 import { AVATAR_DIR_ABS, AVATAR_URL_PREFIX } from '../middleware/upload.js';
 import { matchesImageSignature } from '../utils/fileSignature.js';
+import cloudinary, { CLOUDINARY_ENABLED } from '../lib/cloudinary.js';
+
+// Best-effort delete of whatever avatar the user had before, regardless of
+// which storage backend it was saved under.
+function deleteOldAvatar(oldAvatar) {
+  if (!oldAvatar) return;
+  if (CLOUDINARY_ENABLED && /^https?:\/\/res\.cloudinary\.com\//.test(oldAvatar)) {
+    // Public ID is the path segment after /upload/v<version>/, minus the extension.
+    const match = oldAvatar.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
+    if (match) cloudinary.uploader.destroy(match[1]).catch(() => {}); // best-effort
+  } else if (oldAvatar.startsWith(AVATAR_URL_PREFIX)) {
+    fs.unlink(path.join(AVATAR_DIR_ABS, path.basename(oldAvatar)), () => {});
+  }
+}
 
 const PROFILE_FIELDS = ['name', 'email', 'bio', 'avatar', 'skillsOffered', 'skillsWanted'];
 
@@ -114,9 +128,7 @@ export async function deleteAccount(req, res, next) {
       CommunityPost.deleteMany({ user: userId })
     ]);
 
-    if (user?.avatar?.startsWith(AVATAR_URL_PREFIX)) {
-      fs.unlink(path.join(AVATAR_DIR_ABS, path.basename(user.avatar)), () => {}); // best-effort
-    }
+    deleteOldAvatar(user?.avatar);
 
     await User.findByIdAndDelete(userId);
 
@@ -134,29 +146,42 @@ export async function uploadUserAvatar(req, res, next) {
     }
 
     // The client's declared Content-Type (already checked by multer's
-    // fileFilter) costs nothing to spoof — confirm the bytes on disk are
-    // actually a JPEG/PNG/WEBP before trusting this upload any further.
-    const filePath = path.join(AVATAR_DIR_ABS, req.file.filename);
-    const header = Buffer.alloc(16);
-    const fd = fs.openSync(filePath, 'r');
-    fs.readSync(fd, header, 0, 16, 0);
-    fs.closeSync(fd);
+    // fileFilter) costs nothing to spoof — confirm the bytes are actually
+    // a JPEG/PNG/WEBP before trusting this upload any further.
+    const header = CLOUDINARY_ENABLED
+      ? req.file.buffer.subarray(0, 16)
+      : (() => {
+          const filePath = path.join(AVATAR_DIR_ABS, req.file.filename);
+          const buf = Buffer.alloc(16);
+          const fd = fs.openSync(filePath, 'r');
+          fs.readSync(fd, buf, 0, 16, 0);
+          fs.closeSync(fd);
+          return buf;
+        })();
 
     if (!matchesImageSignature(header, req.file.mimetype)) {
-      fs.unlink(filePath, () => {}); // best-effort — don't leave the rejected file behind
+      if (!CLOUDINARY_ENABLED) fs.unlink(path.join(AVATAR_DIR_ABS, req.file.filename), () => {}); // best-effort
       return res.status(400).json({ message: "File content doesn't match a valid JPEG, PNG, or WEBP image" });
     }
 
     const user = await User.findById(req.user._id);
     const oldAvatar = user.avatar;
 
-    user.avatar = `${AVATAR_URL_PREFIX}${req.file.filename}`;
+    if (CLOUDINARY_ENABLED) {
+      // Uploads live on Cloudinary, not this server's disk, so the URL
+      // keeps working across restarts/redeploys.
+      const uploaded = await cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`,
+        { folder: 'skillswap/avatars', public_id: `${req.user._id}-${Date.now()}` }
+      );
+      user.avatar = uploaded.secure_url;
+    } else {
+      user.avatar = `${AVATAR_URL_PREFIX}${req.file.filename}`;
+    }
     await user.save();
 
-    // Best-effort cleanup of the file this one replaces.
-    if (oldAvatar && oldAvatar.startsWith(AVATAR_URL_PREFIX)) {
-      fs.unlink(path.join(AVATAR_DIR_ABS, path.basename(oldAvatar)), () => {});
-    }
+    // Best-effort cleanup of the avatar this one replaces.
+    deleteOldAvatar(oldAvatar);
 
     res.json({ user });
   } catch (err) {
@@ -169,9 +194,7 @@ export async function removeUserAvatar(req, res, next) {
   try {
     const user = await User.findById(req.user._id);
 
-    if (user.avatar && user.avatar.startsWith(AVATAR_URL_PREFIX)) {
-      fs.unlink(path.join(AVATAR_DIR_ABS, path.basename(user.avatar)), () => {});
-    }
+    deleteOldAvatar(user.avatar);
 
     user.avatar = '';
     await user.save();

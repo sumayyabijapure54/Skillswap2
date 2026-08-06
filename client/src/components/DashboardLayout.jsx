@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../context/UserContext.jsx';
 import FloatingActionButton from './FloatingActionButton.jsx';
+import Avatar from './Avatar.jsx';
 
 const BASE_NAV = [
   { section:null, items:[
@@ -47,7 +48,6 @@ const MENTOR_ITEMS = [
 export default function DashboardLayout({ title, subtitle, children }){
   const { profile, isAdmin, logOut } = useUser();
   const [navOpen, setNavOpen] = React.useState(false);
-  const initials = (profile.name || 'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const isMentor = profile.role === 'teach' || profile.role === 'both';
 
   const nav = isMentor
@@ -67,7 +67,7 @@ export default function DashboardLayout({ title, subtitle, children }){
 
       <aside className={`dash-sidebar ${navOpen ? 'open' : ''}`}>
         <div className="dash-user">
-          <div className="dash-user-av">{initials}</div>
+          <Avatar src={profile.avatar} name={profile.name} className="dash-user-av" />
           <div>
             <b>{profile.name || 'Member'}</b>
             <span>{profile.role ? profile.role[0].toUpperCase()+profile.role.slice(1) : 'Learner'}</span>

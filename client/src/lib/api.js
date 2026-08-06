@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002';
 
 const TOKEN_KEY = 'skillswap_token';
 const REFRESH_KEY = 'skillswap_refresh_token';
@@ -83,6 +83,15 @@ async function request(path, options = {}, { retry = true } = {}) {
   }
 
   return data;
+}
+
+// `avatar` on the user profile is a server-relative path (e.g.
+// "/uploads/avatars/xxx.jpg"), same as everything else served by
+// express.static — this just makes it absolute for <img src>.
+export function avatarUrl(avatar) {
+  if (!avatar) return null;
+  if (/^https?:\/\//.test(avatar)) return avatar;
+  return `${API_BASE}${avatar}`;
 }
 
 export const api = {

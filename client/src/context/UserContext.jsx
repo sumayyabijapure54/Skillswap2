@@ -308,6 +308,31 @@ export function UserProvider({ children }){
     }
   };
 
+  // POST /api/users/me/avatar — multipart/form-data, field name "avatar".
+  // Backend (see server/src/middleware/upload.js) caps this at 2MB and
+  // only accepts JPEG/PNG/WEBP; those constraints surface as err.message.
+  const uploadAvatar = async (file) => {
+    try{
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const data = await api.post('/api/users/me/avatar', formData);
+      setState(s => ({ ...s, profile:{ ...s.profile, avatar: data.user.avatar } }));
+      return { ok:true };
+    }catch(err){
+      return { ok:false, error: err.message };
+    }
+  };
+
+  const removeAvatar = async () => {
+    try{
+      const data = await api.del('/api/users/me/avatar');
+      setState(s => ({ ...s, profile:{ ...s.profile, avatar: data.user?.avatar || '' } }));
+      return { ok:true };
+    }catch(err){
+      return { ok:false, error: err.message };
+    }
+  };
+
   const changePassword = async ({ current, next }) => {
     try{
       await api.patch('/api/users/me/password', { currentPassword: current, newPassword: next });
@@ -451,7 +476,7 @@ export function UserProvider({ children }){
     signUp, logIn, logInWithGoogle, logInWithFacebook, verifyEmail: verifyEmailOtp, resendOtp,
     requestPasswordReset, confirmPasswordReset,
     completeOnboarding, logOut,
-    updateProfile, enroll, markLessonComplete, recordQuizScore, toggleWishlist,
+    updateProfile, uploadAvatar, removeAvatar, enroll, markLessonComplete, recordQuizScore, toggleWishlist,
     toggleSavedLesson, isLessonSaved, setLastWatched,
     markNotifRead, markAllNotifsRead,
     refreshWallet,

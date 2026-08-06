@@ -2,6 +2,9 @@ import React from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useCategories } from '../lib/skillsApi.js';
+import Avatar from '../components/Avatar.jsx';
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // matches server/src/middleware/upload.js
 
 const TEACHING_ROLES = [
   { key:'learn', icon:'🎓', title:'Learn', desc:'Pick up new skills from mentors and free lessons.' },
@@ -10,7 +13,7 @@ const TEACHING_ROLES = [
 ];
 
 export default function Profile(){
-  const { profile, updateProfile, completeOnboarding } = useUser();
+  const { profile, updateProfile, uploadAvatar, removeAvatar, completeOnboarding } = useUser();
   const { categories } = useCategories();
   const [form, setForm] = React.useState({
     name: profile.name || '',
@@ -23,6 +26,9 @@ export default function Profile(){
   const [roleSaving, setRoleSaving] = React.useState(false);
   const [roleError, setRoleError] = React.useState('');
   const [roleSaved, setRoleSaved] = React.useState(false);
+  const [avatarBusy, setAvatarBusy] = React.useState(false);
+  const [avatarError, setAvatarError] = React.useState('');
+  const fileInputRef = React.useRef(null);
 
   const currentTeachingRole = ['learn','teach','both'].includes(profile.role) ? profile.role : null;
 
@@ -51,17 +57,74 @@ export default function Profile(){
     setSaved(true);
   };
 
-  const initials = (form.name || 'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const pickAvatar = () => fileInputRef.current?.click();
+
+  const onAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+
+    setAvatarError('');
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
+      setAvatarError('Only JPEG, PNG, or WEBP images are allowed.');
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setAvatarError('Image must be 2MB or smaller.');
+      return;
+    }
+
+    setAvatarBusy(true);
+    const res = await uploadAvatar(file);
+    setAvatarBusy(false);
+    if (!res.ok) setAvatarError(res.error || 'Upload failed — please try again.');
+  };
+
+  const onRemoveAvatar = async () => {
+    setAvatarError('');
+    setAvatarBusy(true);
+    const res = await removeAvatar();
+    setAvatarBusy(false);
+    if (!res.ok) setAvatarError(res.error || 'Could not remove photo — please try again.');
+  };
 
   return (
     <DashboardLayout title="Profile" subtitle="This is what other members see when they view you.">
       <div className="profile-shell">
         <form className="col-card" onSubmit={onSubmit} style={{maxWidth:'640px'}}>
           <div className="profile-avatar-row">
-            <div className="profile-avatar-big">{initials}</div>
+            <Avatar src={profile.avatar} name={form.name} className="profile-avatar-big" />
             <div>
               <b style={{display:'block', fontSize:'14px'}}>Profile photo</b>
-              <span style={{fontSize:'12px', color:'var(--muted)'}}>Using your initials for now — photo uploads aren't wired up yet.</span>
+              <span style={{fontSize:'12px', color:'var(--muted)'}}>JPEG, PNG, or WEBP — up to 2MB.</span>
+              <div style={{display:'flex', gap:'10px', marginTop:'8px'}}>
+                <button
+                  type="button"
+                  className="btn-outline" style={{padding:'7px 14px', fontSize:'12.5px'}}
+                  onClick={pickAvatar}
+                  disabled={avatarBusy}
+                >
+                  {avatarBusy ? 'Uploading…' : profile.avatar ? 'Change photo' : 'Upload photo'}
+                </button>
+                {profile.avatar && (
+                  <button
+                    type="button"
+                    className="btn-outline" style={{padding:'7px 14px', fontSize:'12.5px'}}
+                    onClick={onRemoveAvatar}
+                    disabled={avatarBusy}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={onAvatarChange}
+                style={{display:'none'}}
+              />
+              {avatarError && <div className="form-error" style={{marginTop:'8px'}}>{avatarError}</div>}
             </div>
           </div>
 
