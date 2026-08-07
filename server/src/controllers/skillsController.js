@@ -268,6 +268,18 @@ export async function createSkill(req, res, next) {
           }))
       : [];
 
+    // A course with neither a linked video nor any lessons can be created
+    // and "published" successfully, but every downstream feature that
+    // reads course content (most visibly the AI quiz — see
+    // quizController.loadSkillOr404) will then fail for students with no
+    // way for them to fix it. Catch it here instead, at the one place it's
+    // actually actionable.
+    if (!youtubeVideo && cleanLessons.length === 0) {
+      return res.status(400).json({
+        message: 'Add at least one lesson or a YouTube course video before publishing.'
+      });
+    }
+
     const skill = await Skill.create({
       id,
       title: title.trim(),
@@ -312,6 +324,15 @@ export async function updateSkill(req, res, next) {
 
     for (const field of EDITABLE_SKILL_FIELDS) {
       if (req.body[field] !== undefined) skill[field] = req.body[field];
+    }
+
+    // Same guard as createSkill — don't let an edit (e.g. removing the
+    // linked video while trying to switch to manual lessons) leave a
+    // previously-valid, already-enrolled course with no content at all.
+    if (!skill.youtubeVideo && skill.lessons.length === 0) {
+      return res.status(400).json({
+        message: 'A course needs at least one lesson or a YouTube course video — add one before removing the other.'
+      });
     }
 
     await skill.save();

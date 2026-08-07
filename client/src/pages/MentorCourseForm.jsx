@@ -83,6 +83,10 @@ export default function MentorCourseForm(){
     const errs = {};
     if (!form.title.trim()) errs.title = 'Give your course a title.';
     if (!form.description.trim() || form.description.trim().length < 20) errs.description = 'Add a bit more detail (20+ characters).';
+    // A course with no video (this form has no manual-lesson builder yet)
+    // can't have a quiz generated for it later — catch that before publish
+    // instead of letting students hit a dead end on Take Quiz.
+    if (!ytVideo) errs.youtubeVideo = 'Add a YouTube course video — required so students can complete and quiz on this course.';
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
@@ -200,6 +204,7 @@ export default function MentorCourseForm(){
           </div>
           <div className="form-hint">Paste a link and we'll pull in the title, thumbnail, and duration automatically.</div>
           {ytError && <div className="form-error">{ytError}</div>}
+          {errors.youtubeVideo && <div className="form-error">{errors.youtubeVideo}</div>}
 
           {ytVideo && (
             <div className="yt-preview-card">

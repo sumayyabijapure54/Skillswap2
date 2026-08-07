@@ -2,6 +2,8 @@
 // Mirrors the style of razorpayClient.js — warn once at boot if the key is
 // missing rather than crashing the whole server, since every other route
 // should keep working even if the AI Mentor can't.
+import { mockClaude } from './mockAI.js';
+
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_VERSION = '2023-06-01';
 
@@ -10,8 +12,30 @@ const ANTHROPIC_VERSION = '2023-06-01';
 // string if Anthropic ships a newer default you'd rather use.
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
 
-if (!process.env.ANTHROPIC_API_KEY) {
+// AI Mock Mode: when true, askClaude() never calls the real Anthropic API —
+// every request is served by mockAI.js's mockClaude() instead, so the AI
+// Mentor chat, quiz generator, flashcards, summaries, study plans, and hints
+// all keep working end-to-end with zero API cost. Flip to 'false' (or unset)
+// to use the real Anthropic API exactly as before — no other code changes
+// are needed either way.
+const MOCK_MODE = process.env.AI_MOCK_MODE === 'true';
+
+if (MOCK_MODE) {
+  console.log('\n==========================');
+  console.log('AI MOCK MODE ENABLED');
+  console.log('==========================\n');
+} else if (!process.env.ANTHROPIC_API_KEY) {
   console.warn('[anthropic] ANTHROPIC_API_KEY is not set — the AI Mentor chatbot will return an error until it is.');
+}
+
+// Flattens { system, messages } into a single prompt string for mockClaude()
+// to pattern-match against, without changing askClaude's public signature or
+// requiring any controller/route/service changes.
+function buildPromptString(system, messages) {
+  const conversation = (messages || [])
+    .map((m) => `[${String(m.role || 'user').toUpperCase()}]\n${m.content}`)
+    .join('\n\n');
+  return `${system || ''}\n\n${conversation}`.trim();
 }
 
 /**
@@ -22,6 +46,11 @@ if (!process.env.ANTHROPIC_API_KEY) {
  * @returns {Promise<string>} the assistant's reply text
  */
 export async function askClaude({ system, messages, maxTokens = 1024 }) {
+  if (MOCK_MODE) {
+    const prompt = buildPromptString(system, messages);
+    return mockClaude(prompt);
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     const err = new Error('AI Mentor is not configured yet — ask an admin to set ANTHROPIC_API_KEY on the server.');
     err.status = 503;

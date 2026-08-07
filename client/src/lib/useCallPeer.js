@@ -37,14 +37,17 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
       localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
       pc.ontrack = (event) => {
+        console.log('[call] remote track received — setting remoteStream', event.streams[0]?.id); // TEMP DEBUG
         if (!cancelled) setRemoteStream(event.streams[0]);
       };
       pc.onconnectionstatechange = () => {
+        console.log('[call] connectionState =', pc.connectionState); // TEMP DEBUG
         if (cancelled) return;
         setPeerConnected(pc.connectionState === 'connected');
       };
       pc.onicecandidate = (event) => {
         if (event.candidate && remoteSocketIdRef.current) {
+          console.log('[call] sending ICE candidate to', remoteSocketIdRef.current); // TEMP DEBUG
           socket.emit('call:signal', { to: remoteSocketIdRef.current, data: { candidate: event.candidate } });
         }
       };
@@ -56,6 +59,7 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
       const pc = pcRef.current;
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
+      console.log('[call] offer created, sending to', targetSocketId); // TEMP DEBUG
       socket.emit('call:signal', { to: targetSocketId, data: { sdp: offer } });
     }
 
@@ -65,22 +69,55 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
       remoteSocketIdRef.current = from;
 
       if (data.sdp) {
-        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-        if (data.sdp.type === 'offer') {
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          socket.emit('call:signal', { to: from, data: { sdp: answer } });
+        try {
+          console.log('[call] received', data.sdp.type, 'from', from, 'pc.signalingState =', pc.signalingState); // TEMP DEBUG
+          await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+          if (data.sdp.type === 'offer') {
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            console.log('[call] answer created, sending to', from); // TEMP DEBUG
+            socket.emit('call:signal', { to: from, data: { sdp: answer } });
+          }
+        } catch (err) {
+          // Was previously silent here — a state-collision exception (e.g.
+          // an offer arriving while our own pc is also mid-offer) used to
+          // just vanish as an unhandled rejection, leaving the call stuck
+          // with no remote video and no visible error. Surface it instead.
+          console.error('[call] failed applying', data.sdp.type, 'from', from, err);
+          if (!cancelled) setSignalingError('Could not connect the call — please try rejoining.');
         }
       } else if (data.candidate) {
-        try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch { /* ignore late candidates */ }
+        console.log('[call] ICE candidate received from', from); // TEMP DEBUG
+        // A candidate arriving slightly before/after negotiation settles is
+        // normal and non-fatal — log it, don't surface it as a call error.
+        try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); }
+        catch (err) { console.warn('[call] ignoring late/invalid ICE candidate', err); }
       }
     }
 
     pcRef.current = createPeerConnection();
-
-    const onPeerJoined = ({ socketId }) => callPeer(socketId);
-    const onExistingPeers = (peers) => { if (peers[0]) callPeer(peers[0].socketId); };
-    const onPeerLeft = () => { setRemoteStream(null); setPeerConnected(false); remoteSocketIdRef.current = null; };
+    const onPeerJoined = ({ socketId }) => {
+      console.log('[call] peer-joined — I was already here, I will offer', socketId); // TEMP DEBUG
+      callPeer(socketId);
+    };
+    // IMPORTANT: the newcomer must NOT also call the peer(s) already in the
+    // room. If both sides independently create+setLocalDescription(offer),
+    // each pc ends up in 'have-local-offer' state, and the incoming remote
+    // offer then fails setRemoteDescription with InvalidStateError — an
+    // unhandled rejection that silently kills negotiation on both sides.
+    // That was the actual bug: both users only ever saw their own camera
+    // because ontrack never fired on either RTCPeerConnection.
+    // Only the side that gets 'call:peer-joined' (i.e. was already in the
+    // room) offers; the newcomer just remembers who's there and waits for
+    // that incoming offer via 'call:signal'.
+    const onExistingPeers = (peers) => {
+      console.log('[call] existing-peers — waiting for their offer', peers); // TEMP DEBUG
+      if (peers[0]) remoteSocketIdRef.current = peers[0].socketId;
+    };
+    const onPeerLeft = () => {
+      console.log('[call] peer-left — tearing down remote stream'); // TEMP DEBUG
+      setRemoteStream(null); setPeerConnected(false); remoteSocketIdRef.current = null;
+    };
     const onError = ({ message }) => setSignalingError(message);
 
     socket.on('call:peer-joined', onPeerJoined);
@@ -90,6 +127,7 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
     socket.on('call:error', onError);
 
     socket.emit('call:join', { bookingId });
+    console.log('[call] socket connected, joining room for booking', bookingId); // TEMP DEBUG
 
     return () => {
       cancelled = true;

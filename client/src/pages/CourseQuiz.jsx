@@ -20,9 +20,26 @@ export default function CourseQuiz() {
 
   const load = React.useCallback(() => {
     setState((s) => ({ ...s, loading: true, error: null, forbidden: null }));
+    // TEMP DEBUG — remove once the "no content" report is confirmed fixed.
+    // Confirms this effect always fires GET /api/quiz/:skillId unconditionally;
+    // there is no client-side content check that can short-circuit it.
+    console.log('[CourseQuiz debug] about to call getQuiz()', {
+      courseId: id,
+      skillId: id,
+      skill,
+      chapters: skill?.chapters,
+      lessons: skill?.lessons,
+      youtubeVideo: skill?.youtubeVideo
+    });
     fetchCourseQuiz(id)
-      .then((data) => setState({ loading: false, quiz: data, error: null, forbidden: null }))
+      .then((data) => {
+        console.log('[CourseQuiz debug] getQuiz() succeeded', data); // TEMP DEBUG
+        setState({ loading: false, quiz: data, error: null, forbidden: null });
+      })
       .catch((err) => {
+        // TEMP DEBUG — status/message straight from the failed response, so
+        // it's clear this text always comes from the server, never a local check.
+        console.log('[CourseQuiz debug] getQuiz() failed', { status: err.status, message: err.message });
         if (err.status === 403) {
           setState({ loading: false, quiz: null, error: null, forbidden: err.message });
         } else {
