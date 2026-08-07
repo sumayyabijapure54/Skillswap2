@@ -9,6 +9,7 @@ import Message from '../models/Message.js';
 import Skill from '../models/Skill.js';
 import RefreshToken from '../models/RefreshToken.js';
 import CommunityPost from '../models/CommunityPost.js';
+import Certificate from '../models/Certificate.js';
 import { AVATAR_DIR_ABS, AVATAR_URL_PREFIX } from '../middleware/upload.js';
 import { matchesImageSignature } from '../utils/fileSignature.js';
 import cloudinary, { CLOUDINARY_ENABLED } from '../lib/cloudinary.js';
@@ -200,6 +201,40 @@ export async function removeUserAvatar(req, res, next) {
     await user.save();
 
     res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/users/:id/public  (public — no auth)
+// A minimal public profile: display name, avatar, bio, and any certificates
+// the learner has explicitly marked visible (see Certificate.isPublic /
+// PATCH /api/certificates/:skillId/visibility). Never exposes email or any
+// other account field.
+export async function getPublicProfile(req, res, next) {
+  try {
+    const user = await User.findById(req.params.id, 'name avatar bio').lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const certificates = await Certificate.find({ user: user._id, isPublic: true })
+      .sort({ createdAt: -1 })
+      .select('skillId skillTitle mentorName mentorRole skillLevel lessonsCount courseDuration certificateNumber createdAt')
+      .lean();
+
+    res.json({
+      user: { id: user._id, name: user.name, avatar: user.avatar, bio: user.bio },
+      certificates: certificates.map(c => ({
+        skillId: c.skillId,
+        skillTitle: c.skillTitle,
+        mentorName: c.mentorName,
+        mentorRole: c.mentorRole,
+        skillLevel: c.skillLevel,
+        lessonsCount: c.lessonsCount,
+        courseDuration: c.courseDuration,
+        certificateNumber: c.certificateNumber,
+        issuedAt: c.createdAt
+      }))
+    });
   } catch (err) {
     next(err);
   }

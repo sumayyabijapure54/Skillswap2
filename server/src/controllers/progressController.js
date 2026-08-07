@@ -1,4 +1,5 @@
 import Progress from '../models/Progress.js';
+import Skill from '../models/Skill.js';
 import { issueIfEarned } from './certificatesController.js';
 
 // Mirrors Progress's toJSON transform for .lean() results.
@@ -58,7 +59,16 @@ export async function completeLesson(req, res, next) {
 
     const { certificate, justIssued } = await issueIfEarned(req.user, skillId);
 
-    res.json({ entry, certificate: justIssued ? certificate : null });
+    // Tell the frontend when it should send the learner to the AI quiz
+    // instead of straight to "you're done" — true once every lesson is
+    // complete, a certificate hasn't already been issued, and this is the
+    // kind of course that has (or will generate) an AI quiz to gate on.
+    const skill = await Skill.findOne({ id: skillId }, 'lessons').lean();
+    const lessonCount = skill?.lessons?.length || 0;
+    const courseComplete = lessonCount > 0 && entry.completedLessons.length >= lessonCount;
+    const quizPending = courseComplete && !certificate;
+
+    res.json({ entry, certificate: justIssued ? certificate : null, courseComplete, quizPending });
   } catch (err) {
     next(err);
   }

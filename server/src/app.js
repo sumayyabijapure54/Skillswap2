@@ -26,6 +26,8 @@ import mentorApplicationsRoutes from './routes/mentorApplicationsRoutes.js';
 import reportsRoutes from './routes/reportsRoutes.js';
 import youtubeRoutes from './routes/youtubeRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
+import liveSessionsRoutes from './routes/liveSessionsRoutes.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 // Pulled out of server.js so tests (and anything else that just wants to
@@ -37,6 +39,14 @@ export const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:51
   .map((o) => o.trim());
 
 const app = express();
+
+// Render (and most hosts) sit behind a reverse proxy, so every request
+// arrives with an X-Forwarded-For header. Without this, Express's default
+// `trust proxy: false` makes express-rate-limit throw on every request
+// (ERR_ERL_UNEXPECTED_X_FORWARDED_FOR) — which is exactly why auth and
+// every other /api route can work on localhost but fail once deployed.
+// "1" means "trust exactly one hop of proxy" (Render's own edge proxy).
+app.set('trust proxy', 1);
 
 // Default helmet sends Cross-Origin-Resource-Policy: same-origin, which
 // blocks the browser from loading images/files (e.g. avatars) in an <img>
@@ -92,6 +102,8 @@ app.use('/api/mentor-applications', mentorApplicationsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/quiz', quizRoutes);
+app.use('/api/live-sessions', liveSessionsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -39,12 +39,19 @@ describe('generateRefreshToken', () => {
 });
 
 describe('generateCertificateNumber', () => {
-  it('matches the SS-XXXXXXXX format', () => {
-    expect(generateCertificateNumber()).toMatch(/^SS-[0-9A-F]{8}$/);
+  it('matches the SS-YYYY-NNNNNN format', () => {
+    expect(generateCertificateNumber()).toMatch(/^SS-\d{4}-\d{6}$/);
+  });
+
+  it('uses the given date\'s year', () => {
+    expect(generateCertificateNumber(new Date('2031-06-01'))).toMatch(/^SS-2031-\d{6}$/);
   });
 
   it('generates different numbers on each call', () => {
     const seen = new Set(Array.from({ length: 100 }, () => generateCertificateNumber()));
+    // Random 6-digit serials over 100 draws could theoretically collide,
+    // but with a 1-in-1,000,000 space that's astronomically unlikely —
+    // treat any duplicate as a real bug rather than adding retry noise here.
     expect(seen.size).toBe(100);
   });
 });

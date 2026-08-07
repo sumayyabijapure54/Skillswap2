@@ -207,6 +207,17 @@ export const recordQuizScoreSchema = z.object({
   total: z.coerce.number().positive('total must be greater than 0')
 }).refine((d) => d.score <= d.total, { message: 'score cannot exceed total', path: ['score'] });
 
+// --- AI course quiz ---
+
+const quizAnswerSchema = z.object({
+  questionId: z.string().trim().min(1).max(50),
+  selectedOptionId: z.string().trim().min(1).max(50).nullable().optional()
+});
+
+export const submitQuizSchema = z.object({
+  answers: z.array(quizAnswerSchema).max(30, 'Too many answers submitted').default([])
+});
+
 // --- reports ---
 
 export const createReportSchema = z.object({
@@ -242,4 +253,39 @@ export const chatQuickActionSchema = z.object({
     errorMap: () => ({ message: 'type must be one of: quiz, flashcards, summary, study-plan, hint' })
   }),
   context: chatContextSchema
+});
+
+// --- live sessions ---
+
+export const createLiveSessionSchema = z.object({
+  skillId: z.string().trim().min(1, 'skillId is required'),
+  title: z.string().trim().min(1, 'title is required').max(200),
+  description: z.string().trim().max(2000).optional(),
+  startTime: z.coerce
+    .date({ invalid_type_error: 'startTime must be a valid date' })
+    .refine((d) => d.getTime() > Date.now(), 'startTime must be in the future'),
+  durationMinutes: z.coerce.number().int().min(5).max(480),
+  timezone: z.string().trim().max(100).optional(),
+  meetingProvider: z.enum(['jitsi', 'zoom', 'google-meet', 'custom']).optional(),
+  meetingUrl: z.string().trim().url('meetingUrl must be a valid URL').max(2000).optional().or(z.literal('')),
+  maxParticipants: z.coerce.number().int().positive().max(10000).optional()
+});
+
+export const updateLiveSessionSchema = z.object({
+  title: z.string().trim().min(1).max(200).optional(),
+  description: z.string().trim().max(2000).optional(),
+  startTime: z.coerce.date({ invalid_type_error: 'startTime must be a valid date' }).optional(),
+  durationMinutes: z.coerce.number().int().min(5).max(480).optional(),
+  timezone: z.string().trim().max(100).optional(),
+  meetingProvider: z.enum(['jitsi', 'zoom', 'google-meet', 'custom']).optional(),
+  meetingUrl: z.string().trim().url('meetingUrl must be a valid URL').max(2000).optional().or(z.literal('')),
+  maxParticipants: z.coerce.number().int().positive().max(10000).optional()
+});
+
+export const endLiveSessionSchema = z.object({
+  recordingUrl: z.string().trim().url('recordingUrl must be a valid URL').max(2000).optional().or(z.literal(''))
+});
+
+export const attachRecordingSchema = z.object({
+  recordingUrl: z.string().trim().url('recordingUrl must be a valid URL').max(2000)
 });

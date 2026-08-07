@@ -92,9 +92,13 @@ nav.topnav{
   border-bottom:1px solid var(--border);
 }
 .brand{display:flex; align-items:center; gap:10px; text-decoration:none;}
-.brand .mark{width:38px; height:38px; border-radius:10px; background:var(--grad); display:flex; align-items:center; justify-content:center; color:#04140e; font-weight:700;}
 .brand .name{font-size:18px; font-weight:700; line-height:1.1; color:var(--text);}
 .brand .tag{font-size:10.5px; color:var(--muted); letter-spacing:0.5px;}
+
+.logo-lockup{ text-decoration:none; }
+.logo-word{ font-size:18px; font-weight:700; line-height:1.1; color:var(--text); letter-spacing:-0.01em; }
+.logo-word-accent{ color:#34D399; }
+.logo-tag{ font-size:10px; color:var(--muted); letter-spacing:0.6px; text-transform:uppercase; }
 nav.topnav ul{list-style:none; display:flex; gap:30px;}
 nav.topnav a, nav.topnav .navlink{color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; position:relative; transition:color .2s; cursor:pointer; background:none; border:none;}
 nav.topnav a::after, nav.topnav .navlink::after{content:""; position:absolute; left:0; bottom:-6px; width:0; height:1px; background:var(--accent); transition:width .25s ease;}
@@ -501,6 +505,7 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
   display:flex; flex-direction:column; justify-content:center; padding:60px 60px;
   border-right:1px solid var(--border); position:relative; overflow:hidden;
 }
+.auth-visual-logo{margin-bottom:28px;}
 .auth-visual .badge{margin-bottom:22px;}
 .auth-visual h2{font-size:clamp(1.6rem,2.6vw,2.2rem); line-height:1.2; margin-bottom:16px;}
 .auth-visual h2 .g{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
@@ -1356,4 +1361,37 @@ button, .btn-solid, .btn-primary-lg, .btn-ghost-lg, .btn-white, .btn-outline{ po
   .player-shell{padding:110px 32px 90px; gap:22px;}
   .skill-hero{padding:32px; gap:26px;}
   .dash-shell{grid-template-columns:230px 1fr;}
+}
+
+/* ── Live Sessions ─────────────────────────────────────────────────── */
+.status-badge{display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:4px 10px; border-radius:100px; margin-top:4px; width:fit-content;}
+.status-scheduled{background:var(--accent2-soft); color:var(--accent2);}
+.status-live{background:var(--danger-soft); color:var(--danger); animation:pulse-live 1.6s ease-in-out infinite;}
+.status-ended{background:var(--panel-2); color:var(--muted);}
+.status-cancelled{background:var(--danger-soft); color:var(--danger);}
+@keyframes pulse-live{0%,100%{opacity:1;}50%{opacity:.55;}}
+
+.countdown{font-size:12.5px; color:var(--muted); font-weight:600;}
+.countdown-live{font-size:12.5px; color:var(--danger); font-weight:700; animation:pulse-live 1.4s ease-in-out infinite;}
+
+.live-join-btn{background:linear-gradient(120deg,var(--danger),#ff9a6b); border:none; color:#fff; box-shadow:0 0 20px rgba(255,107,107,0.4); animation:pulse-live 1.6s ease-in-out infinite;}
+.live-join-btn:hover{filter:brightness(1.08);}
+
+.tab-row{display:flex; gap:8px; flex-wrap:wrap;}
+.tab-btn{padding:9px 18px; border-radius:100px; border:1px solid var(--border); background:var(--panel); color:var(--muted); font-weight:600; font-size:13px; cursor:pointer; transition:all .2s;}
+.tab-btn:hover{border-color:var(--accent); color:var(--text);}
+.tab-btn.active{background:var(--grad); color:#07080B; border-color:transparent;}
+
+.modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:200; padding:20px;}
+.modal-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:26px; max-width:480px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow-lg); backdrop-filter:blur(16px);}
+.modal-card h3{margin-bottom:16px;}
+.modal-card .form-label{display:block; margin:12px 0 6px; font-size:12.5px; font-weight:600; color:var(--muted);}
+.modal-card .form-input{width:100%; margin-bottom:4px;}
+
+.jitsi-embed-wrap{border:1px solid var(--border); border-radius:16px; overflow:hidden; background:#000;}
+.jitsi-embed-bar{display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:var(--panel); color:var(--text); font-size:13px; font-weight:600;}
+.jitsi-embed-frame{width:100%; height:520px; border:none; display:block;}
+
+@media (max-width:640px){
+  .jitsi-embed-frame{height:360px;}
 }

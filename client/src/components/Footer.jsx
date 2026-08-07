@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
+import Logo from './Logo.jsx';
 
 export default function Footer(){
   const { theme, toggleTheme } = useTheme();
@@ -8,7 +9,7 @@ export default function Footer(){
     <footer>
       <div className="foot-grid">
         <div className="foot-brand">
-          <Link to="/" className="brand"><div className="mark">S</div><div><div className="name">SkillSwap</div></div></Link>
+          <Link to="/" className="brand"><Logo /></Link>
           <p>A global community for skill sharing and personal growth.</p>
           <div className="foot-socials"><div>𝕏</div><div>in</div><div>◎</div><div>▶</div></div>
         </div>

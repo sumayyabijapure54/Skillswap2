@@ -7,6 +7,7 @@ import CustomCursor from './components/CustomCursor.jsx';
 import RippleEffect from './components/RippleEffect.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
 import AiMentorWidget from './components/AiMentorWidget.jsx';
+import CertificateToast from './components/CertificateToast.jsx';
 import { useUser } from './context/UserContext.jsx';
 import { initSmoothScroll, scrollToTop } from './lib/smoothScroll.js';
 import { ScrollTrigger } from './lib/gsap.js';
@@ -15,6 +16,7 @@ import Home from './pages/Home.jsx';
 import Explore from './pages/Explore.jsx';
 import SkillDetail from './pages/SkillDetail.jsx';
 import LessonPlayer from './pages/LessonPlayer.jsx';
+import CourseQuiz from './pages/CourseQuiz.jsx';
 import Legal from './pages/Legal.jsx';
 import Help from './pages/Help.jsx';
 import About from './pages/About.jsx';
@@ -41,6 +43,8 @@ import BookSession from './pages/BookSession.jsx';
 import SessionBooking from './pages/SessionBooking.jsx';
 import Sessions from './pages/Sessions.jsx';
 import SessionDetail from './pages/SessionDetail.jsx';
+import LiveSessions from './pages/LiveSessions.jsx';
+import LiveSessionDetail from './pages/LiveSessionDetail.jsx';
 import Reviews from './pages/Reviews.jsx';
 import Checkout from './pages/Checkout.jsx';
 import Wallet from './pages/Wallet.jsx';
@@ -48,6 +52,7 @@ import PaymentHistory from './pages/PaymentHistory.jsx';
 import Certificates from './pages/Certificates.jsx';
 import CertificateDetail from './pages/CertificateDetail.jsx';
 import CertificateVerify from './pages/CertificateVerify.jsx';
+import PublicProfile from './pages/PublicProfile.jsx';
 import MentorDashboard from './pages/MentorDashboard.jsx';
 import MentorCourses from './pages/MentorCourses.jsx';
 import MentorCourseForm from './pages/MentorCourseForm.jsx';
@@ -70,11 +75,11 @@ import ComingSoon from './pages/ComingSoon.jsx';
 const NO_FOOTER_EXACT = [
   '/signup', '/login', '/forgot-password', '/reset-password', '/verify-email', '/onboarding',
   '/dashboard', '/my-learning', '/learning-history', '/wishlist', '/profile', '/notifications',
-  '/post-skill', '/community', '/messages', '/book-session', '/sessions', '/reviews',
+  '/post-skill', '/community', '/messages', '/book-session', '/sessions', '/live-sessions', '/reviews',
   '/checkout', '/wallet', '/payments', '/certificates', '/mentor-dashboard', '/recommendations', '/achievements',
   '/account-settings', '/mentor-courses', '/mentor-courses/new', '/mentor-students', '/mentor-analytics'
 ];
-const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/certificate/', '/admin', '/mentor-courses/'];
+const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/live-sessions/', '/certificate/', '/admin', '/mentor-courses/'];
 
 export default function App(){
   const { pathname } = useLocation();
@@ -121,6 +126,7 @@ export default function App(){
           <Route path="/explore" element={<Explore />} />
           <Route path="/skill/:id" element={<SkillDetail />} />
           <Route path="/learn/:id" element={<LessonPlayer />} />
+          <Route path="/learn/:id/quiz" element={<RequireAuth><CourseQuiz /></RequireAuth>} />
           <Route path="/mentor/:id" element={<MentorProfile />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/help" element={<Help />} />
@@ -136,6 +142,7 @@ export default function App(){
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/verify" element={<CertificateVerify />} />
           <Route path="/verify/:certificateNumber" element={<CertificateVerify />} />
+          <Route path="/u/:userId" element={<PublicProfile />} />
 
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
           <Route path="/my-learning" element={<RequireAuth><MyLearning /></RequireAuth>} />
@@ -150,6 +157,8 @@ export default function App(){
           <Route path="/book/:skillId" element={<RequireAuth><SessionBooking /></RequireAuth>} />
           <Route path="/sessions" element={<RequireAuth><Sessions /></RequireAuth>} />
           <Route path="/session/:id" element={<RequireAuth><SessionDetail /></RequireAuth>} />
+          <Route path="/live-sessions" element={<RequireAuth><LiveSessions /></RequireAuth>} />
+          <Route path="/live-sessions/:id" element={<RequireAuth><LiveSessionDetail /></RequireAuth>} />
           <Route path="/reviews" element={<RequireAuth><Reviews /></RequireAuth>} />
           <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
           <Route path="/wallet" element={<RequireAuth><Wallet /></RequireAuth>} />
@@ -179,6 +188,7 @@ export default function App(){
       {showFooter && <Footer />}
 
       {authed && pathname !== '/ai-mentor' && <AiMentorWidget />}
+      {authed && <CertificateToast />}
     </div>
   );
 }

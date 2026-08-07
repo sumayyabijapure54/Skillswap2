@@ -6,8 +6,8 @@ import { getIO } from '../realtime/io.js';
 // they have a socket connected. Each authenticated socket joins a room
 // named after their own user id (see server.js), so emitting to that room
 // reaches every tab/device they currently have open.
-export async function notifyUser({ user, type, text }) {
-  const notification = await Notification.create({ user, type, text });
+export async function notifyUser({ user, type, text, link = null }) {
+  const notification = await Notification.create({ user, type, text, link });
 
   getIO()?.to(user.toString()).emit('notification:new', notification.toJSON());
 

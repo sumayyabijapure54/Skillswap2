@@ -5,6 +5,7 @@ import dns from 'node:dns';
 import { connectDB } from './src/config/db.js';
 import { setIO } from './src/realtime/io.js';
 import { registerCallSignaling } from './src/realtime/callSignaling.js';
+import { startLiveSessionScheduler } from './src/realtime/liveSessionScheduler.js';
 import User from './src/models/User.js';
 import app, { allowedOrigins } from './src/app.js';
 
@@ -52,4 +53,5 @@ const PORT = process.env.PORT || 5002;
 
 connectDB().then(() => {
   httpServer.listen(PORT, () => console.log(`SkillSwap API listening on http://localhost:${PORT}`));
+  startLiveSessionScheduler();
 });

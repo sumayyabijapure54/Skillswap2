@@ -50,7 +50,7 @@ export default function CertificateVerify(){
       <form className="explore-search" style={{maxWidth:'480px', marginTop:'24px', marginBottom:'0'}} onSubmit={onSubmit}>
         <input
           type="text"
-          placeholder="e.g. SS-7F3K2A9Q"
+          placeholder="e.g. SS-2026-004821"
           value={input}
           onChange={e=>setInput(e.target.value)}
           autoFocus
@@ -70,7 +70,13 @@ export default function CertificateVerify(){
             <h1 className="certificate-name">{result.holderName}</h1>
             <p className="certificate-line">has successfully completed</p>
             <h2 className="certificate-skill">{result.skillTitle}</h2>
-            <p className="certificate-line">led by {result.mentorName}</p>
+            <p className="certificate-line">led by {result.mentorName}{result.mentorRole ? `, ${result.mentorRole}` : ''}</p>
+            {(result.skillLevel || result.lessonsCount || result.courseDuration) && (
+              <p style={{fontSize:'12.5px', color:'var(--accent)', fontWeight:600, marginTop:'-6px'}}>
+                {[result.skillLevel, result.lessonsCount ? `${result.lessonsCount} lessons` : null, result.courseDuration]
+                  .filter(Boolean).join('   ·   ')}
+              </p>
+            )}
             <div className="certificate-footer">
               <div>
                 <span>Issued</span>

@@ -1,4 +1,5 @@
 import React from 'react';
+import Logo from './Logo.jsx';
 
 const VISUALS = {
   signup: {
@@ -29,6 +30,7 @@ export default function AuthLayout({ variant = 'signup', children }){
   return (
     <div className="auth-shell">
       <div className="auth-visual">
+        <Logo withText={false} size={44} className="auth-visual-logo" />
         <div className="badge">{v.badge}</div>
         <h2>{v.heading}</h2>
         <p>{v.text}</p>

@@ -25,6 +25,7 @@ const BASE_NAV = [
   { section:'Sessions', items:[
     { to:'/book-session', label:'Book a Session', icon:'📅' },
     { to:'/sessions', label:'Upcoming Sessions', icon:'⏱' },
+    { to:'/live-sessions', label:'Live Sessions', icon:'🔴' },
     { to:'/reviews', label:'Reviews', icon:'★' }
   ]},
   { section:'Payments', items:[
@@ -49,6 +50,7 @@ const MENTOR_ITEMS = [
 // Same route/page — wording only, so it reads correctly for a mentor audience.
 const MENTOR_LABEL_OVERRIDES = {
   '/sessions': 'Upcoming Teaching Sessions',
+  '/live-sessions': 'Live Sessions (Host)',
   '/achievements': 'Mentor Achievements',
   '/certificates': 'Certificates Issued',
   '/reviews': 'Reviews Received',

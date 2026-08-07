@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { api } from '../lib/api.js';
+import { mentorTodayLiveSessions } from '../lib/liveSessionsApi.js';
 
 export default function MentorDashboard(){
   const { profile } = useUser();
@@ -12,6 +13,7 @@ export default function MentorDashboard(){
   const [courses, setCourses] = React.useState(null);
   const [upcoming, setUpcoming] = React.useState(null);
   const [reviews, setReviews] = React.useState(null);
+  const [liveToday, setLiveToday] = React.useState(null);
   const [error, setError] = React.useState('');
 
   React.useEffect(() => {
@@ -19,12 +21,14 @@ export default function MentorDashboard(){
       api.get('/api/bookings/mentor/earnings'),
       api.get('/api/skills/mentor/mine'),
       api.get('/api/bookings/mentor?when=upcoming&limit=5'),
-      api.get('/api/reviews/mentor?limit=3')
-    ]).then(([earnings, mine, bookings, reviewsRes]) => {
+      api.get('/api/reviews/mentor?limit=3'),
+      mentorTodayLiveSessions().catch(() => ({ liveSessions: [] }))
+    ]).then(([earnings, mine, bookings, reviewsRes, liveRes]) => {
       setStats(earnings);
       setCourses(mine.results || []);
       setUpcoming(bookings.bookings || []);
       setReviews(reviewsRes.reviews || []);
+      setLiveToday(liveRes.liveSessions || []);
     }).catch(err => setError(err.message || 'Could not load your mentor dashboard.'));
   }, []);
 
@@ -55,6 +59,27 @@ export default function MentorDashboard(){
         <div className="guest-banner" style={{marginBottom:'30px'}}>
           You haven't created any courses yet — <Link to="/mentor-courses/new">create your first course</Link> so students can find you.
         </div>
+      )}
+
+      {liveToday !== null && liveToday.length > 0 && (
+        <>
+          <div className="dash-section-head"><h2>Today's live sessions</h2><Link to="/live-sessions">Manage →</Link></div>
+          <div className="my-learning-list" style={{marginBottom:'40px'}}>
+            {liveToday.map(s => (
+              <div className="learning-row" key={s.id}>
+                <div className="learning-row-icon">🔴</div>
+                <div className="learning-row-info">
+                  <b>{s.title}</b>
+                  <span>{s.skillTitle} · {new Date(s.startTime).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}</span>
+                  <span className={`status-badge status-${s.status}`}>{s.status === 'live' ? 'Live Now' : 'Scheduled'}</span>
+                </div>
+                <Link to={`/live-sessions/${s.id}`} className={s.status === 'live' ? 'btn-primary-lg live-join-btn' : 'btn-outline'}>
+                  {s.status === 'live' ? 'Open' : 'Details'}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <div className="dash-section-head"><h2>Upcoming teaching sessions</h2><Link to="/mentor-students">View students →</Link></div>

@@ -12,8 +12,11 @@ export function errorHandler(err, req, res, next) {
     return res.status(409).json({ message: `That ${field} is already in use` });
   }
 
-  // Mongoose schema validation errors
-  if (err.name === 'ValidationError') {
+  // Mongoose schema validation errors. Guarded on `err.errors` too, not
+  // just the name — express-rate-limit's internal error class is also
+  // named "ValidationError" but has no `.errors` object, so without this
+  // guard it hit this branch and threw a second, unhandled TypeError.
+  if (err.name === 'ValidationError' && err.errors) {
     const message = Object.values(err.errors)
       .map((e) => e.message)
       .join(', ');

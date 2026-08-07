@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
 import Avatar from './Avatar.jsx';
+import Logo from './Logo.jsx';
 
 export default function Navbar(){
   const navigate = useNavigate();
@@ -46,11 +47,7 @@ export default function Navbar(){
   return (
     <nav className="topnav">
       <Link to="/" className="brand">
-        <div className="mark">S</div>
-        <div>
-          <div className="name">SkillSwap</div>
-          <div className="tag">Learn · Teach · Grow</div>
-        </div>
+        <Logo tagline="Learn. Teach. Trade skills." />
       </Link>
 
       <ul>

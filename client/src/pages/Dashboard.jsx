@@ -5,8 +5,61 @@ import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById, useSkills, useCategories } from '../lib/skillsApi.js';
 import { MiniBarChart } from '../components/MiniChart.jsx';
 import ScrollReveal from '../components/ScrollReveal.jsx';
+import Countdown from '../components/Countdown.jsx';
+import { myUpcomingLiveSessions, myLiveLiveSessions } from '../lib/liveSessionsApi.js';
+import { getSocket } from '../lib/socket.js';
 
 const WEEK_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// Shows the soonest live-or-about-to-start session for a course the
+// student is enrolled in. Pulls straight from the real
+// /api/live-sessions/my/* endpoints (unlike the static "Upcoming
+// sessions" list below it, which is placeholder booking data) and
+// updates instantly on live-session:update instead of polling.
+function NextLiveSessionWidget(){
+  const [session, setSession] = React.useState(undefined); // undefined = loading, null = none
+
+  const load = React.useCallback(() => {
+    Promise.all([myLiveLiveSessions(), myUpcomingLiveSessions()])
+      .then(([live, upcoming]) => {
+        const soonest = (live.liveSessions || [])[0] || (upcoming.liveSessions || [])[0] || null;
+        setSession(soonest);
+      })
+      .catch(() => setSession(null));
+  }, []);
+
+  React.useEffect(() => { load(); }, [load]);
+
+  React.useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+    const onUpdate = () => load();
+    socket.on('live-session:update', onUpdate);
+    return () => socket.off('live-session:update', onUpdate);
+  }, [load]);
+
+  if (!session) return null;
+
+  return (
+    <>
+      <div className="dash-section-head"><h2>Live session</h2></div>
+      <div className="col-card" style={{marginBottom:'28px'}}>
+        <div className="session-item">
+          <div className="session-date">{new Date(session.startTime).getDate()}<br />{new Date(session.startTime).toLocaleDateString(undefined,{month:'short'}).toUpperCase()}</div>
+          <div className="session-info">
+            <b>{session.title}</b>
+            <span>{session.skillTitle} · {new Date(session.startTime).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}</span>
+          </div>
+          {session.status === 'live' ? (
+            <Link to={`/live-sessions/${session.id}`} className="btn-primary-lg live-join-btn">JOIN NOW</Link>
+          ) : (
+            <Countdown target={session.startTime} live={false} />
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
 
 export default function Dashboard(){
   const { profile, enrolled, wishlist, notifications } = useUser();
@@ -101,6 +154,7 @@ export default function Dashboard(){
         </div>
 
         <div>
+          <NextLiveSessionWidget />
           <div className="dash-section-head"><h2>Upcoming sessions</h2></div>
           <div className="col-card">
             <div className="session-item"><div className="session-date">24<br />MAY</div><div className="session-info"><b>Mastering Python Basics</b><span>John Doe · 7:00 PM IST</span></div><button>Join</button></div>

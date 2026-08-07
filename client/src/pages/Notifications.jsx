@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 
@@ -8,9 +9,15 @@ const FILTERS = ['all', 'booking', 'message', 'recommendation', 'system'];
 export default function Notifications(){
   const { notifications, markNotifRead, markAllNotifsRead, liveConnected } = useUser();
   const [filter, setFilter] = React.useState('all');
+  const navigate = useNavigate();
 
   const filtered = filter==='all' ? notifications : notifications.filter(n=>n.type===filter);
   const unreadCount = notifications.filter(n=>!n.read).length;
+
+  const openNotif = (n) => {
+    markNotifRead(n.id);
+    if (n.link) navigate(n.link);
+  };
 
   return (
     <DashboardLayout title="Notifications" subtitle="Every alert in one place — bookings, messages, and recommendations.">
@@ -31,7 +38,12 @@ export default function Notifications(){
       ) : (
         <div className="notif-list">
           {filtered.map(n=>(
-            <div className={`notif-item ${n.read?'':'unread'}`} key={n.id} onClick={()=>markNotifRead(n.id)}>
+            <div
+              className={`notif-item ${n.read?'':'unread'}`}
+              key={n.id}
+              onClick={()=>openNotif(n)}
+              style={n.link ? {cursor:'pointer'} : undefined}
+            >
               <div className="notif-ic">{TYPE_ICON[n.type] || '🔔'}</div>
               <div className="notif-body">
                 <p>{n.text}</p>

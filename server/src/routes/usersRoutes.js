@@ -5,7 +5,8 @@ import {
   changePassword,
   deleteAccount,
   uploadUserAvatar,
-  removeUserAvatar
+  removeUserAvatar,
+  getPublicProfile
 } from '../controllers/usersController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -23,5 +24,9 @@ router.delete('/me', requireAuth, deleteAccount);
 // filename callback has req.user available.
 router.post('/me/avatar', requireAuth, uploadAvatar, uploadUserAvatar);
 router.delete('/me/avatar', requireAuth, removeUserAvatar);
+
+// Public — no auth. Registered after the /me routes; :id won't collide with
+// the literal "me" segment above since Express matches the /me/* routes first.
+router.get('/:id/public', getPublicProfile);
 
 export default router;

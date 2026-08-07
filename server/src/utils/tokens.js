@@ -25,7 +25,12 @@ export function generateRefreshToken() {
   return { rawToken, hashedToken };
 }
 
-// Human-shareable, still unique enough for a demo: SS-<8 hex chars, upper>.
-export function generateCertificateNumber() {
-  return `SS-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+// Human-readable & easy to read aloud/type: SS-<year>-<6 digit number>,
+// e.g. SS-2026-004821. Still has ~900k possible values per year, and the
+// caller (issueIfEarned) retries on the rare collision against the unique
+// index, so this doesn't need to be a DB-backed sequence to stay safe.
+export function generateCertificateNumber(date = new Date()) {
+  const year = date.getFullYear();
+  const serial = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+  return `SS-${year}-${serial}`;
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export default function ComingSoon({ title, text }){
+export default function ComingSoon({ title, text, action }){
   const { pathname } = useLocation();
 
   return (
@@ -14,6 +14,7 @@ export default function ComingSoon({ title, text }){
         )}
       </p>
       <div className="cta-row">
+        {action}
         <Link to="/" className="btn-primary-lg">Back to Home</Link>
         <Link to="/explore" className="btn-ghost-lg">Browse Skills</Link>
       </div>

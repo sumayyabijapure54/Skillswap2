@@ -1,6 +1,8 @@
 import Certificate from '../models/Certificate.js';
 import Progress from '../models/Progress.js';
 import Skill from '../models/Skill.js';
+import Quiz from '../models/Quiz.js';
+import QuizAttempt from '../models/QuizAttempt.js';
 import { generateCertificateNumber } from '../utils/tokens.js';
 import { parsePagination, paginationMeta } from '../utils/pagination.js';
 import { notifyUser } from '../utils/notify.js';
@@ -28,32 +30,62 @@ export async function issueIfEarned(user, skillId) {
   if (!skill || !skill.lessons.length || !progress) return { certificate: null, justIssued: false };
   if (progress.completedLessons.length < skill.lessons.length) return { certificate: null, justIssued: false };
 
-  try {
-    const certificate = await Certificate.create({
-      user: user._id,
-      skillId,
-      skillTitle: skill.title,
-      mentorName: skill.mentor.name,
-      holderName: user.name,
-      certificateNumber: generateCertificateNumber()
-    });
-
-    await notifyUser({
-      user: user._id,
-      type: 'system',
-      text: `You earned a certificate for completing "${skill.title}"!`
-    });
-
-    return { certificate, justIssued: true };
-  } catch (err) {
-    // Lost a race with a concurrent request (unique index on user+skillId) —
-    // just return whichever one won.
-    if (err.code === 11000) {
-      const winner = await Certificate.findOne({ user: user._id, skillId });
-      return { certificate: winner, justIssued: false };
-    }
-    throw err;
+  // If this course has an AI-generated quiz (server/src/services/aiQuizService.js),
+  // finishing every lesson is necessary but no longer sufficient — the
+  // student must also have a passing attempt on file before a certificate
+  // can be issued. Courses that never got a quiz generated (e.g. AI quiz
+  // generation is unavailable, or the course predates this feature) fall
+  // straight through to the old lesson-completion-only behavior below, so
+  // completion never gets stuck waiting on a quiz that doesn't exist.
+  const quizExists = await Quiz.exists({ skillId });
+  if (quizExists) {
+    const passed = await QuizAttempt.exists({ user: user._id, skillId, passed: true });
+    if (!passed) return { certificate: null, justIssued: false };
   }
+
+  const baseDoc = {
+    user: user._id,
+    skillId,
+    skillTitle: skill.title,
+    mentorName: skill.mentor.name,
+    mentorRole: skill.mentor.role || '',
+    holderName: user.name,
+    skillLevel: skill.level || null,
+    lessonsCount: skill.lessons.length,
+    courseDuration: skill.duration || ''
+  };
+
+  // Certificate numbers are random (see generateCertificateNumber), so a
+  // collision on the unique index is possible though rare — retry a few
+  // times with a fresh number before giving up.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const certificate = await Certificate.create({
+        ...baseDoc,
+        certificateNumber: generateCertificateNumber()
+      });
+
+      await notifyUser({
+        user: user._id,
+        type: 'system',
+        text: `🎉 You earned a certificate for completing "${skill.title}"!`,
+        link: `/certificate/${skillId}`
+      });
+
+      return { certificate, justIssued: true };
+    } catch (err) {
+      if (err.code !== 11000) throw err;
+
+      // Which unique index did we hit? user+skillId means someone else's
+      // concurrent request already issued this exact certificate — return
+      // that one. certificateNumber means a random collision — retry.
+      const winner = await Certificate.findOne({ user: user._id, skillId });
+      if (winner) return { certificate: winner, justIssued: false };
+      // else: certificateNumber collision, loop and try a new number
+    }
+  }
+
+  throw new Error('Could not generate a unique certificate number after several attempts');
 }
 
 // POST /api/certificates/:skillId/issue  (protected)
@@ -65,6 +97,21 @@ export async function issueCertificate(req, res, next) {
     const { certificate, justIssued } = await issueIfEarned(req.user, skillId);
 
     if (!certificate) {
+      const [progress, skill, quizExists] = await Promise.all([
+        Progress.findOne({ user: req.user._id, skillId }),
+        Skill.findOne({ id: skillId }, 'lessons').lean(),
+        Quiz.exists({ skillId })
+      ]);
+      const lessonsDone = Boolean(
+        skill?.lessons?.length && progress && progress.completedLessons.length >= skill.lessons.length
+      );
+
+      if (lessonsDone && quizExists) {
+        return res.status(400).json({
+          message: 'Pass the AI-generated quiz for this course to earn your certificate.',
+          quizPending: true
+        });
+      }
       return res.status(400).json({ message: "You haven't completed all lessons in this skill yet" });
     }
 
@@ -88,7 +135,7 @@ export async function downloadCertificatePdf(req, res, next) {
     }
 
     const skill = await Skill.findOne({ id: skillId }).lean();
-    streamCertificatePdf(certificate, skill, res);
+    await streamCertificatePdf(certificate, skill, res);
   } catch (err) {
     next(err);
   }
@@ -111,6 +158,32 @@ export async function listMyCertificates(req, res, next) {
   }
 }
 
+// PATCH /api/certificates/:skillId/visibility  (protected — the holder only)
+// Body: { isPublic: boolean }. Lets a learner show/hide a certificate on
+// their public SkillSwap profile.
+export async function setCertificateVisibility(req, res, next) {
+  try {
+    const { skillId } = req.params;
+    const { isPublic } = req.body;
+    if (typeof isPublic !== 'boolean') {
+      return res.status(400).json({ message: 'isPublic must be true or false' });
+    }
+
+    const certificate = await Certificate.findOneAndUpdate(
+      { user: req.user._id, skillId },
+      { isPublic },
+      { new: true }
+    );
+    if (!certificate) {
+      return res.status(404).json({ message: "You haven't earned a certificate for this skill yet" });
+    }
+
+    res.json({ certificate });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // GET /api/certificates/verify/:certificateNumber  (public)
 // Lets anyone check a certificate is real without exposing the holder's account.
 export async function verifyCertificate(req, res, next) {
@@ -124,6 +197,10 @@ export async function verifyCertificate(req, res, next) {
       holderName: certificate.holderName,
       skillTitle: certificate.skillTitle,
       mentorName: certificate.mentorName,
+      mentorRole: certificate.mentorRole,
+      skillLevel: certificate.skillLevel,
+      lessonsCount: certificate.lessonsCount,
+      courseDuration: certificate.courseDuration,
       certificateNumber: certificate.certificateNumber,
       issuedAt: certificate.createdAt
     });

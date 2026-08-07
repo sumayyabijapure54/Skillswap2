@@ -7,15 +7,18 @@ import ComingSoon from './ComingSoon.jsx';
 
 export default function CertificateDetail(){
   const { skillId } = useParams();
-  const { enrolled } = useUser();
+  const { enrolled, profile } = useUser();
   const { skill, loading: skillLoading } = useSkill(skillId);
   const entry = enrolled.find(e=>e.skillId===skillId);
 
   const [certificate, setCertificate] = React.useState(null);
   const [certLoading, setCertLoading] = React.useState(true);
   const [certError, setCertError] = React.useState(null);
+  const [quizPending, setQuizPending] = React.useState(false);
   const [pdfDownloading, setPdfDownloading] = React.useState(false);
   const [pdfError, setPdfError] = React.useState(null);
+  const [visibilitySaving, setVisibilitySaving] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
 
   // Every lesson locally shows as complete — ask the backend to issue (or
   // return the existing) certificate. Idempotent: calling this again just
@@ -27,9 +30,16 @@ export default function CertificateDetail(){
     let alive = true;
     setCertLoading(true);
     setCertError(null);
+    setQuizPending(false);
     api.post(`/api/certificates/${skillId}/issue`, {})
       .then((data) => { if (alive) setCertificate(data.certificate); })
-      .catch((err) => { if (alive) setCertError(err); })
+      .catch((err) => {
+        if (!alive) return;
+        // This course gates its certificate behind the AI quiz — send the
+        // learner there instead of showing a generic error.
+        if (err.data?.quizPending) setQuizPending(true);
+        else setCertError(err);
+      })
       .finally(() => { if (alive) setCertLoading(false); });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,6 +47,16 @@ export default function CertificateDetail(){
 
   if (skillLoading || (locallyComplete && certLoading)) {
     return <ComingSoon title="Loading certificate…" text="Just a moment while we pull up your certificate." />;
+  }
+
+  if (skill && quizPending) {
+    return (
+      <ComingSoon
+        title="One more step — the AI quiz"
+        text="You've finished every lesson in this course. Pass the AI-generated quiz to earn your certificate."
+        action={<Link to={`/learn/${skillId}/quiz`} className="btn-primary-lg">Take the quiz →</Link>}
+      />
+    );
   }
 
   if (!skill || !locallyComplete || !certificate) {
@@ -55,6 +75,29 @@ export default function CertificateDetail(){
       .catch((err) => setPdfError(err))
       .finally(() => setPdfDownloading(false));
   };
+
+  const copyVerifyLink = () => {
+    navigator.clipboard?.writeText(verifyUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const shareOnLinkedIn = () => {
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(verifyUrl)}`;
+    window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const togglePublic = () => {
+    setVisibilitySaving(true);
+    api.patch(`/api/certificates/${skillId}/visibility`, { isPublic: !certificate.isPublic })
+      .then((data) => setCertificate(data.certificate))
+      .catch(() => {})
+      .finally(() => setVisibilitySaving(false));
+  };
+
+  const metaParts = [certificate.skillLevel, certificate.lessonsCount ? `${certificate.lessonsCount} lessons` : null, certificate.courseDuration || skill.duration]
+    .filter(Boolean);
 
   return (
     <div className="certificate-print-page" style={{maxWidth:'900px', margin:'0 auto', padding:'150px 24px 100px', position:'relative', zIndex:1}}>
@@ -75,7 +118,14 @@ export default function CertificateDetail(){
         <h1 className="certificate-name">{certificate.holderName || 'SkillSwap Member'}</h1>
         <p className="certificate-line">has successfully completed</p>
         <h2 className="certificate-skill">{certificate.skillTitle}</h2>
-        <p className="certificate-line">an {skill.duration} course led by {certificate.mentorName}</p>
+        <p className="certificate-line">
+          A course led by {certificate.mentorName}{certificate.mentorRole ? `, ${certificate.mentorRole}` : ''}
+        </p>
+        {metaParts.length > 0 && (
+          <p style={{fontSize:'12.5px', color:'var(--accent)', fontWeight:600, marginTop:'-6px'}}>
+            {metaParts.join('   ·   ')}
+          </p>
+        )}
 
         <div className="certificate-footer">
           <div>
@@ -113,8 +163,28 @@ export default function CertificateDetail(){
         <button className="btn-primary-lg" onClick={downloadPdf} disabled={pdfDownloading}>
           {pdfDownloading ? 'Preparing PDF…' : '⬇ Download PDF'}
         </button>
+        <button className="btn-outline" onClick={shareOnLinkedIn}>in Share on LinkedIn</button>
+        <button className="btn-outline" onClick={copyVerifyLink}>{copied ? '✓ Link copied' : '🔗 Copy verify link'}</button>
         <button className="btn-outline" onClick={()=>window.print()}>🖨 Print</button>
-        <Link to={verifyPath} className="btn-outline">🔗 View public verify page</Link>
+        <Link to={verifyPath} className="btn-outline">👁 View public verify page</Link>
+      </div>
+
+      <div className="cta-row" style={{justifyContent:'center', marginTop:'12px'}}>
+        <label style={{display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'var(--muted)', cursor: visibilitySaving ? 'default' : 'pointer'}}>
+          <input
+            type="checkbox"
+            checked={!!certificate.isPublic}
+            disabled={visibilitySaving}
+            onChange={togglePublic}
+          />
+          Show on my public SkillSwap profile
+        </label>
+        {certificate.isPublic && (
+          <Link to={`/u/${profile.id}`} style={{fontSize:'13px', color:'var(--accent)'}}>View my public profile →</Link>
+        )}
+      </div>
+
+      <div className="cta-row" style={{justifyContent:'center', marginTop:'12px'}}>
         <Link to="/certificates" className="btn-ghost-lg">← Back to certificates</Link>
       </div>
     </div>

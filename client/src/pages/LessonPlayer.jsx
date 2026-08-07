@@ -165,6 +165,7 @@ export default function LessonPlayer() {
 
   const completed = authed ? new Set(enrolledEntry?.completedLessons || []) : guestCompleted;
   const progressPct = curriculum.length ? Math.round((completed.size / curriculum.length) * 100) : 0;
+  const courseComplete = curriculum.length > 0 && completed.size >= curriculum.length;
 
   const remainingSeconds = curriculum
     .filter((c, i) => i >= activeIdx && c.kind === 'chapter')
@@ -470,6 +471,13 @@ export default function LessonPlayer() {
             </button>
           )}
         </div>
+
+        {courseComplete && authed && (
+          <div className="notice-banner" style={{ marginTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <span>🎉 Course completed! Pass the AI-generated quiz to earn your certificate.</span>
+            <Link to={`/learn/${skill.id}/quiz`} className="btn-primary-lg">Take AI Quiz →</Link>
+          </div>
+        )}
       </div>
 
       <aside className="player-side glass">
