@@ -37,6 +37,13 @@ export function joinLiveSession(id) {
   return api.post(`/api/live-sessions/${id}/join`);
 }
 
+// Call only after the Jitsi embed's videoConferenceJoined event actually
+// fires (see JitsiEmbed.jsx + LiveSessionDetail.jsx) — this is what flips
+// attendance from "connecting" to "present" and starts the duration clock.
+export function confirmLiveSessionJoin(id) {
+  return api.post(`/api/live-sessions/${id}/confirm-join`);
+}
+
 export function leaveLiveSession(id) {
   return api.post(`/api/live-sessions/${id}/leave`);
 }

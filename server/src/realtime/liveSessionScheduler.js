@@ -60,7 +60,12 @@ async function autoEndOverrunSessions() {
     for (const entry of session.attendance) {
       if (entry.joinedAt && !entry.leftAt) {
         entry.leftAt = now;
-        entry.totalSeconds += Math.max(0, Math.round((now - entry.joinedAt) / 1000));
+        // Duration counts from confirmedAt (actually inside the Jitsi
+        // conference), not joinedAt (just clicked Join) — see the same
+        // logic in liveSessionsController.js's endLiveSession/leaveLiveSession.
+        if (entry.confirmedAt) {
+          entry.totalSeconds += Math.max(0, Math.round((now - entry.confirmedAt) / 1000));
+        }
       }
     }
     await session.save();

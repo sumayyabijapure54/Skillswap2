@@ -78,6 +78,42 @@ async function broadcastToStudents(session, { text, link, event }) {
   ).catch(() => {});
 }
 
+// Live "someone joined/left the actual Jitsi conference" push — separate
+// from broadcastToStudents() above, which is for session status changes
+// (started/ended/etc). This is fired from joinLiveSession/leaveLiveSession,
+// which are themselves only called by the client AFTER Jitsi's own
+// videoConferenceJoined/videoConferenceLeft events fire (see JitsiEmbed.jsx
+// + LiveSessionDetail.jsx) — never on button click alone — so "joined" here
+// means "actually inside the conference", not "clicked Join".
+// Pushed to the mentor (drives the live participants panel) and to every
+// enrolled student (drives the "N participants" count on the student page).
+async function broadcastAttendance(session, participant, type) {
+  const io = getIO();
+  if (!io) return;
+
+  const studentIds = await getEnrolledStudentIds(session.skillId);
+  const recipients = new Set([session.mentor.toString(), ...studentIds]);
+
+  const now = new Date();
+  const liveCount = session.attendance.filter((a) => a.joinedAt && !a.leftAt).length;
+
+  const payload = {
+    sessionId: session.id || session._id.toString(),
+    type, // 'joined' | 'left'
+    participant: {
+      userId: participant._id ? participant._id.toString() : participant.id,
+      name: participant.name,
+      joinedAt: type === 'joined' ? now : undefined,
+      leftAt: type === 'left' ? now : undefined
+    },
+    liveCount
+  };
+
+  for (const id of recipients) {
+    io.to(id).emit('live-session:attendance', payload);
+  }
+}
+
 // POST /api/live-sessions  (protected — mentor who owns the course)
 export async function createLiveSession(req, res, next) {
   try {
@@ -207,6 +243,10 @@ export async function startLiveSession(req, res, next) {
     session.startedAt = new Date();
     await session.save();
 
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Jitsi] role=mentor sessionId=${session.id} roomName=${jitsiRoomName(session.id)}`);
+    }
+
     await broadcastToStudents(session, {
       text: `${req.user.name} just started a live session for ${session.skillTitle} — join now!`,
       link: `/live-sessions/${session.id}`,
@@ -239,7 +279,9 @@ export async function endLiveSession(req, res, next) {
     for (const entry of session.attendance) {
       if (entry.joinedAt && !entry.leftAt) {
         entry.leftAt = now;
-        entry.totalSeconds += Math.max(0, Math.round((now - entry.joinedAt) / 1000));
+        if (entry.confirmedAt) {
+          entry.totalSeconds += Math.max(0, Math.round((now - entry.confirmedAt) / 1000));
+        }
       }
     }
 
@@ -283,6 +325,11 @@ export async function attachRecording(req, res, next) {
 }
 
 // POST /api/live-sessions/:id/join  (protected — enrolled student)
+// This is JOIN INITIATED: it gates on enrollment + capacity and hands back
+// the room to open the prejoin screen with. It does NOT mean the student is
+// actually in the Jitsi conference yet — see confirmLiveSessionJoin() below,
+// which is what actually stamps attendance as "present". Called when the
+// student clicks "JOIN NOW", before the Jitsi iframe has even mounted.
 export async function joinLiveSession(req, res, next) {
   try {
     const session = await LiveSession.findById(req.params.id);
@@ -307,20 +354,23 @@ export async function joinLiveSession(req, res, next) {
 
     const now = new Date();
     let entry = session.attendance.find((a) => a.user.toString() === req.user._id.toString());
-    const lateThresholdMs = 5 * 60 * 1000; // more than 5 min after start = late
-    const status = session.startedAt && now - session.startedAt > lateThresholdMs ? 'late' : 'present';
 
     if (entry) {
       entry.joinedAt = now;
+      entry.confirmedAt = null;
       entry.leftAt = null;
-      entry.status = status;
     } else {
-      session.attendance.push({ user: req.user._id, joinedAt: now, status });
+      session.attendance.push({ user: req.user._id, joinedAt: now, status: 'absent' });
     }
 
     await session.save();
 
     const json = withJoinUrl(session.toJSON());
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Jitsi] role=student sessionId=${session.id} roomName=${json.jitsiRoom}`);
+    }
+
     res.json({
       liveSession: json,
       meetingUrl: session.meetingUrl || null,
@@ -331,7 +381,39 @@ export async function joinLiveSession(req, res, next) {
   }
 }
 
+// POST /api/live-sessions/:id/confirm-join  (protected — enrolled student)
+// Called only when the client's Jitsi embed actually fires
+// videoConferenceJoined (see JitsiEmbed.jsx's onConferenceJoined + the
+// handler in LiveSessionDetail.jsx) — i.e. the student is genuinely inside
+// the conference, past the prejoin screen, not just "clicked Join". This is
+// the moment attendance flips to "present" and duration starts counting.
+export async function confirmLiveSessionJoin(req, res, next) {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ message: 'Live session not found' });
+
+    const entry = session.attendance.find((a) => a.user.toString() === req.user._id.toString());
+    if (!entry || !entry.joinedAt || entry.leftAt) {
+      return res.status(400).json({ message: 'Call /join before confirming' });
+    }
+
+    const now = new Date();
+    entry.confirmedAt = now;
+    const lateThresholdMs = 5 * 60 * 1000; // more than 5 min after session start = late
+    entry.status = session.startedAt && now - session.startedAt > lateThresholdMs ? 'late' : 'present';
+
+    await session.save();
+    broadcastAttendance(session, req.user, 'joined').catch(() => {});
+
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // POST /api/live-sessions/:id/leave  (protected — enrolled student)
+// Called when the client's Jitsi embed fires videoConferenceLeft (or the
+// user clicks Leave / navigates away) — see LiveSessionDetail.jsx.
 export async function leaveLiveSession(req, res, next) {
   try {
     const session = await LiveSession.findById(req.params.id);
@@ -341,8 +423,15 @@ export async function leaveLiveSession(req, res, next) {
     if (entry && entry.joinedAt && !entry.leftAt) {
       const now = new Date();
       entry.leftAt = now;
-      entry.totalSeconds += Math.max(0, Math.round((now - entry.joinedAt) / 1000));
+      // Duration counts from when they actually entered the conference
+      // (confirmedAt), not from when they clicked Join (joinedAt). If they
+      // never got a confirmedAt (e.g. Jitsi failed to load), no duration is
+      // added — they were never verifiably in the call.
+      if (entry.confirmedAt) {
+        entry.totalSeconds += Math.max(0, Math.round((now - entry.confirmedAt) / 1000));
+      }
       await session.save();
+      broadcastAttendance(session, req.user, 'left').catch(() => {});
     }
 
     res.json({ ok: true });
@@ -478,13 +567,26 @@ export async function getAttendance(req, res, next) {
     if (error) return res.status(error).json({ message });
 
     await session.populate('attendance.user', 'name email avatarUrl');
-    const attendance = session.attendance.map((a) => ({
-      user: a.user && a.user._id ? { id: a.user._id, name: a.user.name, email: a.user.email, avatarUrl: a.user.avatarUrl } : a.user,
-      joinedAt: a.joinedAt,
-      leftAt: a.leftAt,
-      totalSeconds: a.totalSeconds,
-      status: a.status
-    }));
+    const now = new Date();
+    const attendance = session.attendance.map((a) => {
+      // Still in the conference right now: report a live-ticking duration
+      // (confirmedAt -> now) on top of any accumulated totalSeconds from
+      // earlier join/leave cycles, so the mentor's panel doesn't sit frozen
+      // at the same number the whole time someone is present.
+      const stillIn = a.joinedAt && !a.leftAt;
+      const liveSeconds = stillIn && a.confirmedAt ? Math.max(0, Math.round((now - a.confirmedAt) / 1000)) : 0;
+
+      return {
+        user: a.user && a.user._id ? { id: a.user._id, name: a.user.name, email: a.user.email, avatarUrl: a.user.avatarUrl } : a.user,
+        joinedAt: a.joinedAt,
+        confirmedAt: a.confirmedAt,
+        leftAt: a.leftAt,
+        totalSeconds: a.totalSeconds + liveSeconds,
+        // "connecting" = clicked Join but Jitsi hasn't confirmed them in
+        // the conference yet — distinct from genuinely "present".
+        status: stillIn && !a.confirmedAt ? 'connecting' : a.status
+      };
+    });
 
     res.json({ attendance });
   } catch (err) {

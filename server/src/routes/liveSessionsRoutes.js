@@ -8,6 +8,7 @@ import {
   endLiveSession,
   attachRecording,
   joinLiveSession,
+  confirmLiveSessionJoin,
   leaveLiveSession,
   getLiveSession,
   listLiveSessions,
@@ -52,6 +53,7 @@ router.post('/:id/end', validate(endLiveSessionSchema), endLiveSession);
 router.patch('/:id/recording', validate(attachRecordingSchema), attachRecording);
 
 router.post('/:id/join', joinLiveSession);
+router.post('/:id/confirm-join', confirmLiveSessionJoin);
 router.post('/:id/leave', leaveLiveSession);
 
 router.get('/:id/attendance', getAttendance);

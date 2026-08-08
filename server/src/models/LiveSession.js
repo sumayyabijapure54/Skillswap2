@@ -11,9 +11,16 @@ const { Schema } = mongoose;
 const AttendanceSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    // joinedAt = when the student clicked "Join" and passed the
+    // enrollment/capacity gate (join INITIATED). confirmedAt = when Jitsi's
+    // own videoConferenceJoined event actually fired for them (they are
+    // genuinely inside the conference, not just on the prejoin screen).
+    // Duration is measured from confirmedAt, never from joinedAt — see
+    // leaveLiveSession()/confirmLiveSessionJoin() in liveSessionsController.js.
     joinedAt: { type: Date, default: null },
+    confirmedAt: { type: Date, default: null },
     leftAt: { type: Date, default: null },
-    // Sum of all join->leave intervals, in case someone reconnects.
+    // Sum of all confirmedAt->leftAt intervals, in case someone reconnects.
     totalSeconds: { type: Number, default: 0 },
     status: { type: String, enum: ['present', 'absent', 'late'], default: 'absent' }
   },
