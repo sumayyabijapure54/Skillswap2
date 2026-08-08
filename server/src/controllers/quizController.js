@@ -8,6 +8,18 @@ import {
 } from '../services/aiQuizService.js';
 import { issueIfEarned } from './certificatesController.js';
 
+// AI-quiz-specific errors (see aiQuizService.js) carry a `.code` — surface
+// those as the { success:false, code, message } envelope the AI Quiz spec
+// requires instead of the plain `{ message }` shape other routes use.
+// Anything without an AI code falls through to the normal error handling.
+function sendQuizError(res, err, next) {
+  if (err?.code?.startsWith('AI_QUIZ_')) {
+    return res.status(err.status || 502).json({ success: false, code: err.code, message: err.message });
+  }
+  if (err.status) return res.status(err.status).json({ message: err.message });
+  next(err);
+}
+
 function isMentorOwner(skill, user) {
   return Boolean(skill.mentorUser) && skill.mentorUser.toString() === user._id.toString();
 }
@@ -63,8 +75,7 @@ export async function getQuiz(req, res, next) {
       certificateAlreadyIssued: Boolean(certificate)
     });
   } catch (err) {
-    if (err.status) return res.status(err.status).json({ message: err.message });
-    next(err);
+    sendQuizError(res, err, next);
   }
 }
 
@@ -105,8 +116,7 @@ export async function submitQuiz(req, res, next) {
       certificate
     });
   } catch (err) {
-    if (err.status) return res.status(err.status).json({ message: err.message });
-    next(err);
+    sendQuizError(res, err, next);
   }
 }
 
@@ -127,7 +137,6 @@ export async function regenerateQuiz(req, res, next) {
     const quiz = await generateQuiz(skill);
     res.status(201).json({ quiz: sanitizeForAttempt(quiz) });
   } catch (err) {
-    if (err.status) return res.status(err.status).json({ message: err.message });
-    next(err);
+    sendQuizError(res, err, next);
   }
 }

@@ -73,7 +73,7 @@ export default function CourseQuiz() {
   };
 
   if (skillLoading || state.loading) {
-    return <ComingSoon title="Preparing your quiz…" text="Just a moment while the AI puts your quiz together." />;
+    return <ComingSoon title="Preparing your quiz…" text="Preparing your course quiz from the lessons you've completed…" />;
   }
 
   if (!skill) {

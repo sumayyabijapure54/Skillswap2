@@ -1,12 +1,63 @@
 import crypto from 'crypto';
 import Quiz from '../models/Quiz.js';
 import QuizAttempt from '../models/QuizAttempt.js';
-import { askClaude } from '../lib/anthropicClient.js';
+import * as aiService from '../lib/aiService.js';
+import { extractJson } from '../utils/jsonExtract.js';
 import { fetchTranscript } from '../utils/ytTranscript.js';
 
 const MIN_QUESTIONS = 10;
 const MAX_QUESTIONS = 20;
 const DEFAULT_PASSING_SCORE = 70;
+// How many times to ask the model again if it returns invalid JSON / an
+// otherwise malformed quiz, before giving up with AI_QUIZ_GENERATION_FAILED.
+// Never falls back to mock/placeholder questions — see parseQuizJson below.
+const MAX_GENERATION_ATTEMPTS = 3;
+// Below this, there isn't enough real course material to write a
+// trustworthy quiz from — see hasEnoughContent().
+const MIN_CONTENT_CHARS = 120;
+
+const PLACEHOLDER_PATTERNS = [
+  /\[mock\]/i,
+  /\bmock ?ai\b/i,
+  /\bplaceholder\b/i,
+  /\blorem ipsum\b/i,
+  /\btodo\b/i,
+  /\bfill[- ]?in\b/i,
+  /\bsample question\b/i
+];
+
+function aiUnavailableError() {
+  const err = new Error('AI quiz generation is currently unavailable. Please try again later.');
+  err.code = 'AI_QUIZ_UNAVAILABLE';
+  err.status = 503;
+  return err;
+}
+
+function generationFailedError() {
+  const err = new Error('AI quiz generation failed after multiple attempts. Please try again later.');
+  err.code = 'AI_QUIZ_GENERATION_FAILED';
+  err.status = 502;
+  return err;
+}
+
+function insufficientContentError() {
+  const err = new Error("This course does not contain enough content yet to generate a reliable quiz. Ask the mentor to add lesson notes, a description, or a video.");
+  err.code = 'AI_QUIZ_INSUFFICIENT_CONTENT';
+  err.status = 400;
+  return err;
+}
+
+// Rough gate on "is there enough real material here to test", independent
+// of whether transcript extraction succeeded — a course can still have a
+// good quiz built from title + description + lesson titles alone.
+function hasEnoughContent(skill, transcriptsByLessonTitle) {
+  const transcriptChars = Object.values(transcriptsByLessonTitle).join(' ').length;
+  const lessonChars = (skill.lessons || [])
+    .map((l) => `${l.title} ${l.description || ''} ${(l.youtube?.chapters || []).map((c) => c.title).join(' ')}`)
+    .join(' ').length;
+  const baseChars = `${skill.title || ''} ${skill.description || ''}`.length + lessonChars;
+  return baseChars + transcriptChars >= MIN_CONTENT_CHARS;
+}
 
 // Every video-lesson's own mentor-provided YouTube video, in course order.
 function videoLessons(skill) {
@@ -21,7 +72,10 @@ export function contentFingerprint(skill) {
   const parts = [
     skill.title || '',
     skill.description || '',
-    ...(skill.lessons || []).map((l) => `${l.title}:${l.youtube?.videoId || ''}`)
+    ...(skill.lessons || []).map((l) => {
+      const chapterKey = (l.youtube?.chapters || []).map((c) => c.title).join(',');
+      return `${l.title}:${l.description || ''}:${l.youtube?.videoId || ''}:${chapterKey}`;
+    })
   ];
   return crypto.createHash('sha256').update(parts.join('|')).digest('hex');
 }
@@ -32,7 +86,11 @@ function buildQuizPrompt(skill, transcriptsByLessonTitle) {
     ? lessons.map((l, i) => {
         if (l.type === 'Quiz') return `${i + 1}. [Checkpoint quiz] ${l.title}`;
         const v = l.youtube;
-        return `${i + 1}. ${l.title} (${l.duration || 'unknown length'})${v ? ` — video: "${v.title}" (channel: ${v.channelTitle || 'unknown'})` : ''}`;
+        const chapterList = v?.chapters?.length
+          ? `\n   Chapters: ${v.chapters.map((c) => c.title).join(' | ')}`
+          : '';
+        const notes = l.description?.trim() ? `\n   Mentor notes: ${l.description.trim()}` : '';
+        return `${i + 1}. ${l.title} (${l.duration || 'unknown length'})${v ? ` — video: "${v.title}" (channel: ${v.channelTitle || 'unknown'})` : ''}${chapterList}${notes}`;
       }).join('\n')
     : '(no lesson list available)';
 
@@ -69,46 +127,74 @@ Rules:
   return { system, messages: [{ role: 'user', content: userContent }] };
 }
 
-function parseQuizJson(raw) {
-  let parsed;
-  try {
-    parsed = JSON.parse(raw.replace(/^```json\s*|^```\s*|\s*```$/g, '').trim());
-  } catch {
-    const err = new Error('The AI returned a quiz in an unexpected format — please try regenerating.');
-    err.status = 502;
-    throw err;
-  }
+// Thrown internally to signal "the output was invalid, worth retrying" —
+// caught and retried by generateQuiz below, never surfaced to the user
+// directly and never papered over with placeholder questions.
+class QuizValidationError extends Error {}
 
+function isPlaceholderText(text) {
+  return PLACEHOLDER_PATTERNS.some((re) => re.test(text));
+}
+
+// Validates + normalizes the raw AI JSON into our storage shape. Throws
+// QuizValidationError (retryable, see generateQuiz) on ANY of:
+//   - invalid/unparsable JSON
+//   - fewer than MIN_QUESTIONS usable questions after cleaning
+//   - "[MOCK]"/placeholder text anywhere in a question, option, or explanation
+//   - duplicate questions (case/whitespace-insensitive)
+//   - duplicate options within a single question
+// Malformed *individual* questions (wrong option count, no matching
+// correct answer, empty text) are dropped rather than failing the whole
+// batch, as long as enough valid ones remain — mirrors the original
+// behavior, just with more checks.
+export function parseQuizJson(raw) {
+  const parsed = extractJson(raw);
   const questions = Array.isArray(parsed?.questions) ? parsed.questions : null;
-  if (!questions || questions.length < MIN_QUESTIONS) {
-    const err = new Error('The AI did not return enough valid questions — please try regenerating.');
-    err.status = 502;
-    throw err;
+  if (!questions || questions.length === 0) {
+    throw new QuizValidationError('The AI returned a quiz in an unexpected format.');
   }
 
+  const seenQuestionKeys = new Set();
   const cleaned = [];
-  questions.slice(0, MAX_QUESTIONS).forEach((q, qi) => {
-    const options = Array.isArray(q.options) ? q.options.filter((o) => typeof o === 'string' && o.trim()) : [];
-    if (options.length !== 4) return; // skip malformed questions rather than fail the whole quiz
-    const correctIdx = options.findIndex((o) => o.trim() === String(q.correctAnswer || '').trim());
-    if (correctIdx === -1) return;
-    if (typeof q.question !== 'string' || !q.question.trim()) return;
 
-    const qId = `q${qi + 1}`;
+  questions.slice(0, MAX_QUESTIONS).forEach((q, qi) => {
+    if (typeof q.question !== 'string' || !q.question.trim()) return;
+    const questionText = q.question.trim();
+    if (isPlaceholderText(questionText)) return;
+
+    const rawOptions = Array.isArray(q.options) ? q.options.filter((o) => typeof o === 'string' && o.trim()) : [];
+    if (rawOptions.length !== 4) return; // skip malformed questions rather than fail the whole quiz
+    const trimmedOptions = rawOptions.map((o) => o.trim());
+    if (trimmedOptions.some(isPlaceholderText)) return;
+
+    // No duplicate options within a question (case-insensitive).
+    const optionKeySet = new Set(trimmedOptions.map((o) => o.toLowerCase()));
+    if (optionKeySet.size !== trimmedOptions.length) return;
+
+    const correctIdx = trimmedOptions.findIndex((o) => o === String(q.correctAnswer || '').trim());
+    if (correctIdx === -1) return;
+
+    // No duplicate questions across the quiz (case/whitespace-insensitive).
+    const dedupeKey = questionText.toLowerCase().replace(/\s+/g, ' ');
+    if (seenQuestionKeys.has(dedupeKey)) return;
+    seenQuestionKeys.add(dedupeKey);
+
+    const explanation = typeof q.explanation === 'string' ? q.explanation.trim() : '';
+    if (!explanation || isPlaceholderText(explanation)) return;
+
+    const qId = `q${cleaned.length + 1}`;
     cleaned.push({
       id: qId,
-      question: q.question.trim(),
-      options: options.map((text, oi) => ({ id: `${qId}o${oi + 1}`, text: text.trim() })),
+      question: questionText,
+      options: trimmedOptions.map((text, oi) => ({ id: `${qId}o${oi + 1}`, text })),
       correctOptionId: `${qId}o${correctIdx + 1}`,
-      explanation: typeof q.explanation === 'string' ? q.explanation.trim() : '',
+      explanation,
       difficulty: ['easy', 'medium', 'hard'].includes(q.difficulty) ? q.difficulty : 'medium'
     });
   });
 
   if (cleaned.length < MIN_QUESTIONS) {
-    const err = new Error('The AI did not return enough valid questions — please try regenerating.');
-    err.status = 502;
-    throw err;
+    throw new QuizValidationError('The AI did not return enough valid, unique questions.');
   }
 
   return cleaned;
@@ -132,9 +218,39 @@ export async function generateQuiz(skill) {
     transcriptEntries.filter(([, text]) => Boolean(text))
   );
 
+  if (!hasEnoughContent(skill, transcriptsByLessonTitle)) {
+    throw insufficientContentError();
+  }
+
   const { system, messages } = buildQuizPrompt(skill, transcriptsByLessonTitle);
-  const raw = await askClaude({ system, messages, maxTokens: 4000 });
-  const questions = parseQuizJson(raw);
+
+  let questions = null;
+  let lastValidationError = null;
+  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt += 1) {
+    let raw;
+    try {
+      raw = await aiService.generateQuiz({ system, messages, maxTokens: 4000 });
+    } catch (err) {
+      // The provider itself is down/misconfigured — not a validation
+      // problem, and retrying won't help, so fail immediately with the
+      // dedicated AI_QUIZ_UNAVAILABLE code rather than mock content.
+      if (err?.code === 'AI_UNAVAILABLE') throw aiUnavailableError();
+      throw err;
+    }
+
+    try {
+      questions = parseQuizJson(raw);
+      break;
+    } catch (err) {
+      lastValidationError = err;
+      questions = null;
+    }
+  }
+
+  if (!questions) {
+    console.error('[aiQuizService] quiz generation validation failed after retries:', lastValidationError?.message);
+    throw generationFailedError();
+  }
 
   const firstVideoLesson = videoLessons(skill)[0];
   const quiz = await Quiz.findOneAndUpdate(
@@ -145,7 +261,10 @@ export async function generateQuiz(skill) {
       questions,
       passingScore: DEFAULT_PASSING_SCORE,
       sourceVideoId: firstVideoLesson?.youtube?.videoId || null,
-      contentFingerprint: contentFingerprint(skill)
+      contentFingerprint: contentFingerprint(skill),
+      model: aiService.config.OLLAMA_MODEL || null,
+      generatedAt: new Date(),
+      questionCount: questions.length
     },
     { new: true, upsert: true }
   );

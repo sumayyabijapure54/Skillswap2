@@ -1,7 +1,22 @@
 import ChatSession from '../models/ChatSession.js';
 import Progress from '../models/Progress.js';
 import Skill from '../models/Skill.js';
-import { askClaude } from '../lib/anthropicClient.js';
+import * as aiService from '../lib/aiService.js';
+import { extractJson } from '../utils/jsonExtract.js';
+
+// Sends the AI_UNAVAILABLE envelope the spec calls for, instead of letting
+// the generic errorHandler's plain `{ message }` shape take over. Anything
+// without an aiService-style `.code` still falls through to `next(err)`.
+function sendAiError(res, err, next) {
+  if (err?.code === 'AI_UNAVAILABLE') {
+    return res.status(err.status || 503).json({
+      success: false,
+      code: 'AI_UNAVAILABLE',
+      message: err.message || 'AI service is currently unavailable. Please try again later.'
+    });
+  }
+  next(err);
+}
 
 // Only the last N turns ride along in every request — keeps latency/cost
 // bounded on a long-running conversation while still giving Claude enough
@@ -136,7 +151,7 @@ export async function sendMessage(req, res, next) {
       { role: 'user', content: message }
     ];
 
-    const reply = await askClaude({ system, messages: claudeMessages, maxTokens: 900 });
+    const reply = await aiService.generateMentorResponse({ system, messages: claudeMessages, maxTokens: 900 });
 
     await appendAndTrim(session, [
       { role: 'user', content: message, kind: 'chat', context: context || null },
@@ -145,7 +160,7 @@ export async function sendMessage(req, res, next) {
 
     res.json({ reply, sessionUpdatedAt: session.updatedAt });
   } catch (err) {
-    next(err);
+    sendAiError(res, err, next);
   }
 }
 
@@ -173,6 +188,16 @@ const QUICK_ACTIONS = {
   })
 };
 
+// Which aiService wrapper backs each quick action — purely for readability
+// at the call site; all of them funnel into the same free Ollama provider.
+const QUICK_ACTION_AI_FN = {
+  quiz: aiService.generateQuiz,
+  flashcards: aiService.generateFlashcards,
+  summary: aiService.summarizeContent,
+  'study-plan': aiService.generateStudyPlan,
+  hint: aiService.generateMentorResponse
+};
+
 // POST /api/chatbot/quick-action  { type: 'quiz'|'flashcards'|'summary'|'study-plan'|'hint', context? }  (protected)
 export async function runQuickAction(req, res, next) {
   try {
@@ -190,16 +215,22 @@ export async function runQuickAction(req, res, next) {
       { role: 'user', content: instruction }
     ];
 
-    const raw = await askClaude({ system, messages: claudeMessages, maxTokens: 1400 });
+    const aiCall = QUICK_ACTION_AI_FN[type] || aiService.generateMentorResponse;
+    const raw = await aiCall({ system, messages: claudeMessages, maxTokens: 1400 });
 
-    let payload = raw;
     let parsed = null;
     if (kind === 'quiz' || kind === 'flashcards') {
-      try {
-        // Model occasionally wraps JSON in ```json fences despite instructions — strip them defensively.
-        parsed = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, '').trim());
-      } catch {
-        parsed = null; // fall through — frontend shows raw text if this happens
+      parsed = extractJson(raw);
+      const looksValid = kind === 'quiz' ? Array.isArray(parsed?.questions) && parsed.questions.length > 0
+        : Array.isArray(parsed?.cards) && parsed.cards.length > 0;
+      if (!looksValid) {
+        // Never show the model's raw JSON/near-JSON text to the user —
+        // surface a clear, retryable error instead (see FIX RAW JSON IN
+        // AI MENTOR requirement).
+        const err = new Error('The AI Mentor could not generate that right now — please try again.');
+        err.code = 'AI_UNAVAILABLE';
+        err.status = 502;
+        throw err;
       }
     }
 
@@ -210,6 +241,6 @@ export async function runQuickAction(req, res, next) {
 
     res.json({ kind, raw, data: parsed, sessionUpdatedAt: session.updatedAt });
   } catch (err) {
-    next(err);
+    sendAiError(res, err, next);
   }
 }

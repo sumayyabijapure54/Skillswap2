@@ -45,7 +45,17 @@ const QuizSchema = new Schema(
     // video, or edited the description) apart from "just regenerate it
     // because I feel like it" — see aiQuizService.contentFingerprint.
     sourceVideoId: { type: String, default: null },
-    contentFingerprint: { type: String, default: null }
+    contentFingerprint: { type: String, default: null },
+
+    // Bookkeeping about the generation itself — which free local model
+    // produced these questions and when, plus a denormalized count so the
+    // UI/list views don't need to load the full questions array just to
+    // show "12 questions". `generatedAt` is distinct from `updatedAt`:
+    // this quiz doc is upserted in place on every regeneration, and this
+    // field is set exactly when new questions were written.
+    model: { type: String, default: null },
+    generatedAt: { type: Date, default: null },
+    questionCount: { type: Number, default: 0 }
   },
   { timestamps: true }
 );
