@@ -18,7 +18,7 @@ async function loadSkillOr404(skillId, res) {
     res.status(404).json({ message: 'Course not found' });
     return null;
   }
-  if (!skill.youtubeVideo && !skill.lessons?.length) {
+  if (!skill.lessons?.length) {
     res.status(400).json({ message: 'This course has no content yet to generate a quiz from.' });
     return null;
   }

@@ -152,13 +152,19 @@ export const addCommentSchema = z.object({
 
 // --- skills ---
 
-const lessonSchema = z.object({
-  title: z.string().trim().min(1, 'lesson title is required'),
-  duration: z.string().max(50).optional(),
-  type: z.enum(['Video', 'Quiz']).optional()
+const lessonChapterSchema = z.object({
+  id: z.string().trim().min(1),
+  title: z.string().trim().min(1),
+  startSeconds: z.coerce.number().min(0),
+  endSeconds: z.coerce.number().min(0),
+  duration: z.string().trim().optional()
 });
 
-const youtubeVideoSchema = z.object({
+// The mentor-provided YouTube video for one lesson — resolved server-side
+// via GET /api/youtube/video before the mentor ever submits the course
+// form, so everything here describes a real video the mentor explicitly
+// chose. Required on every `type: 'Video'` lesson.
+const lessonYoutubeSchema = z.object({
   videoId: z.string().trim().min(1),
   title: z.string().trim().min(1),
   url: z.string().trim().min(1),
@@ -166,8 +172,26 @@ const youtubeVideoSchema = z.object({
   thumbnail: z.string().trim().optional(),
   channelTitle: z.string().trim().optional(),
   duration: z.string().trim().optional(),
-  durationSeconds: z.coerce.number().optional()
-}).nullable();
+  durationSeconds: z.coerce.number().optional(),
+  chapters: z.array(lessonChapterSchema).max(50).optional()
+});
+
+const lessonSchema = z.object({
+  title: z.string().trim().min(1, 'lesson title is required'),
+  description: z.string().trim().max(2000).optional(),
+  order: z.coerce.number().optional(),
+  duration: z.string().max(50).optional(),
+  type: z.enum(['Video', 'Quiz']).optional(),
+  youtube: lessonYoutubeSchema.optional(),
+  quiz: z.array(z.object({
+    q: z.string().trim().min(1),
+    options: z.array(z.string().trim().min(1)).min(2),
+    correct: z.coerce.number().min(0)
+  })).optional()
+}).refine(
+  (lesson) => lesson.type === 'Quiz' || Boolean(lesson.youtube),
+  { message: 'Every video lesson needs a YouTube URL — paste one and fetch it before saving.', path: ['youtube'] }
+);
 
 export const createSkillSchema = z.object({
   title: z.string().trim().min(1, 'title is required').max(150),
@@ -178,8 +202,7 @@ export const createSkillSchema = z.object({
   mentorRole: z.string().max(100).optional(),
   prerequisites: z.array(z.string().trim().min(1)).max(20).optional(),
   tags: z.array(z.string().trim().min(1)).max(20).optional(),
-  lessons: z.array(lessonSchema).max(100).optional(),
-  youtubeVideo: youtubeVideoSchema.optional()
+  lessons: z.array(lessonSchema).max(100).optional()
 });
 
 export const updateSkillSchema = z.object({
@@ -188,8 +211,7 @@ export const updateSkillSchema = z.object({
   duration: z.string().max(50).optional(),
   prerequisites: z.array(z.string().trim().min(1)).max(20).optional(),
   tags: z.array(z.string().trim().min(1)).max(20).optional(),
-  lessons: z.array(lessonSchema).max(100).optional(),
-  youtubeVideo: youtubeVideoSchema.optional()
+  lessons: z.array(lessonSchema).max(100).optional()
 });
 
 // --- mentor applications ---

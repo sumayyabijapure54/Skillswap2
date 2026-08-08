@@ -1,29 +1,11 @@
-import { getCourseForSkill, getVideoByUrl } from '../services/youtubeService.js';
-
-// GET /api/youtube/course?skill=React%20Fundamentals&limit=8
-// Public endpoint (no auth) — mirrors GET /api/skills being public.
-export async function getYoutubeCourse(req, res, next) {
-  try {
-    const { skill, limit } = req.query;
-    if (!skill || !skill.trim()) {
-      return res.status(400).json({ message: 'Query param "skill" is required.' });
-    }
-
-    const result = await getCourseForSkill({
-      skillTitle: skill.trim(),
-      limit: Math.min(Number(limit) || 8, 10)
-    });
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-}
+import { getVideoByUrl } from '../services/youtubeService.js';
 
 // GET /api/youtube/video?url=https://youtube.com/watch?v=...  (protected)
-// Used by the mentor "Upload YouTube course" flow: the mentor pastes a
-// link, we resolve it to a real video's title/thumbnail/duration so they
-// can preview it before saving it onto a course.
-export async function getYoutubeVideoById(req, res, next) {
+// Used by the mentor course form: the mentor pastes a link for a lesson,
+// we resolve it to that exact video's title/thumbnail/duration/chapters so
+// they can preview it before saving it onto the lesson. This is the only
+// YouTube lookup the app performs — there is no search or auto-selection.
+export async function getYoutubeVideo(req, res, next) {
   try {
     const { url } = req.query;
     if (!url || !url.trim()) {

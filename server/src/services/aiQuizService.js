@@ -8,46 +8,51 @@ const MIN_QUESTIONS = 10;
 const MAX_QUESTIONS = 20;
 const DEFAULT_PASSING_SCORE = 70;
 
+// Every video-lesson's own mentor-provided YouTube video, in course order.
+function videoLessons(skill) {
+  return (skill.lessons || []).filter((l) => l.type === 'Video' && l.youtube?.videoId);
+}
+
 // Ties a generated quiz to the exact course content it was built from —
-// title, description, linked video, and chapter/lesson titles. Used to
+// title, description, and every lesson's title + linked video id. Used to
 // decide whether an existing quiz is still valid or the course content has
 // moved on since it was generated (see getOrGenerateQuiz below).
 export function contentFingerprint(skill) {
   const parts = [
     skill.title || '',
     skill.description || '',
-    skill.youtubeVideo?.videoId || '',
-    ...(skill.lessons || []).map((l) => l.title)
+    ...(skill.lessons || []).map((l) => `${l.title}:${l.youtube?.videoId || ''}`)
   ];
   return crypto.createHash('sha256').update(parts.join('|')).digest('hex');
 }
 
-function buildQuizPrompt(skill, transcript) {
-  const chapterTitles = (skill.lessons || [])
-    .filter((l) => l.type === 'Video')
-    .map((l, i) => `${i + 1}. ${l.title} (${l.duration})`)
-    .join('\n') || '(no chapter list available)';
+function buildQuizPrompt(skill, transcriptsByLessonTitle) {
+  const lessons = skill.lessons || [];
+  const lessonLines = lessons.length
+    ? lessons.map((l, i) => {
+        if (l.type === 'Quiz') return `${i + 1}. [Checkpoint quiz] ${l.title}`;
+        const v = l.youtube;
+        return `${i + 1}. ${l.title} (${l.duration || 'unknown length'})${v ? ` — video: "${v.title}" (channel: ${v.channelTitle || 'unknown'})` : ''}`;
+      }).join('\n')
+    : '(no lesson list available)';
 
-  const video = skill.youtubeVideo;
-  const videoBlock = video
-    ? `Linked course video: "${video.title}" (channel: ${video.channelTitle || 'unknown'}, duration: ${video.duration || 'unknown'})`
-    : 'No mentor-linked video — base the quiz on the course title, description, and chapter list only.';
-
-  const transcriptBlock = transcript
-    ? `\nVIDEO TRANSCRIPT (use this as the primary source of truth for facts/terminology):\n${transcript}`
-    : '\n(No transcript could be retrieved for this video — rely on the title, description, and chapter titles instead. Do not invent specific facts, numbers, or code that weren\'t implied by them.)';
+  const transcriptBlock = Object.keys(transcriptsByLessonTitle).length
+    ? `\nLESSON VIDEO TRANSCRIPTS (use these as the primary source of truth for facts/terminology):\n${
+        Object.entries(transcriptsByLessonTitle)
+          .map(([lessonTitle, text]) => `--- ${lessonTitle} ---\n${text}`)
+          .join('\n\n')
+      }`
+    : '\n(No transcripts could be retrieved for these videos — rely on the title, description, and lesson list instead. Do not invent specific facts, numbers, or code that weren\'t implied by them.)';
 
   const userContent = `Course title: ${skill.title}
 
 Course description: ${skill.description}
 
-${videoBlock}
-
-Chapter/lesson titles:
-${chapterTitles}
+Lessons (in order):
+${lessonLines}
 ${transcriptBlock}
 
-Generate the quiz now, following the schema and rules exactly.`;
+Generate the quiz now, following the schema and rules exactly. Cover the full curriculum, not just the first lesson.`;
 
   const system = `You are an assessment generator for the SkillSwap learning platform. Your ONLY job is to write a multiple-choice quiz that tests understanding of the specific course content provided below — never general trivia, never facts unrelated to this course.
 
@@ -109,17 +114,29 @@ function parseQuizJson(raw) {
   return cleaned;
 }
 
+// Caps how many of the course's own lesson videos we pull transcripts for —
+// enough to ground the quiz in real content across the curriculum without
+// the combined prompt growing unbounded on long courses.
+const MAX_TRANSCRIPT_LESSONS = 6;
+
 // Generates a fresh quiz from the skill's current content and upserts it
 // in place (one quiz document per course — see Quiz.skillId unique index).
+// Pulls a best-effort transcript from each of the mentor's own lesson
+// videos (never a substitute video) to ground the questions.
 export async function generateQuiz(skill) {
-  const transcript = skill.youtubeVideo?.videoId
-    ? await fetchTranscript(skill.youtubeVideo.videoId)
-    : null;
+  const lessonsWithVideo = videoLessons(skill).slice(0, MAX_TRANSCRIPT_LESSONS);
+  const transcriptEntries = await Promise.all(
+    lessonsWithVideo.map(async (l) => [l.title, await fetchTranscript(l.youtube.videoId)])
+  );
+  const transcriptsByLessonTitle = Object.fromEntries(
+    transcriptEntries.filter(([, text]) => Boolean(text))
+  );
 
-  const { system, messages } = buildQuizPrompt(skill, transcript);
+  const { system, messages } = buildQuizPrompt(skill, transcriptsByLessonTitle);
   const raw = await askClaude({ system, messages, maxTokens: 4000 });
   const questions = parseQuizJson(raw);
 
+  const firstVideoLesson = videoLessons(skill)[0];
   const quiz = await Quiz.findOneAndUpdate(
     { skillId: skill.id },
     {
@@ -127,7 +144,7 @@ export async function generateQuiz(skill) {
       generatedBy: 'AI',
       questions,
       passingScore: DEFAULT_PASSING_SCORE,
-      sourceVideoId: skill.youtubeVideo?.videoId || null,
+      sourceVideoId: firstVideoLesson?.youtube?.videoId || null,
       contentFingerprint: contentFingerprint(skill)
     },
     { new: true, upsert: true }

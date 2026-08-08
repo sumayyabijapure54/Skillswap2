@@ -240,9 +240,34 @@ async function uniqueSlug(title) {
 // POST /api/skills  { title, category, level, description, duration?, mentorRole?, prerequisites?, tags?, lessons? }  (protected)
 // A member posts a brand-new skill and becomes its mentor immediately —
 // distinct from /skills/:id/claim, which attaches to an existing seeded skill.
+// Normalizes the mentor-submitted lessons array into the shape Skill.lessons
+// expects: stable sequential `id`s, an explicit `order`, and — critically —
+// every `type: 'Video'` lesson keeps only its own `youtube` block (already
+// resolved via GET /api/youtube/video on the client before submit). There
+// is no other source for a video lesson's content, so anything without a
+// `youtube` object is dropped rather than silently published without a video.
+function cleanLessonsInput(lessons) {
+  if (!Array.isArray(lessons)) return [];
+  return lessons
+    .filter((l) => l && l.title && (l.type === 'Quiz' ? true : Boolean(l.youtube?.videoId)))
+    .map((l, i) => ({
+      id: i + 1,
+      order: i + 1,
+      title: l.title,
+      description: l.description || '',
+      duration: l.type === 'Quiz' ? (l.duration || '5 min') : (l.youtube?.duration || l.duration || ''),
+      type: l.type === 'Quiz' ? 'Quiz' : 'Video',
+      youtube: l.type === 'Quiz' ? null : l.youtube,
+      quiz: Array.isArray(l.quiz) ? l.quiz : []
+    }));
+}
+
+// POST /api/skills  { title, category, level, description, duration?, mentorRole?, prerequisites?, tags?, lessons? }  (protected)
+// A member posts a brand-new skill and becomes its mentor immediately —
+// distinct from /skills/:id/claim, which attaches to an existing seeded skill.
 export async function createSkill(req, res, next) {
   try {
-    const { title, category, level, description, duration, mentorRole, prerequisites, tags, lessons, youtubeVideo } = req.body;
+    const { title, category, level, description, duration, mentorRole, prerequisites, tags, lessons } = req.body;
 
     if (!title || !category || !level || !description) {
       return res.status(400).json({ message: 'title, category, level, and description are required' });
@@ -257,26 +282,23 @@ export async function createSkill(req, res, next) {
     const id = await uniqueSlug(title);
     const initials = req.user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 
-    const cleanLessons = Array.isArray(lessons)
-      ? lessons
-          .filter((l) => l && l.title)
-          .map((l, i) => ({
-            id: i + 1,
-            title: l.title,
-            duration: l.duration || '10 min',
-            type: l.type === 'Quiz' ? 'Quiz' : 'Video'
-          }))
-      : [];
+    const cleanLessons = cleanLessonsInput(lessons);
 
-    // A course with neither a linked video nor any lessons can be created
-    // and "published" successfully, but every downstream feature that
-    // reads course content (most visibly the AI quiz — see
-    // quizController.loadSkillOr404) will then fail for students with no
-    // way for them to fix it. Catch it here instead, at the one place it's
-    // actually actionable.
-    if (!youtubeVideo && cleanLessons.length === 0) {
+    // A course with no lessons at all can be created and "published"
+    // successfully, but every downstream feature that reads course content
+    // (most visibly the AI quiz — see quizController.loadSkillOr404) will
+    // then fail for students with no way for them to fix it. A course also
+    // needs at least one actual video lesson — a course made only of quiz
+    // checkpoints has nothing to teach from. Catch both here instead, at
+    // the one place it's actually actionable.
+    if (cleanLessons.length === 0) {
       return res.status(400).json({
-        message: 'Add at least one lesson or a YouTube course video before publishing.'
+        message: 'Add at least one lesson with a YouTube video before publishing.'
+      });
+    }
+    if (!cleanLessons.some((l) => l.type === 'Video')) {
+      return res.status(400).json({
+        message: 'Add at least one video lesson before publishing.'
       });
     }
 
@@ -299,8 +321,7 @@ export async function createSkill(req, res, next) {
       mentorUser: req.user._id,
       prerequisites: Array.isArray(prerequisites) ? prerequisites.filter(Boolean) : [],
       tags: Array.isArray(tags) ? tags.filter(Boolean) : [],
-      lessons: cleanLessons,
-      youtubeVideo: youtubeVideo || null
+      lessons: cleanLessons
     });
 
     res.status(201).json({ skill });
@@ -309,7 +330,7 @@ export async function createSkill(req, res, next) {
   }
 }
 
-const EDITABLE_SKILL_FIELDS = ['title', 'description', 'duration', 'prerequisites', 'tags', 'lessons', 'youtubeVideo'];
+const EDITABLE_SKILL_FIELDS = ['title', 'description', 'duration', 'prerequisites', 'tags'];
 
 // PATCH /api/skills/:id  (protected — only the mentor who posted it)
 // category/level are intentionally not editable here to keep Explore's
@@ -325,13 +346,20 @@ export async function updateSkill(req, res, next) {
     for (const field of EDITABLE_SKILL_FIELDS) {
       if (req.body[field] !== undefined) skill[field] = req.body[field];
     }
+    if (req.body.lessons !== undefined) {
+      skill.lessons = cleanLessonsInput(req.body.lessons);
+    }
 
-    // Same guard as createSkill — don't let an edit (e.g. removing the
-    // linked video while trying to switch to manual lessons) leave a
-    // previously-valid, already-enrolled course with no content at all.
-    if (!skill.youtubeVideo && skill.lessons.length === 0) {
+    // Same guard as createSkill — don't let an edit leave a previously
+    // valid, already-enrolled course with no video content at all.
+    if (skill.lessons.length === 0) {
       return res.status(400).json({
-        message: 'A course needs at least one lesson or a YouTube course video — add one before removing the other.'
+        message: 'A course needs at least one lesson with a YouTube video — add one before saving.'
+      });
+    }
+    if (!skill.lessons.some((l) => l.type === 'Video')) {
+      return res.status(400).json({
+        message: 'A course needs at least one video lesson — add one before saving.'
       });
     }
 

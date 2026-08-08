@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { getYoutubeCourse, getYoutubeVideoById } from '../controllers/youtubeController.js';
+import { getYoutubeVideo } from '../controllers/youtubeController.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/course', getYoutubeCourse);
-router.get('/video', requireAuth, getYoutubeVideoById);
+// Mentor-only lookup used while building a lesson — resolves a pasted
+// YouTube URL to that exact video's metadata. No search endpoint exists.
+router.get('/video', requireAuth, getYoutubeVideo);
 
 export default router;

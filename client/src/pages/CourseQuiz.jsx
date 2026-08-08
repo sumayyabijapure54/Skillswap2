@@ -17,29 +17,19 @@ export default function CourseQuiz() {
 
   const isOwnerMentor = Boolean(skill?.mentorUser) && skill.mentorUser === profile?.id;
   const canRegenerate = isOwnerMentor || isAdmin;
+  // Same eligibility check as server's quizController.loadSkillOr404 — a
+  // course with no lessons yet will 400 on every single request, forever,
+  // no matter how many times "Try again" is clicked. Short-circuit instead
+  // of hitting that wall.
+  const hasQuizContent = Boolean(skill) && (skill.lessons?.length || 0) > 0;
 
   const load = React.useCallback(() => {
     setState((s) => ({ ...s, loading: true, error: null, forbidden: null }));
-    // TEMP DEBUG — remove once the "no content" report is confirmed fixed.
-    // Confirms this effect always fires GET /api/quiz/:skillId unconditionally;
-    // there is no client-side content check that can short-circuit it.
-    console.log('[CourseQuiz debug] about to call getQuiz()', {
-      courseId: id,
-      skillId: id,
-      skill,
-      chapters: skill?.chapters,
-      lessons: skill?.lessons,
-      youtubeVideo: skill?.youtubeVideo
-    });
     fetchCourseQuiz(id)
       .then((data) => {
-        console.log('[CourseQuiz debug] getQuiz() succeeded', data); // TEMP DEBUG
         setState({ loading: false, quiz: data, error: null, forbidden: null });
       })
       .catch((err) => {
-        // TEMP DEBUG — status/message straight from the failed response, so
-        // it's clear this text always comes from the server, never a local check.
-        console.log('[CourseQuiz debug] getQuiz() failed', { status: err.status, message: err.message });
         if (err.status === 403) {
           setState({ loading: false, quiz: null, error: null, forbidden: err.message });
         } else {
@@ -49,8 +39,16 @@ export default function CourseQuiz() {
   }, [id]);
 
   React.useEffect(() => {
+    if (skillLoading) return;
+    // Don't even ask the server for a quiz this course can never generate —
+    // see hasQuizContent above. Surfacing this locally avoids the endless
+    // "Couldn't load the quiz" / "Try again" loop for these courses.
+    if (!hasQuizContent) {
+      setState({ loading: false, quiz: null, error: null, forbidden: null });
+      return;
+    }
     load();
-  }, [load]);
+  }, [load, skillLoading, hasQuizContent]);
 
   const handleSubmit = async (answers) => {
     setSubmitting(true);
@@ -87,6 +85,16 @@ export default function CourseQuiz() {
       <ComingSoon
         title="Finish the course first"
         text={state.forbidden}
+        action={<Link to={`/learn/${id}`} className="btn-primary-lg">Back to lessons →</Link>}
+      />
+    );
+  }
+
+  if (!hasQuizContent) {
+    return (
+      <ComingSoon
+        title="Quiz not available yet"
+        text="This course's mentor hasn't linked a course video or lessons yet, so there's nothing for the AI to build a quiz from. Check back once they add content."
         action={<Link to={`/learn/${id}`} className="btn-primary-lg">Back to lessons →</Link>}
       />
     );

@@ -86,8 +86,8 @@ export default function MentorCourses(){
           {courses.map(c => (
             <div className="course-card" key={c.id}>
               <div className="course-card-thumb">
-                {c.youtubeVideo?.thumbnail ? (
-                  <img src={c.youtubeVideo.thumbnail} alt={c.title} />
+                {c.lessons?.find(l => l.type === 'Video' && l.youtube?.thumbnail)?.youtube?.thumbnail ? (
+                  <img src={c.lessons.find(l => l.type === 'Video' && l.youtube?.thumbnail).youtube.thumbnail} alt={c.title} />
                 ) : (
                   <div className="no-video">No video uploaded</div>
                 )}
