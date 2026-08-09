@@ -4,6 +4,7 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { api } from '../lib/api.js';
 import { mentorTodayLiveSessions } from '../lib/liveSessionsApi.js';
+import { SkeletonRow, Skeleton } from '../components/Skeleton.jsx';
 
 export default function MentorDashboard(){
   const { profile } = useUser();
@@ -84,7 +85,9 @@ export default function MentorDashboard(){
 
       <div className="dash-section-head"><h2>Upcoming teaching sessions</h2><Link to="/mentor-students">View students →</Link></div>
       {upcoming === null ? (
-        <div className="dash-empty">Loading…</div>
+        <div className="my-learning-list" style={{marginBottom:'40px'}}>
+          {Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)}
+        </div>
       ) : upcoming.length === 0 ? (
         <div className="dash-empty">No upcoming teaching sessions booked yet.</div>
       ) : (
@@ -109,7 +112,7 @@ export default function MentorDashboard(){
           <div className="dash-section-head"><h2>What you teach</h2><Link to="/mentor-courses">Manage →</Link></div>
           <div className="col-card">
             {courses === null ? (
-              <div className="dash-empty" style={{margin:0}}>Loading…</div>
+              <Skeleton height="28px" width="90%" style={{margin:0}} />
             ) : courses.length === 0 ? (
               <div className="dash-empty" style={{margin:0}}>Nothing listed yet.</div>
             ) : (
@@ -121,7 +124,7 @@ export default function MentorDashboard(){
           <div className="dash-section-head"><h2>Recent reviews</h2><Link to="/mentor-analytics">See analytics →</Link></div>
           <div className="col-card">
             {reviews === null ? (
-              <div className="dash-empty" style={{margin:0}}>Loading…</div>
+              <Skeleton height="50px" width="100%" style={{margin:0}} />
             ) : reviews.length === 0 ? (
               <div className="dash-empty" style={{margin:0}}>No reviews yet.</div>
             ) : (

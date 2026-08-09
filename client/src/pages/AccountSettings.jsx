@@ -2,10 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function AccountSettings(){
   const navigate = useNavigate();
   const { profile, isAdmin, settings, updateProfile, updateSettings, toggleConnectedAccount, changePassword, deleteAccount } = useUser();
+  const toast = useToast();
 
   const [email, setEmail] = React.useState(profile.email);
   const [pw, setPw] = React.useState({ current:'', next:'', confirm:'' });
@@ -13,7 +15,7 @@ export default function AccountSettings(){
   const [pwError, setPwError] = React.useState('');
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
 
-  const saveEmail = (e)=>{ e.preventDefault(); updateProfile({ email }); };
+  const saveEmail = (e)=>{ e.preventDefault(); updateProfile({ email }); toast.success('Email address updated.'); };
 
   const submitPw = async (e)=>{
     e.preventDefault();
@@ -21,7 +23,8 @@ export default function AccountSettings(){
     if(pw.next.length<8){ setPwError('New password must be at least 8 characters.'); return; }
     if(pw.next!==pw.confirm){ setPwError("New passwords don't match."); return; }
     const res = await changePassword(pw);
-    if(res.ok){ setPwStatus('Password updated.'); setPw({ current:'', next:'', confirm:'' }); }
+    if(res.ok){ setPwStatus('Password updated.'); setPw({ current:'', next:'', confirm:'' }); toast.success('Password updated.'); }
+    else { toast.error(res.error || 'Could not update password.'); }
   };
 
   const doDelete = async ()=>{

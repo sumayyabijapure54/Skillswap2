@@ -2,6 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { api } from '../lib/api.js';
+import { SkeletonRow } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 function initialsOf(name){
   return (name || '').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
@@ -10,12 +13,14 @@ function initialsOf(name){
 export default function Reviews(){
   const [reviews, setReviews] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const toast = useToast();
 
   React.useEffect(()=>{
     api.get('/api/reviews/mine')
       .then(data => setReviews(data.reviews || []))
-      .catch(()=>{})
+      .catch(()=>{ toast.error('Could not load your reviews — please refresh to try again.'); })
       .finally(()=>setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sorted = [...reviews].sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
@@ -23,11 +28,17 @@ export default function Reviews(){
   return (
     <DashboardLayout title="Reviews" subtitle="Reviews you've written for mentors after your sessions.">
       {loading ? (
-        <div className="dash-empty">Loading reviews…</div>
-      ) : sorted.length===0 ? (
-        <div className="dash-empty">
-          No reviews yet — after a mentor <Link to="/sessions">marks a session complete</Link>, you'll be able to leave one.
+        <div className="my-learning-list">
+          {Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)}
         </div>
+      ) : sorted.length===0 ? (
+        <EmptyState
+          icon="★"
+          title="No reviews yet"
+          text="After a mentor marks a session complete, you'll be able to leave one."
+          ctaLabel="View sessions"
+          ctaTo="/sessions"
+        />
       ) : (
         <div className="my-learning-list">
           {sorted.map(r=>(

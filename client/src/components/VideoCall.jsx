@@ -160,7 +160,7 @@ export default function VideoCall({ mentorName = 'your mentor', bookingId, onEnd
           )}
 
           <div style={{ position: 'absolute', top: '14px', left: '14px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: peerConnected ? '#2ecc71' : '#ff5f5f', boxShadow: peerConnected ? '0 0 8px #2ecc71' : '0 0 8px #ff5f5f' }} />
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: peerConnected ? 'var(--success)' : 'var(--danger)', boxShadow: peerConnected ? '0 0 8px var(--success)' : '0 0 8px var(--danger)' }} />
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.4)', padding: '4px 10px', borderRadius: '100px' }}>
               {formatDuration(seconds)}
             </span>

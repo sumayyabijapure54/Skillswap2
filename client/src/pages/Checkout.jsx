@@ -4,12 +4,14 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { api } from '../lib/api.js';
 import { openRazorpayCheckout } from '../lib/razorpay.js';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function Checkout(){
   const location = useLocation();
   const navigate = useNavigate();
   const { wallet, profile, refreshWallet } = useUser();
   const order = location.state;
+  const toast = useToast();
 
   const [method, setMethod] = React.useState('wallet');
   const [processing, setProcessing] = React.useState(false);
@@ -73,6 +75,7 @@ export default function Checkout(){
     setProcessing(true);
     try{
       const booking = method==='wallet' ? await payWithWallet() : await payWithRazorpay();
+      toast.success('Payment successful — session booked!');
       navigate(`/session/${booking.id}`);
     }catch(err){
       setError(err.message);

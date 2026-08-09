@@ -3,6 +3,13 @@ import User from '../models/User.js';
 import { notifyUser } from '../utils/notify.js';
 import { parsePagination, paginationMeta } from '../utils/pagination.js';
 
+// Mirrors MentorApplication's schema-level toJSON transform, which .lean()
+// results skip — same pattern as leanSkill/leanReview/leanReport elsewhere.
+function leanApplication(a) {
+  const { _id, __v, user, skillTitle, ...rest } = a;
+  return { id: _id, skill: skillTitle, submittedAt: a.createdAt, ...rest };
+}
+
 // POST /api/mentor-applications  { skillTitle, category, bio }  (protected)
 export async function submitApplication(req, res, next) {
   try {
@@ -37,11 +44,11 @@ export async function listApplications(req, res, next) {
     const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 50 });
 
     const [applications, total] = await Promise.all([
-      MentorApplication.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      MentorApplication.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       MentorApplication.countDocuments(filter)
     ]);
 
-    res.json({ applications, ...paginationMeta({ page, limit, total }) });
+    res.json({ applications: applications.map(leanApplication), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }

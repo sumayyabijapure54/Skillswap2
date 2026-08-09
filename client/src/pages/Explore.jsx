@@ -2,6 +2,9 @@ import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCategories, useLevels, useSkills } from '../lib/skillsApi.js';
 import SkillIcon3D from '../components/SkillIcon3D.jsx';
+import { SkeletonSkillCard } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
 
 export default function Explore(){
   const [params, setParams] = useSearchParams();
@@ -103,11 +106,19 @@ export default function Explore(){
           </div>
 
           {skillsLoading ? (
-            <div className="explore-empty">Loading skills…</div>
-          ) : filtered.length===0 ? (
-            <div className="explore-empty">No skills match your filters yet. Try clearing a filter or searching a different term.</div>
-          ) : (
             <div className="explore-grid">
+              {Array.from({ length: 6 }).map((_, i) => <SkeletonSkillCard key={i} />)}
+            </div>
+          ) : filtered.length===0 ? (
+            <EmptyState
+              icon="⌕"
+              title="No skills match your filters"
+              text="Try clearing a filter or searching a different term."
+              ctaLabel={(activeCats.length>0 || activeLevels.length>0 || query) ? 'Clear all filters' : undefined}
+              ctaOnClick={()=>{ setActiveCats([]); setActiveLevels([]); setQuery(''); }}
+            />
+          ) : (
+            <ScrollReveal as="div" className="explore-grid" stagger>
               {filtered.map(s=>{
                 const cat = categories.find(c=>c.key===s.category);
                 return (
@@ -124,7 +135,7 @@ export default function Explore(){
                   </Link>
                 );
               })}
-            </div>
+            </ScrollReveal>
           )}
         </div>
       </div>

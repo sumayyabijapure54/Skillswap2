@@ -37,17 +37,14 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
       localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
       pc.ontrack = (event) => {
-        console.log('[call] remote track received — setting remoteStream', event.streams[0]?.id); // TEMP DEBUG
         if (!cancelled) setRemoteStream(event.streams[0]);
       };
       pc.onconnectionstatechange = () => {
-        console.log('[call] connectionState =', pc.connectionState); // TEMP DEBUG
         if (cancelled) return;
         setPeerConnected(pc.connectionState === 'connected');
       };
       pc.onicecandidate = (event) => {
         if (event.candidate && remoteSocketIdRef.current) {
-          console.log('[call] sending ICE candidate to', remoteSocketIdRef.current); // TEMP DEBUG
           socket.emit('call:signal', { to: remoteSocketIdRef.current, data: { candidate: event.candidate } });
         }
       };
@@ -59,7 +56,6 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
       const pc = pcRef.current;
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      console.log('[call] offer created, sending to', targetSocketId); // TEMP DEBUG
       socket.emit('call:signal', { to: targetSocketId, data: { sdp: offer } });
     }
 
@@ -70,12 +66,10 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
 
       if (data.sdp) {
         try {
-          console.log('[call] received', data.sdp.type, 'from', from, 'pc.signalingState =', pc.signalingState); // TEMP DEBUG
           await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
           if (data.sdp.type === 'offer') {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
-            console.log('[call] answer created, sending to', from); // TEMP DEBUG
             socket.emit('call:signal', { to: from, data: { sdp: answer } });
           }
         } catch (err) {
@@ -87,7 +81,6 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
           if (!cancelled) setSignalingError('Could not connect the call — please try rejoining.');
         }
       } else if (data.candidate) {
-        console.log('[call] ICE candidate received from', from); // TEMP DEBUG
         // A candidate arriving slightly before/after negotiation settles is
         // normal and non-fatal — log it, don't surface it as a call error.
         try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); }
@@ -97,7 +90,6 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
 
     pcRef.current = createPeerConnection();
     const onPeerJoined = ({ socketId }) => {
-      console.log('[call] peer-joined — I was already here, I will offer', socketId); // TEMP DEBUG
       callPeer(socketId);
     };
     // IMPORTANT: the newcomer must NOT also call the peer(s) already in the
@@ -111,11 +103,9 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
     // room) offers; the newcomer just remembers who's there and waits for
     // that incoming offer via 'call:signal'.
     const onExistingPeers = (peers) => {
-      console.log('[call] existing-peers — waiting for their offer', peers); // TEMP DEBUG
       if (peers[0]) remoteSocketIdRef.current = peers[0].socketId;
     };
     const onPeerLeft = () => {
-      console.log('[call] peer-left — tearing down remote stream'); // TEMP DEBUG
       setRemoteStream(null); setPeerConnected(false); remoteSocketIdRef.current = null;
     };
     const onError = ({ message }) => setSignalingError(message);
@@ -127,7 +117,6 @@ export function useCallPeer({ bookingId, localStream, enabled }) {
     socket.on('call:error', onError);
 
     socket.emit('call:join', { bookingId });
-    console.log('[call] socket connected, joining room for booking', bookingId); // TEMP DEBUG
 
     return () => {
       cancelled = true;

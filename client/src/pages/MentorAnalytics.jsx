@@ -3,6 +3,9 @@ import { NavLink } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { api } from '../lib/api.js';
 import { MiniLineChart, MiniBarChart } from '../components/MiniChart.jsx';
+import { Skeleton } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const RANGE_OPTIONS = [
   { key: 3, label: '3 months' },
@@ -14,13 +17,21 @@ export default function MentorAnalytics(){
   const [months, setMonths] = React.useState(6);
   const [data, setData] = React.useState(null);
   const [error, setError] = React.useState('');
+  const [refreshKey, setRefreshKey] = React.useState(0);
+  const toast = useToast();
 
   React.useEffect(() => {
     setData(null);
+    setError('');
     api.get(`/api/bookings/mentor/analytics?months=${months}`)
       .then(setData)
-      .catch(err => setError(err.message || 'Could not load analytics.'));
-  }, [months]);
+      .catch(err => {
+        const msg = err.message || 'Could not load analytics.';
+        setError(msg);
+        toast.error(msg);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [months, refreshKey]);
 
   const ratingSeries = React.useMemo(() => {
     if (!data) return [];
@@ -44,10 +55,27 @@ export default function MentorAnalytics(){
         </div>
       </div>
 
-      {error && <div className="form-error" style={{marginBottom:'20px'}}>{error}</div>}
-
-      {data === null ? (
-        <div className="dash-empty">Loading analytics…</div>
+      {data === null && error ? (
+        <EmptyState icon="⚠" title="Couldn't load analytics" text={error} ctaLabel="Try again" ctaOnClick={() => setRefreshKey(k => k + 1)} />
+      ) : data === null ? (
+        <>
+          <div className="analytics-grid">
+            <div className="col-card">
+              <Skeleton height="16px" width="40%" style={{ marginBottom: '10px' }} />
+              <Skeleton height="12px" width="70%" style={{ marginBottom: '16px' }} />
+              <Skeleton height="160px" width="100%" radius="10px" />
+            </div>
+            <div className="col-card">
+              <Skeleton height="16px" width="40%" style={{ marginBottom: '10px' }} />
+              <Skeleton height="12px" width="70%" style={{ marginBottom: '16px' }} />
+              <Skeleton height="160px" width="100%" radius="10px" />
+            </div>
+          </div>
+          <div className="col-card" style={{ marginBottom: '32px' }}>
+            <Skeleton height="16px" width="30%" style={{ marginBottom: '16px' }} />
+            <Skeleton height="140px" width="100%" radius="10px" />
+          </div>
+        </>
       ) : (
         <>
           <div className="analytics-grid">
@@ -71,7 +99,7 @@ export default function MentorAnalytics(){
 
           <div className="dash-section-head"><h2>Performance by course</h2></div>
           {data.courses.length === 0 ? (
-            <div className="dash-empty">No course activity yet.</div>
+            <EmptyState icon="📊" title="No course activity yet" text="Once students enroll, their activity will show up here." />
           ) : (
             <div className="analytics-course-table">
               <div className="analytics-course-row head">

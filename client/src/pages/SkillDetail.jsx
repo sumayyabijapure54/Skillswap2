@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useCategories, useSkill } from '../lib/skillsApi.js';
 import { useUser } from '../context/UserContext.jsx';
 import { useAiMentor } from '../context/AiMentorContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
 import ComingSoon from './ComingSoon.jsx';
 
 export default function SkillDetail(){
@@ -12,6 +14,7 @@ export default function SkillDetail(){
   const { skill, loading } = useSkill(id);
   const { authed, wishlist, toggleWishlist } = useUser();
   const { setPageContext } = useAiMentor();
+  const toast = useToast();
 
   React.useEffect(() => {
     if (!skill) return undefined;
@@ -33,6 +36,7 @@ export default function SkillDetail(){
   const onSaveClick = ()=>{
     if(!authed){ navigate('/login', { state:{ from:`/skill/${skill.id}` } }); return; }
     toggleWishlist(skill.id);
+    toast.success(saved ? 'Removed from wishlist' : 'Saved to wishlist');
   };
 
   return (
@@ -95,16 +99,18 @@ export default function SkillDetail(){
 
       <div className="curriculum">
         <h2>Curriculum</h2>
-        {skill.lessons.map((lesson, i)=>(
-          <Link to={`/learn/${skill.id}`} className="lesson-row" key={lesson.id}>
-            <div className="num">{i+1}</div>
-            <div className="info">
-              <b>{lesson.title}</b>
-              <span>{lesson.type}</span>
-            </div>
-            <div className="dur">{lesson.duration}</div>
-          </Link>
-        ))}
+        <ScrollReveal as="div" stagger={0.04}>
+          {skill.lessons.map((lesson, i)=>(
+            <Link to={`/learn/${skill.id}`} className="lesson-row" key={lesson.id}>
+              <div className="num">{i+1}</div>
+              <div className="info">
+                <b>{lesson.title}</b>
+                <span>{lesson.type}</span>
+              </div>
+              <div className="dur">{lesson.duration}</div>
+            </Link>
+          ))}
+        </ScrollReveal>
       </div>
 
       <div>

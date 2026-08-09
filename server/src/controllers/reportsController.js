@@ -1,6 +1,15 @@
 import Report from '../models/Report.js';
 import { parsePagination, paginationMeta } from '../utils/pagination.js';
 
+// Mirrors Report's schema-level toJSON transform, which .lean() results
+// skip (they're plain objects, not Mongoose documents, so the transform
+// never runs on them) — same pattern as leanSkill/leanReview/leanAdminUser
+// elsewhere in the codebase.
+function leanReport(r) {
+  const { _id, __v, reporter, reportedUserName, ...rest } = r;
+  return { id: _id, reportedUser: reportedUserName, ...rest };
+}
+
 // POST /api/reports  { type, targetId?, reportedUserName, reason }  (protected)
 // Any signed-in user can file one — this is the write side that feeds the
 // admin moderation queue.
@@ -31,11 +40,11 @@ export async function listReports(req, res, next) {
     const { limit, page, skip } = parsePagination(req.query, { defaultLimit: 50 });
 
     const [reports, total] = await Promise.all([
-      Report.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Report.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Report.countDocuments(filter)
     ]);
 
-    res.json({ reports, ...paginationMeta({ page, limit, total }) });
+    res.json({ reports: reports.map(leanReport), ...paginationMeta({ page, limit, total }) });
   } catch (err) {
     next(err);
   }

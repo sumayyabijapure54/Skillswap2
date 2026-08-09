@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById, useCategories } from '../lib/skillsApi.js';
+import EmptyState from '../components/EmptyState.jsx';
 
 export default function MyLearning(){
   const { enrolled } = useUser();
@@ -15,9 +16,13 @@ export default function MyLearning(){
   return (
     <DashboardLayout title="My Learning" subtitle="Everything you're currently working through.">
       {inProgress.length===0 ? (
-        <div className="dash-empty">
-          Nothing in progress yet. <Link to="/explore">Browse skills</Link> to start your first course.
-        </div>
+        <EmptyState
+          icon="📚"
+          title="Nothing in progress yet"
+          text="Browse skills to start your first course."
+          ctaLabel="Browse skills"
+          ctaTo="/explore"
+        />
       ) : (
         <div className="my-learning-list">
           {inProgress.map(e=>{

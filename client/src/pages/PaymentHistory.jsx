@@ -1,6 +1,9 @@
 import React from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { api } from '../lib/api.js';
+import { SkeletonRow } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const TYPE_LABEL = { topup:'Wallet top-up', session_payment:'Session payment', refund:'Refund' };
 const TYPE_FILTERS = [
@@ -14,12 +17,14 @@ export default function PaymentHistory(){
   const [transactions, setTransactions] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('all');
+  const toast = useToast();
 
   React.useEffect(()=>{
     api.get('/api/wallet/transactions')
       .then(data => setTransactions(data.transactions || []))
-      .catch(()=>{})
+      .catch(()=>{ toast.error('Could not load your transactions — please refresh to try again.'); })
       .finally(()=>setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered = filter==='all' ? transactions : transactions.filter(t=>t.type===filter);
@@ -34,9 +39,14 @@ export default function PaymentHistory(){
       </div>
 
       {loading ? (
-        <div className="dash-empty">Loading transactions…</div>
+        <div className="invoice-table">
+          <div className="invoice-row invoice-head">
+            <span>Description</span><span>Method</span><span>Date</span><span>Amount</span>
+          </div>
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} />)}
+        </div>
       ) : sorted.length===0 ? (
-        <div className="dash-empty">No transactions in this category.</div>
+        <EmptyState icon="💳" title="No transactions" text="Nothing in this category yet." />
       ) : (
         <div className="invoice-table">
           <div className="invoice-row invoice-head">

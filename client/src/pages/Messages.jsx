@@ -4,6 +4,7 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { api } from '../lib/api.js';
 import { getSocket } from '../lib/socket.js';
+import EmptyState from '../components/EmptyState.jsx';
 
 function timeLabel(iso){
   return new Date(iso).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
@@ -87,9 +88,13 @@ export default function Messages(){
   if (conversations.length===0 && !userParam){
     return (
       <DashboardLayout title="Messages" subtitle="Your conversations with mentors and members.">
-        <div className="dash-empty">
-          No conversations yet. Visit a <Link to="/explore">mentor's profile</Link> and hit Message to start one.
-        </div>
+        <EmptyState
+          icon="💬"
+          title="No conversations yet"
+          text="Visit a mentor's profile and hit Message to start one."
+          ctaLabel="Explore mentors"
+          ctaTo="/explore"
+        />
       </DashboardLayout>
     );
   }

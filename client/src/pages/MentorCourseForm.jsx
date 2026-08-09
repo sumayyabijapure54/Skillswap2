@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { api } from '../lib/api.js';
 import { useCategories, useLevels } from '../lib/skillsApi.js';
+import { Skeleton } from '../components/Skeleton.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 // Categories/levels come from the live API (useCategories/useLevels) rather
 // than any static list, so this form can never offer a category or level
@@ -37,8 +39,7 @@ export default function MentorCourseForm(){
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
-
-  const [form, setForm] = React.useState(EMPTY_FORM);
+  const toast = useToast();
   const [errors, setErrors] = React.useState({});
   const [loading, setLoading] = React.useState(isEdit);
   const [saving, setSaving] = React.useState(false);
@@ -166,6 +167,7 @@ export default function MentorCourseForm(){
     try {
       if (isEdit) {
         await api.patch(`/api/skills/${id}`, payload);
+        toast.success('Course updated.');
       } else {
         await api.post('/api/skills', {
           ...payload,
@@ -173,10 +175,13 @@ export default function MentorCourseForm(){
           level: form.level,
           mentorRole: form.mentorRole.trim() || undefined
         });
+        toast.success('Course published.');
       }
       navigate('/mentor-courses');
     } catch (err) {
-      setSaveError(err.message || 'Could not save this course.');
+      const msg = err.message || 'Could not save this course.';
+      setSaveError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -185,7 +190,14 @@ export default function MentorCourseForm(){
   if (loading) {
     return (
       <DashboardLayout title={isEdit ? 'Edit Course' : 'New Course'}>
-        <div className="dash-empty">Loading course…</div>
+        <div className="col-card" style={{ maxWidth: '640px' }}>
+          <Skeleton height="14px" width="30%" style={{ marginBottom: '10px' }} />
+          <Skeleton height="38px" width="100%" radius="10px" style={{ marginBottom: '18px' }} />
+          <Skeleton height="14px" width="25%" style={{ marginBottom: '10px' }} />
+          <Skeleton height="90px" width="100%" radius="10px" style={{ marginBottom: '18px' }} />
+          <Skeleton height="14px" width="35%" style={{ marginBottom: '10px' }} />
+          <Skeleton height="38px" width="100%" radius="10px" />
+        </div>
       </DashboardLayout>
     );
   }

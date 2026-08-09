@@ -2,12 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { api } from '../lib/api.js';
+import { SkeletonRow } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const STATUS_LABEL = { confirmed:'Upcoming', completed:'Awaiting review', cancelled:'Cancelled' };
 
 export default function Sessions(){
   const [bookings, setBookings] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const toast = useToast();
 
   const load = React.useCallback(() => {
     setLoading(true);
@@ -23,7 +28,10 @@ export default function Sessions(){
     try{
       await api.patch(`/api/bookings/${id}/cancel`, {});
       load();
-    }catch{ /* best-effort — the row just won't update if this fails */ }
+      toast.success('Session cancelled.');
+    }catch{
+      toast.error('Could not cancel this session — please try again.');
+    }
   };
 
   const sorted = [...bookings].sort((a,b)=> new Date(b.scheduledAt) - new Date(a.scheduledAt));
@@ -31,13 +39,19 @@ export default function Sessions(){
   return (
     <DashboardLayout title="Upcoming Sessions" subtitle="Everything you've booked with mentors.">
       {loading ? (
-        <div className="dash-empty">Loading sessions…</div>
-      ) : sorted.length===0 ? (
-        <div className="dash-empty">
-          No sessions booked yet. <Link to="/book-session">Book your first session</Link>.
-        </div>
-      ) : (
         <div className="my-learning-list">
+          {Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)}
+        </div>
+      ) : sorted.length===0 ? (
+        <EmptyState
+          icon="📅"
+          title="No sessions booked yet"
+          text="Book time with a mentor to get started."
+          ctaLabel="Book a session"
+          ctaTo="/book-session"
+        />
+      ) : (
+        <ScrollReveal as="div" className="my-learning-list" stagger>
           {sorted.map(b=>(
             <div className="learning-row" key={b.id}>
               <div className="learning-row-icon">{b.mentorInitials}</div>
@@ -51,7 +65,7 @@ export default function Sessions(){
               )}
             </div>
           ))}
-        </div>
+        </ScrollReveal>
       )}
     </DashboardLayout>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
@@ -8,66 +8,72 @@ import RippleEffect from './components/RippleEffect.jsx';
 import RequireAuth from './components/RequireAuth.jsx';
 import AiMentorWidget from './components/AiMentorWidget.jsx';
 import CertificateToast from './components/CertificateToast.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { useUser } from './context/UserContext.jsx';
 import { initSmoothScroll, scrollToTop } from './lib/smoothScroll.js';
 import { ScrollTrigger } from './lib/gsap.js';
 
+// Home loads eagerly (it's the first paint for most visits — no reason to
+// add a chunk round-trip to the landing page). Every other route is its
+// own lazy chunk: the browser only ever downloads the page the person is
+// actually navigating to, instead of all ~55 pages up front. See the
+// <Suspense fallback> below for what shows while a chunk downloads.
 import Home from './pages/Home.jsx';
-import Explore from './pages/Explore.jsx';
-import SkillDetail from './pages/SkillDetail.jsx';
-import LessonPlayer from './pages/LessonPlayer.jsx';
-import CourseQuiz from './pages/CourseQuiz.jsx';
-import Legal from './pages/Legal.jsx';
-import Help from './pages/Help.jsx';
-import About from './pages/About.jsx';
-import Contact from './pages/Contact.jsx';
-import Pricing from './pages/Pricing.jsx';
-import Search from './pages/Search.jsx';
-import SignUp from './pages/SignUp.jsx';
-import Login from './pages/Login.jsx';
-import ForgotPassword from './pages/ForgotPassword.jsx';
-import ResetPassword from './pages/ResetPassword.jsx';
-import VerifyEmail from './pages/VerifyEmail.jsx';
-import Onboarding from './pages/Onboarding.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import MyLearning from './pages/MyLearning.jsx';
-import LearningHistory from './pages/LearningHistory.jsx';
-import Wishlist from './pages/Wishlist.jsx';
-import Profile from './pages/Profile.jsx';
-import Notifications from './pages/Notifications.jsx';
-import MentorProfile from './pages/MentorProfile.jsx';
-import PostSkill from './pages/PostSkill.jsx';
-import Community from './pages/Community.jsx';
-import Messages from './pages/Messages.jsx';
-import BookSession from './pages/BookSession.jsx';
-import SessionBooking from './pages/SessionBooking.jsx';
-import Sessions from './pages/Sessions.jsx';
-import SessionDetail from './pages/SessionDetail.jsx';
-import LiveSessions from './pages/LiveSessions.jsx';
-import LiveSessionDetail from './pages/LiveSessionDetail.jsx';
-import Reviews from './pages/Reviews.jsx';
-import Checkout from './pages/Checkout.jsx';
-import Wallet from './pages/Wallet.jsx';
-import PaymentHistory from './pages/PaymentHistory.jsx';
-import Certificates from './pages/Certificates.jsx';
-import CertificateDetail from './pages/CertificateDetail.jsx';
-import CertificateVerify from './pages/CertificateVerify.jsx';
-import PublicProfile from './pages/PublicProfile.jsx';
-import MentorDashboard from './pages/MentorDashboard.jsx';
-import MentorCourses from './pages/MentorCourses.jsx';
-import MentorCourseForm from './pages/MentorCourseForm.jsx';
-import MentorStudents from './pages/MentorStudents.jsx';
-import MentorAnalytics from './pages/MentorAnalytics.jsx';
-import Recommendations from './pages/Recommendations.jsx';
-import Achievements from './pages/Achievements.jsx';
-import AccountSettings from './pages/AccountSettings.jsx';
-import AiMentor from './pages/AiMentor.jsx';
+const Explore = lazy(() => import('./pages/Explore.jsx'));
+const SkillDetail = lazy(() => import('./pages/SkillDetail.jsx'));
+const LessonPlayer = lazy(() => import('./pages/LessonPlayer.jsx'));
+const CourseQuiz = lazy(() => import('./pages/CourseQuiz.jsx'));
+const Legal = lazy(() => import('./pages/Legal.jsx'));
+const Help = lazy(() => import('./pages/Help.jsx'));
+const About = lazy(() => import('./pages/About.jsx'));
+const Contact = lazy(() => import('./pages/Contact.jsx'));
+const Pricing = lazy(() => import('./pages/Pricing.jsx'));
+const Search = lazy(() => import('./pages/Search.jsx'));
+const SignUp = lazy(() => import('./pages/SignUp.jsx'));
+const Login = lazy(() => import('./pages/Login.jsx'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail.jsx'));
+const Onboarding = lazy(() => import('./pages/Onboarding.jsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const MyLearning = lazy(() => import('./pages/MyLearning.jsx'));
+const LearningHistory = lazy(() => import('./pages/LearningHistory.jsx'));
+const Wishlist = lazy(() => import('./pages/Wishlist.jsx'));
+const Profile = lazy(() => import('./pages/Profile.jsx'));
+const Notifications = lazy(() => import('./pages/Notifications.jsx'));
+const MentorProfile = lazy(() => import('./pages/MentorProfile.jsx'));
+const PostSkill = lazy(() => import('./pages/PostSkill.jsx'));
+const Community = lazy(() => import('./pages/Community.jsx'));
+const Messages = lazy(() => import('./pages/Messages.jsx'));
+const BookSession = lazy(() => import('./pages/BookSession.jsx'));
+const SessionBooking = lazy(() => import('./pages/SessionBooking.jsx'));
+const Sessions = lazy(() => import('./pages/Sessions.jsx'));
+const SessionDetail = lazy(() => import('./pages/SessionDetail.jsx'));
+const LiveSessions = lazy(() => import('./pages/LiveSessions.jsx'));
+const LiveSessionDetail = lazy(() => import('./pages/LiveSessionDetail.jsx'));
+const Reviews = lazy(() => import('./pages/Reviews.jsx'));
+const Checkout = lazy(() => import('./pages/Checkout.jsx'));
+const Wallet = lazy(() => import('./pages/Wallet.jsx'));
+const PaymentHistory = lazy(() => import('./pages/PaymentHistory.jsx'));
+const Certificates = lazy(() => import('./pages/Certificates.jsx'));
+const CertificateDetail = lazy(() => import('./pages/CertificateDetail.jsx'));
+const CertificateVerify = lazy(() => import('./pages/CertificateVerify.jsx'));
+const PublicProfile = lazy(() => import('./pages/PublicProfile.jsx'));
+const MentorDashboard = lazy(() => import('./pages/MentorDashboard.jsx'));
+const MentorCourses = lazy(() => import('./pages/MentorCourses.jsx'));
+const MentorCourseForm = lazy(() => import('./pages/MentorCourseForm.jsx'));
+const MentorStudents = lazy(() => import('./pages/MentorStudents.jsx'));
+const MentorAnalytics = lazy(() => import('./pages/MentorAnalytics.jsx'));
+const Recommendations = lazy(() => import('./pages/Recommendations.jsx'));
+const Achievements = lazy(() => import('./pages/Achievements.jsx'));
+const AccountSettings = lazy(() => import('./pages/AccountSettings.jsx'));
+const AiMentor = lazy(() => import('./pages/AiMentor.jsx'));
 import RequireAdmin from './components/RequireAdmin.jsx';
-import AdminOverview from './pages/admin/AdminOverview.jsx';
-import AdminUsers from './pages/admin/AdminUsers.jsx';
-import AdminMentorApplications from './pages/admin/AdminMentorApplications.jsx';
-import AdminReports from './pages/admin/AdminReports.jsx';
-import ComingSoon from './pages/ComingSoon.jsx';
+const AdminOverview = lazy(() => import('./pages/admin/AdminOverview.jsx'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers.jsx'));
+const AdminMentorApplications = lazy(() => import('./pages/admin/AdminMentorApplications.jsx'));
+const AdminReports = lazy(() => import('./pages/admin/AdminReports.jsx'));
+const ComingSoon = lazy(() => import('./pages/ComingSoon.jsx'));
 
 // Auth/onboarding/dashboard screens use full-height layouts of their own
 // (see .auth-shell / .onboard-shell / .dash-shell) — the marketing footer
@@ -109,10 +115,17 @@ export default function App(){
   }, []);
 
   const showFooter = !NO_FOOTER_EXACT.includes(pathname) && !NO_FOOTER_PREFIXES.some(p=>pathname.startsWith(p));
+  // Utility/app pages (dashboard, forms, tables, checkout, live calls) reuse
+  // the same routing signal as showFooter — they're "in the app", not "on
+  // the site". Keeping the always-animating 3D particle field off those
+  // pages cuts unnecessary GPU/CPU work and stops the effect stack from
+  // competing with dense data or focused tasks. The cheap CSS .bg-glow
+  // still runs everywhere for ambient warmth.
+  const showBackgroundFX = showFooter;
 
   return (
     <div className="page">
-      <BackgroundFX />
+      {showBackgroundFX && <BackgroundFX />}
       <div className="grain"></div>
       <div className="bg-glow"></div>
 
@@ -121,6 +134,8 @@ export default function App(){
       <RippleEffect />
 
       <div className="route-fade" key={pathname}>
+        <ErrorBoundary resetKey={pathname}>
+        <Suspense fallback={<div className="route-loader"><div className="route-loader-spin" /></div>}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
@@ -183,6 +198,8 @@ export default function App(){
 
           <Route path="*" element={<ComingSoon />} />
         </Routes>
+        </Suspense>
+        </ErrorBoundary>
       </div>
 
       {showFooter && <Footer />}

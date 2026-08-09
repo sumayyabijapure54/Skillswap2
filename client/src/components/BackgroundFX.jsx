@@ -1,6 +1,15 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useTheme } from '../context/ThemeContext.jsx';
+
+// Three.js materials take real color values, not CSS custom properties, so
+// the two accent colors are mirrored here from index.css's --accent/--accent2
+// for each theme. Keep these in sync if the palette in index.css changes.
+const ACCENTS = {
+  dark: [0x14f0b4, 0x9b7bff],
+  light: [0x0fbe93, 0x7c5ce0]
+};
 
 function Field() {
   const groupRef = useRef();
@@ -9,6 +18,9 @@ function Field() {
   const mouse = useRef({ x: 0, y: 0 });
   const scrollNorm = useRef(0);
   const { size } = useThree();
+  const { theme } = useTheme();
+  const [accent, accent2] = ACCENTS[theme] || ACCENTS.dark;
+  const accentHex = '#' + accent.toString(16).padStart(6, '0');
 
   const reduced = useMemo(
     () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
@@ -29,8 +41,8 @@ function Field() {
 
     const posArr = new Float32Array(COUNT * 3);
     const colorArr = new Float32Array(COUNT * 3);
-    const c1 = new THREE.Color(0x14f0b4);
-    const c2 = new THREE.Color(0x9b7bff);
+    const c1 = new THREE.Color(accent);
+    const c2 = new THREE.Color(accent2);
     nodes.forEach((n, i) => {
       posArr[i * 3] = n.pos.x; posArr[i * 3 + 1] = n.pos.y; posArr[i * 3 + 2] = n.pos.z;
       const mixed = c1.clone().lerp(c2, Math.random());
@@ -48,7 +60,7 @@ function Field() {
 
     return { nodes, posArr, colorArr, edges, edgePosArr };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [COUNT]);
+  }, [COUNT, accent, accent2]);
 
   useEffect(() => {
     const onMouseMove = (e) => {
@@ -107,7 +119,7 @@ function Field() {
         <bufferGeometry ref={edgesGeoRef}>
           <bufferAttribute attach="attributes-position" count={edges.length * 2} array={edgePosArr} itemSize={3} />
         </bufferGeometry>
-        <lineBasicMaterial color="#14f0b4" transparent opacity={0.22} />
+        <lineBasicMaterial color={accentHex} transparent opacity={0.22} />
       </lineSegments>
     </group>
   );

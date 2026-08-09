@@ -3,6 +3,8 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useSkills, useCategories } from '../lib/skillsApi.js';
 import { api } from '../lib/api.js';
 import SkillIcon3D from '../components/SkillIcon3D.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
 
 const TABS = [
   { key:'all', label:'All' },
@@ -87,11 +89,11 @@ export default function Search(){
           </div>
 
           {totalCount===0 ? (
-            <div className="dash-empty">No results for "{q}". Try a different search term.</div>
+            <EmptyState icon="⌕" title="No results" text={`Nothing matched "${q}". Try a different search term.`} />
           ) : (
             <>
               {showSkills && skillResults.length>0 && (
-                <div style={{marginBottom:'40px'}}>
+                <ScrollReveal as="div" style={{marginBottom:'40px'}}>
                   <h3 style={{fontSize:'14px', marginBottom:'14px', color:'var(--muted)'}}>Skills</h3>
                   <div className="explore-grid">
                     {skillResults.map(s=>{
@@ -107,11 +109,11 @@ export default function Search(){
                       );
                     })}
                   </div>
-                </div>
+                </ScrollReveal>
               )}
 
               {showMentors && mentorResults.length>0 && (
-                <div style={{marginBottom:'40px'}}>
+                <ScrollReveal as="div" delay={80} style={{marginBottom:'40px'}}>
                   <h3 style={{fontSize:'14px', marginBottom:'14px', color:'var(--muted)'}}>Mentors</h3>
                   <div className="mentor-grid">
                     {mentorResults.map(m=>(
@@ -125,11 +127,11 @@ export default function Search(){
                       </Link>
                     ))}
                   </div>
-                </div>
+                </ScrollReveal>
               )}
 
               {showPosts && postResults.length>0 && (
-                <div style={{marginBottom:'40px'}}>
+                <ScrollReveal as="div" delay={160} style={{marginBottom:'40px'}}>
                   <h3 style={{fontSize:'14px', marginBottom:'14px', color:'var(--muted)'}}>Community posts</h3>
                   <div className="community-list">
                     {postResults.map(p=>(
@@ -149,7 +151,7 @@ export default function Search(){
                       </div>
                     ))}
                   </div>
-                </div>
+                </ScrollReveal>
               )}
             </>
           )}

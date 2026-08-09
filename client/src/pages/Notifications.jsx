@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
+import EmptyState from '../components/EmptyState.jsx';
 
 const TYPE_ICON = { booking:'📅', message:'💬', recommendation:'✦', system:'🔔' };
 const FILTERS = ['all', 'booking', 'message', 'recommendation', 'system'];
@@ -34,7 +35,7 @@ export default function Notifications(){
       </div>
 
       {filtered.length===0 ? (
-        <div className="dash-empty">No notifications in this category.</div>
+        <EmptyState icon="🔔" title="Nothing here" text="No notifications in this category." />
       ) : (
         <div className="notif-list">
           {filtered.map(n=>(

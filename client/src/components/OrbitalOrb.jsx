@@ -1,6 +1,11 @@
 import React, { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useTheme } from '../context/ThemeContext.jsx';
+
+// Mirrors --accent/--accent2 from index.css for each theme — three.js
+// materials need real color values, not CSS custom properties.
+const ACCENTS = { dark: ['#14f0b4', '#9b7bff'], light: ['#0fbe93', '#7c5ce0'] };
 
 // One ring: the ring outline, its orbiting nodes, and the connector arcs
 // from center to each node all live in the same rotating group, so the
@@ -68,6 +73,8 @@ function Core({ mouse }) {
   const knotRef = useRef();
   const groupRef = useRef();
   const glowRef = useRef();
+  const { theme } = useTheme();
+  const [accent, accent2] = ACCENTS[theme] || ACCENTS.dark;
 
   useFrame((state, delta) => {
     knotRef.current.rotation.x += delta * 0.37;
@@ -82,14 +89,14 @@ function Core({ mouse }) {
     <group ref={groupRef}>
       <mesh ref={knotRef}>
         <torusKnotGeometry args={[1.15, 0.34, 160, 12, 2, 3]} />
-        <meshBasicMaterial color="#14f0b4" wireframe transparent opacity={0.55} />
+        <meshBasicMaterial color={accent} wireframe transparent opacity={0.55} />
       </mesh>
       <mesh ref={glowRef}>
         <sphereGeometry args={[1.05, 32, 32]} />
-        <meshBasicMaterial color="#9b7bff" transparent opacity={0.06} />
+        <meshBasicMaterial color={accent2} transparent opacity={0.06} />
       </mesh>
-      <OrbitRing radius={2.55} tilt={0.55} count={9} color="#14f0b4" speed={0.35} />
-      <OrbitRing radius={3.1} tilt={-0.8} count={6} color="#9b7bff" speed={-0.24} />
+      <OrbitRing radius={2.55} tilt={0.55} count={9} color={accent} speed={0.35} />
+      <OrbitRing radius={3.1} tilt={-0.8} count={6} color={accent2} speed={-0.24} />
     </group>
   );
 }

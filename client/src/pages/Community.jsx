@@ -4,6 +4,7 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useCategories } from '../lib/skillsApi.js';
 import { api } from '../lib/api.js';
+import EmptyState from '../components/EmptyState.jsx';
 
 const TYPE_FILTERS = [
   { key:'all', label:'All posts' },
@@ -82,7 +83,7 @@ export default function Community(){
       {loading ? (
         <div className="dash-empty">Loading posts…</div>
       ) : filtered.length===0 ? (
-        <div className="dash-empty">No posts match your filters yet.</div>
+        <EmptyState icon="📝" title="No posts match your filters" text="Try a different filter, or be the first to post." ctaLabel="Post a skill" ctaTo="/post-skill" />
       ) : (
         <div className="community-list">
           {filtered.map(p=>{

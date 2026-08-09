@@ -8,6 +8,9 @@ import ScrollReveal from '../components/ScrollReveal.jsx';
 import Countdown from '../components/Countdown.jsx';
 import { myUpcomingLiveSessions, myLiveLiveSessions } from '../lib/liveSessionsApi.js';
 import { getSocket } from '../lib/socket.js';
+import { Skeleton } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import TiltCard from '../components/TiltCard.jsx';
 
 const WEEK_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -63,8 +66,8 @@ function NextLiveSessionWidget(){
 
 export default function Dashboard(){
   const { profile, enrolled, wishlist, notifications } = useUser();
-  const { getSkillById } = useSkillsById(enrolled.map(e => e.skillId));
-  const { skills } = useSkills();
+  const { getSkillById, loading: enrolledLoading } = useSkillsById(enrolled.map(e => e.skillId));
+  const { skills, loading: skillsLoading } = useSkills();
   const { categories } = useCategories();
 
   const withSkill = enrolled.map(e => ({ ...e, skill:getSkillById(e.skillId) })).filter(e=>e.skill);
@@ -118,23 +121,37 @@ export default function Dashboard(){
         {inProgress.length>0 && <Link to="/my-learning">View all →</Link>}
       </div>
 
-      {inProgress.length===0 ? (
-        <div className="dash-empty">
-          You haven't started a skill yet. <Link to="/explore">Browse skills</Link> to get going.
+      {enrolledLoading ? (
+        <div className="continue-grid">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div className="continue-card" key={i}>
+              <Skeleton height="13px" width="60%" style={{ marginBottom: '14px' }} />
+              <Skeleton height="8px" width="100%" radius="100px" style={{ margin: '12px 0' }} />
+              <Skeleton height="12px" width="80%" />
+            </div>
+          ))}
         </div>
+      ) : inProgress.length===0 ? (
+        <EmptyState
+          icon="🎯"
+          title="You haven't started a skill yet"
+          text="Browse the catalog and pick something to learn."
+          ctaLabel="Browse skills"
+          ctaTo="/explore"
+        />
       ) : (
         <div className="continue-grid">
           {inProgress.slice(0,3).map(e=>{
             const pct = Math.round((e.completedLessons.length / e.skill.lessons.length) * 100);
             return (
-              <div className="continue-card" key={e.skillId}>
+              <TiltCard as="div" className="continue-card" key={e.skillId}>
                 <div className="cat">{categories.find(c=>c.key===e.skill.category)?.icon} {e.skill.title}</div>
                 <div className="progress-track" style={{margin:'12px 0'}}><i style={{width:`${pct}%`}}></i></div>
                 <div className="continue-meta">
                   <span>{e.completedLessons.length}/{e.skill.lessons.length} lessons · {pct}%</span>
                   <Link to={`/learn/${e.skillId}`} className="btn-solid">Resume →</Link>
                 </div>
-              </div>
+              </TiltCard>
             );
           })}
         </div>
@@ -144,7 +161,17 @@ export default function Dashboard(){
         <div>
           <div className="dash-section-head"><h2>Recommended for you</h2><Link to="/recommendations">View all →</Link></div>
           <div className="col-card">
-            {recommended.map(s=>(
+            {skillsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div className="feed-item" key={i}>
+                  <Skeleton height="34px" width="34px" radius="50%" />
+                  <div style={{ flex: 1 }}>
+                    <Skeleton height="12px" width="70%" style={{ marginBottom: '8px' }} />
+                    <Skeleton height="10px" width="45%" />
+                  </div>
+                </div>
+              ))
+            ) : recommended.map(s=>(
               <Link to={`/skill/${s.id}`} className="feed-item" key={s.id} style={{textDecoration:'none', color:'inherit'}}>
                 <div className="dot">{categories.find(c=>c.key===s.category)?.icon}</div>
                 <p><b>{s.title}</b><br /><span>★ {s.rating} · {s.students.toLocaleString()} students</span></p>

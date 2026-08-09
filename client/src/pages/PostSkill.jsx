@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useCategories } from '../lib/skillsApi.js';
 import { api } from '../lib/api.js';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function PostSkill(){
   const navigate = useNavigate();
   const { categories } = useCategories();
+  const toast = useToast();
 
   const [form, setForm] = React.useState({ type:'offer', category:'programming', title:'', description:'', tags:'' });
   const [errors, setErrors] = React.useState({});
@@ -35,6 +37,7 @@ export default function PostSkill(){
       setPosted(true);
     }catch(err){
       setErrors({ form: err.message });
+      toast.error('Could not post your skill — please try again.');
     }
     setSubmitting(false);
   };

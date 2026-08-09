@@ -4,24 +4,41 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById, useCategories } from '../lib/skillsApi.js';
 import SkillIcon3D from '../components/SkillIcon3D.jsx';
+import { SkeletonSkillCard } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function Wishlist(){
   const { wishlist, toggleWishlist } = useUser();
   const { getSkillById, loading } = useSkillsById(wishlist);
   const { categories } = useCategories();
+  const toast = useToast();
 
   const wishlisted = wishlist.map(id => getSkillById(id)).filter(Boolean);
+
+  const handleRemove = (e, id, title) => {
+    e.preventDefault(); e.stopPropagation();
+    toggleWishlist(id);
+    toast.info(`Removed "${title}" from your wishlist`);
+  };
 
   return (
     <DashboardLayout title="Wishlist" subtitle="Skills you've saved to come back to later.">
       {loading ? (
-        <div className="dash-empty">Loading your wishlist…</div>
-      ) : wishlisted.length === 0 ? (
-        <div className="dash-empty">
-          Nothing saved yet. <Link to="/explore">Browse skills</Link> and tap ☆ Wishlist on anything that catches your eye.
-        </div>
-      ) : (
         <div className="explore-grid">
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonSkillCard key={i} />)}
+        </div>
+      ) : wishlisted.length === 0 ? (
+        <EmptyState
+          icon="☆"
+          title="Nothing saved yet"
+          text="Browse skills and tap the star on anything that catches your eye — it'll show up here."
+          ctaLabel="Browse skills"
+          ctaTo="/explore"
+        />
+      ) : (
+        <ScrollReveal as="div" className="explore-grid" stagger>
           {wishlisted.map(s => {
             const cat = categories.find(c => c.key === s.category);
             return (
@@ -29,7 +46,7 @@ export default function Wishlist(){
                 <button
                   className="icon-btn active"
                   title="Remove from wishlist"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(s.id); }}
+                  onClick={(e) => handleRemove(e, s.id, s.title)}
                   style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 1 }}
                 >★</button>
                 <Link to={`/skill/${s.id}`} style={{ display: 'contents' }}>
@@ -46,7 +63,7 @@ export default function Wishlist(){
               </div>
             );
           })}
-        </div>
+        </ScrollReveal>
       )}
     </DashboardLayout>
   );
