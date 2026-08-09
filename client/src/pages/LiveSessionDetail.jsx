@@ -121,6 +121,18 @@ export default function LiveSessionDetail(){
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, isMentor, sessionStatus, id]);
 
+  // Keeps inCallRef in sync with `inCall` state, for the unmount-safety-net
+  // effect above to read without itself depending on `inCall` (which would
+  // re-run that cleanup-registering effect on every join/leave). Declared
+  // here, before the early returns below, because every hook in this
+  // component must run on every render, loading/not-found included, per
+  // the Rules of Hooks — this one used to sit after the early returns,
+  // which meant it was skipped entirely on the first (loading) render and
+  // only started firing once session data loaded, changing the hook count
+  // between renders and crashing with "Rendered more hooks than during the
+  // previous render."
+  React.useEffect(() => { inCallRef.current = inCall; }, [inCall]);
+
   if (loading) return null;
   if (notFound || !session) return <ComingSoon title="Live session not found" text="We couldn't find that session." />;
 
@@ -149,8 +161,6 @@ export default function LiveSessionDetail(){
     hasLeftRef.current = true;
     leaveLiveSession(id).catch(() => {});
   };
-
-  React.useEffect(() => { inCallRef.current = inCall; }, [inCall]);
 
   const leaveCall = () => {
     setInCall(false);
