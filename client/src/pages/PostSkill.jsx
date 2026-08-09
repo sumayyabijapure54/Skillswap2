@@ -60,7 +60,7 @@ export default function PostSkill(){
       <form className="col-card" onSubmit={onSubmit} style={{maxWidth:'640px'}}>
         <div className="form-group">
           <label className="form-label">What are you posting?</label>
-          <div className="role-grid" style={{gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
+          <div className="role-grid role-grid-2up" style={{gap:'12px'}}>
             <div className={`role-card ${form.type==='offer'?'selected':''}`} onClick={()=>set('type','offer')} style={{padding:'18px'}}>
               <div className="ic" style={{width:'36px', height:'36px', fontSize:'16px'}}>🎓</div>
               <b style={{fontSize:'14px'}}>I can teach this</b>

@@ -184,6 +184,18 @@ export function UserProvider({ children }){
     if(!state.authed) disconnectSocket();
   }, [state.authed]);
 
+  // api.js dispatches this when a request 401s and the silent refresh
+  // attempt also fails (refresh token expired/revoked) — i.e. the session
+  // is genuinely over, not just a single request glitch. Reset to logged-
+  // out state so `authed` flips to false and RequireAuth redirects to
+  // /login on the next render, instead of the UI staying stuck looking
+  // signed-in with stale data while every action quietly fails.
+  useEffect(()=>{
+    const onSessionExpired = () => setState(emptyState());
+    window.addEventListener('skillswap:session-expired', onSessionExpired);
+    return () => window.removeEventListener('skillswap:session-expired', onSessionExpired);
+  }, []);
+
   // --- real auth/profile actions, backed by the Express API (server/) ---
 
   const signUp = async ({ name, email, password }) => {

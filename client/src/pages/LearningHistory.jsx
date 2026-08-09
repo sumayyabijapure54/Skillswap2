@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById, useCategories } from '../lib/skillsApi.js';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
 
 export default function LearningHistory(){
   const { enrolled } = useUser();
@@ -15,11 +17,15 @@ export default function LearningHistory(){
   return (
     <DashboardLayout title="Learning History" subtitle="Skills you've fully completed.">
       {completed.length===0 ? (
-        <div className="dash-empty">
-          No completed skills yet — finish every lesson in a course from <Link to="/my-learning">My Learning</Link> and it'll show up here.
-        </div>
+        <EmptyState
+          icon="✓"
+          title="No completed skills yet"
+          text="Finish every lesson in a course from My Learning and it'll show up here."
+          ctaLabel="Go to My Learning"
+          ctaTo="/my-learning"
+        />
       ) : (
-        <div className="my-learning-list">
+        <ScrollReveal as="div" className="my-learning-list" stagger>
           {completed.map(e=>{
             const cat = categories.find(c=>c.key===e.skill.category);
             const finishedDate = new Date(e.enrolledAt);
@@ -35,7 +41,7 @@ export default function LearningHistory(){
               </div>
             );
           })}
-        </div>
+        </ScrollReveal>
       )}
     </DashboardLayout>
   );

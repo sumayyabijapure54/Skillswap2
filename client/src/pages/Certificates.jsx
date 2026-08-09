@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById, useCategories } from '../lib/skillsApi.js';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
 
 export default function Certificates(){
   const { enrolled } = useUser();
@@ -15,11 +17,15 @@ export default function Certificates(){
   return (
     <DashboardLayout title="Certificates" subtitle="Earned automatically when you finish every lesson in a skill.">
       {completed.length===0 ? (
-        <div className="dash-empty">
-          No certificates yet — complete every lesson in a skill from <Link to="/my-learning">My Learning</Link> to earn one.
-        </div>
+        <EmptyState
+          icon="🎓"
+          title="No certificates yet"
+          text="Complete every lesson in a skill to earn one automatically."
+          ctaLabel="Go to My Learning"
+          ctaTo="/my-learning"
+        />
       ) : (
-        <div className="cert-grid">
+        <ScrollReveal as="div" className="cert-grid" stagger>
           {completed.map(e=>{
             const cat = categories.find(c=>c.key===e.skill.category);
             return (
@@ -30,7 +36,7 @@ export default function Certificates(){
               </Link>
             );
           })}
-        </div>
+        </ScrollReveal>
       )}
     </DashboardLayout>
   );

@@ -37,7 +37,7 @@ async function attemptRefresh() {
       body: JSON.stringify({ refreshToken })
     })
       .then(async (res) => {
-        const data = await res.json().catch(() => null);
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) return false;
         setTokens(data);
         return true;
@@ -71,9 +71,26 @@ async function request(path, options = {}, { retry = true } = {}) {
     const refreshed = await attemptRefresh();
     if (refreshed) return request(path, options, { retry: false });
     clearTokens();
+    // This module has no React state of its own — UserContext (which does)
+    // listens for this on mount and clears its cached `authed`/profile
+    // state in response. Without it, a token dying mid-session (refresh
+    // token itself expired, revoked, etc.) leaves the UI looking logged
+    // in with stale cached data while every subsequent request just
+    // 401s/throws — the user has no idea they need to log back in.
+    window.dispatchEvent(new CustomEvent('skillswap:session-expired'));
   }
 
-  const data = await res.json().catch(() => null);
+  // Some 2xx responses legitimately have no JSON body (204 No Content is
+  // the common case, but a misbehaving proxy/edge cache can occasionally
+  // serve an empty body for a 200 too). res.json() then rejects, and
+  // without the fallback here `data` would be null — every call site that
+  // does `data.someField` (most of them, all over the app) throws a raw
+  // TypeError the moment that happens, which is a crash caused entirely
+  // by this file, not by whatever the caller was actually trying to do.
+  // {} makes every such access resolve to `undefined` instead, which the
+  // existing `data.x || []` / `data?.x` patterns already treat as "nothing
+  // there."
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
     const err = new Error((data && data.message) || (data && data.error) || `Request failed (${res.status})`);

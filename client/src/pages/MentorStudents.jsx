@@ -2,6 +2,8 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { SkeletonRow } from '../components/Skeleton.jsx';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
 import { api } from '../lib/api.js';
 
 export default function MentorStudents(){
@@ -61,9 +63,9 @@ export default function MentorStudents(){
           {Array.from({length:5}).map((_,i)=><SkeletonRow key={i} />)}
         </div>
       ) : students.length === 0 ? (
-        <div className="dash-empty">No students match this filter yet.</div>
+        <EmptyState icon="🧑‍🎓" title="No students yet" text="No students match this filter yet." />
       ) : (
-        <div className="students-table">
+        <ScrollReveal as="div" className="students-table">
           <div className="students-row head">
             <span>Student</span><span>Course(s)</span><span>Sessions</span><span>Spent</span><span>Last session</span>
           </div>
@@ -79,7 +81,7 @@ export default function MentorStudents(){
               <span>{s.lastSession ? new Date(s.lastSession).toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'}) : '—'}</span>
             </div>
           ))}
-        </div>
+        </ScrollReveal>
       )}
     </DashboardLayout>
   );

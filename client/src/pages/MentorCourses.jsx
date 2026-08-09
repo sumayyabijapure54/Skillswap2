@@ -3,6 +3,9 @@ import { Link, NavLink } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import { SkeletonSkillCard } from '../components/Skeleton.jsx';
 import { api } from '../lib/api.js';
+import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 // The client's static category list (data/skills.js) has drifted from the
 // backend's real category set, so labels are looked up from the live
@@ -17,6 +20,7 @@ export default function MentorCourses(){
   const [error, setError] = React.useState('');
   const [deletingId, setDeletingId] = React.useState(null);
   const [confirmId, setConfirmId] = React.useState(null);
+  const toast = useToast();
 
   const categoryLabel = (key) => categories.find(c => c.key === key)?.label || titleCase(key);
 
@@ -48,8 +52,11 @@ export default function MentorCourses(){
       await api.del(`/api/skills/${id}`);
       setCourses(cs => cs.filter(c => c.id !== id));
       setConfirmId(null);
+      toast.success('Course deleted.');
     } catch (err) {
-      setError(err.message || 'Could not delete this course.');
+      const msg = err.message || 'Could not delete this course.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setDeletingId(null);
     }
@@ -78,11 +85,15 @@ export default function MentorCourses(){
           {Array.from({length:3}).map((_,i)=><SkeletonSkillCard key={i} />)}
         </div>
       ) : courses.length === 0 ? (
-        <div className="dash-empty">
-          You haven't created any courses yet. <Link to="/mentor-courses/new">Create your first course</Link> to start teaching.
-        </div>
+        <EmptyState
+          icon="🎓"
+          title="No courses yet"
+          text="Create your first course to start teaching."
+          ctaLabel="Create a course"
+          ctaTo="/mentor-courses/new"
+        />
       ) : (
-        <div className="course-grid">
+        <ScrollReveal as="div" className="course-grid" stagger>
           {courses.map(c => (
             <div className="course-card" key={c.id}>
               <div className="course-card-thumb">
@@ -120,7 +131,7 @@ export default function MentorCourses(){
               </div>
             </div>
           ))}
-        </div>
+        </ScrollReveal>
       )}
     </DashboardLayout>
   );

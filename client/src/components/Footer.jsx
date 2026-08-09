@@ -1,10 +1,36 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { api } from '../lib/api.js';
+import { useToast } from '../context/ToastContext.jsx';
 import Logo from './Logo.jsx';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Footer(){
   const { theme, toggleTheme } = useTheme();
+  const toast = useToast();
+  const [email, setEmail] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
+
+  const subscribe = async (e) => {
+    e.preventDefault();
+    if (!EMAIL_RE.test(email.trim())) {
+      toast.error('Enter a valid email to subscribe.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post('/api/newsletter/subscribe', { email: email.trim() });
+      toast.success("You're subscribed!");
+      setEmail('');
+    } catch {
+      toast.error('Could not subscribe right now — please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <footer>
       <div className="foot-grid">
@@ -43,10 +69,17 @@ export default function Footer(){
         <div>
           <h4>Stay Updated</h4>
           <p style={{fontSize:'12.5px', marginBottom:'10px'}}>Get the latest updates and learning tips.</p>
-          <div className="foot-newsletter">
-            <input type="text" placeholder="Enter your email" />
-            <button>→</button>
-          </div>
+          <form className="foot-newsletter" onSubmit={subscribe}>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              disabled={submitting}
+              aria-label="Email address"
+            />
+            <button type="submit" disabled={submitting}>→</button>
+          </form>
         </div>
       </div>
       <div className="foot-bottom">

@@ -10,6 +10,7 @@ import AiMentorWidget from './components/AiMentorWidget.jsx';
 import CertificateToast from './components/CertificateToast.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { useUser } from './context/UserContext.jsx';
+import { useToast } from './context/ToastContext.jsx';
 import { initSmoothScroll, scrollToTop } from './lib/smoothScroll.js';
 import { ScrollTrigger } from './lib/gsap.js';
 
@@ -90,6 +91,13 @@ const NO_FOOTER_PREFIXES = ['/book/', '/session/', '/live-sessions/', '/certific
 export default function App(){
   const { pathname } = useLocation();
   const { authed } = useUser();
+  const toast = useToast();
+
+  React.useEffect(()=>{
+    const onSessionExpired = () => toast.error("You've been signed out — please log in again.");
+    window.addEventListener('skillswap:session-expired', onSessionExpired);
+    return () => window.removeEventListener('skillswap:session-expired', onSessionExpired);
+  }, [toast]);
 
   React.useEffect(()=>{ initSmoothScroll(); }, []);
 

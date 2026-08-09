@@ -28,6 +28,7 @@ import youtubeRoutes from './routes/youtubeRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import liveSessionsRoutes from './routes/liveSessionsRoutes.js';
+import newsletterRoutes from './routes/newsletterRoutes.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 // Pulled out of server.js so tests (and anything else that just wants to
@@ -104,6 +105,7 @@ app.use('/api/youtube', youtubeRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/live-sessions', liveSessionsRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

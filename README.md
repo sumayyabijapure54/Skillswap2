@@ -14,8 +14,8 @@ cp .env.example .env
 Fill in `.env`:
 - `MONGODB_URI` — your Atlas connection string
 - `JWT_SECRET` — any long random string
-- `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` — from your Razorpay dashboard (already wired, unchanged from what you sent)
-- `YOUTUBE_API_KEY` — **new**, from Google Cloud Console → enable "YouTube Data API v3" → Credentials → Create API key
+- `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` — from your Razorpay dashboard
+- `YOUTUBE_API_KEY` — from Google Cloud Console → enable "YouTube Data API v3" → Credentials → Create API key
 
 ```bash
 npm run seed   # first time only, populates the skills catalog
@@ -31,27 +31,28 @@ cp .env.example .env
 npm run dev    # http://localhost:5173, already pointed at :5002
 ```
 
-## What changed for the YouTube integration
+## How the YouTube integration actually works
 
-**Backend** (`server/`) — new files, everything else untouched:
-- `src/services/youtubeService.js` — fetches, filters (30 min–12h, English, no Shorts/trailers/promos), ranks, and dedupes YouTube results
-- `src/controllers/youtubeController.js`, `src/routes/youtubeRoutes.js` — `GET /api/youtube/course?skill=...`, mounted in `server.js` alongside your other routes
-- `src/utils/ytCache.js`, `src/utils/ytDuration.js`, `src/config/youtubeCuration.js` — caching (in-memory + Mongo) and the preferred-channel/filter rules (edit `youtubeCuration.js` to tune)
-- `.env.example` — added `YOUTUBE_API_KEY` and `YOUTUBE_CACHE_TTL_HOURS`
+This is a single-lookup design, not a search/curation pipeline:
+- `GET /api/youtube/video?url=...` (`src/services/youtubeService.js`,
+  `controllers/youtubeController.js`, `routes/youtubeRoutes.js`) resolves
+  one YouTube URL a mentor pastes while building a lesson
+  (`MentorCourseForm.jsx`) to that exact video's title/thumbnail/duration/
+  chapters. There's no search, ranking, or auto-selection, and nothing
+  fetches YouTube data on a learner's page load — so there's no caching
+  layer to configure and no meaningful quota risk from normal use.
+- `src/utils/ytDuration.js` — parses/formats ISO 8601 durations.
+  `src/utils/ytChapters.js` — parses chapter timestamps out of a video's
+  description (or synthesizes evenly-spaced ones if none exist).
+- On the frontend, `components/YouTubePlayer.jsx` just embeds a
+  `videoId` that was already resolved and stored on the lesson at
+  authoring time; `components/CourseSkeleton.jsx` provides its loading
+  skeleton. `pages/LessonPlayer.jsx` wires these into quiz checkpoints,
+  save-for-later, continue-watching, and completion tracking.
 
-**Frontend** (`client/`):
-- `src/pages/LessonPlayer.jsx` rebuilt — real embedded YouTube videos merged with your existing quiz checkpoints, autoplay-next, save-for-later, download notes, ask-mentor, continue-watching rail, completion %, glass panels, GSAP animations, skeleton loading. Design/CSS otherwise unchanged.
-- `src/components/YouTubePlayer.jsx`, `src/components/CourseSkeleton.jsx` — new
-- `src/lib/youtubeApi.js` — new, calls the backend above
-- `src/context/UserContext.jsx` — added save-for-later / continue-watching state (backward-compatible with existing localStorage)
-- `.env.example` / `src/lib/api.js` — fixed to point at `:5002` (your real backend's port) instead of the placeholder `:4000`
+## Skills catalog
 
-## Note on the skills catalog
-
-`client/src/data/skills.js` (a static local list) and `server/src/models/Skill.js`
-(a real MongoDB collection, seeded via `npm run seed`) currently hold the
-*same shape* of data but aren't wired together yet — the frontend still
-reads its local copy rather than calling `GET /api/skills`. I left that
-as-is since it's outside what was asked here, but it's worth knowing:
-whichever skill data source the frontend ends up using, the YouTube
-integration works the same either way since it only needs `skill.title`.
+`server/src/models/Skill.js` (MongoDB, seeded via `npm run seed`) is the
+single source of truth — the frontend calls `GET /api/skills` and friends
+through `src/lib/skillsApi.js`. There's no separate static/local skills
+file to keep in sync.

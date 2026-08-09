@@ -84,6 +84,28 @@ describe('POST /api/skills — auth required before validation runs', () => {
   });
 });
 
+describe('POST /api/newsletter/subscribe — validation layer', () => {
+  it('is public — no auth required', async () => {
+    const res = await request(app).post('/api/newsletter/subscribe').send({ email: 'not-an-email' });
+    // Reaches validation (400), not an auth wall (401) — confirms the
+    // route is intentionally unauthenticated, matching the public footer
+    // form it backs.
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects an invalid email before ever reaching the database', async () => {
+    const res = await request(app).post('/api/newsletter/subscribe').send({ email: 'nope' });
+    expect(res.status).toBe(400);
+    expect(res.body.errors.some((e) => e.field === 'email')).toBe(true);
+  });
+
+  it('rejects a missing email', async () => {
+    const res = await request(app).post('/api/newsletter/subscribe').send({});
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Validation failed');
+  });
+});
+
 describe('unknown routes', () => {
   it('returns a 404 with a helpful message', async () => {
     const res = await request(app).get('/api/this-route-does-not-exist');

@@ -3,6 +3,8 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById } from '../lib/skillsApi.js';
 import { api } from '../lib/api.js';
+import ScrollReveal from '../components/ScrollReveal.jsx';
+import TiltCard from '../components/TiltCard.jsx';
 
 export default function Achievements() {
   const { enrolled, wishlist } = useUser();
@@ -43,22 +45,22 @@ export default function Achievements() {
       title="Achievements"
       subtitle={`${unlockedCount} of ${achievements.length} unlocked — keep learning to earn the rest.`}
     >
-      <div className="dash-stat-row" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+      <div className="dash-stat-row">
         <div className="dash-stat"><b>{unlockedCount}</b><span>Unlocked</span></div>
         <div className="dash-stat"><b>{achievements.length - unlockedCount}</b><span>Remaining</span></div>
         <div className="dash-stat"><b>{Math.round((unlockedCount / achievements.length) * 100)}%</b><span>Complete</span></div>
       </div>
 
-      <div className="cert-grid">
+      <ScrollReveal as="div" className="cert-grid" stagger>
         {achievements.map(a => (
-          <div key={a.key} className={`achievement-card ${a.unlocked ? 'unlocked' : 'locked'}`}>
+          <TiltCard key={a.key} as="div" className={`achievement-card ${a.unlocked ? 'unlocked' : 'locked'}`}>
             <div className="achievement-icon">{a.unlocked ? a.icon : '🔒'}</div>
             <b>{a.title}</b>
             <span>{a.desc}</span>
             {!a.unlocked && a.progress && <span className="achievement-progress">{a.progress}</span>}
-          </div>
+          </TiltCard>
         ))}
-      </div>
+      </ScrollReveal>
     </DashboardLayout>
   );
 }

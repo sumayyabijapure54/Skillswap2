@@ -311,3 +311,9 @@ export const endLiveSessionSchema = z.object({
 export const attachRecordingSchema = z.object({
   recordingUrl: z.string().trim().url('recordingUrl must be a valid URL').max(2000)
 });
+
+// --- newsletter ---
+
+export const newsletterSubscribeSchema = z.object({
+  email: z.string().trim().toLowerCase().email('must be a valid email')
+});

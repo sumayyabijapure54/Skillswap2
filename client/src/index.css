@@ -592,6 +592,10 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 
 .role-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:40px;}
 .role-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:28px 20px; text-align:center; cursor:pointer; transition:all .2s; min-width:0;}
+.role-grid-2up{grid-template-columns:1fr 1fr;}
+@media (max-width:480px){
+  .role-grid-2up{grid-template-columns:1fr;}
+}
 /* Profile page reuses .role-grid, but confined to a fixed 280px sidebar
    column instead of the full-width contexts (Onboarding/Checkout/PostSkill)
    the shared class is also used in. 3-across at 280px leaves ~68px per
@@ -860,7 +864,29 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
   .route-loader-spin{ animation-duration: 1.4s; }
 }
 
-/* ── Payment History / Invoices ─────────────────────────────────── */
+/* ── Mentor "My Courses" cards — .course-grid/.course-card and its
+   children had no CSS defined anywhere, so this page (course thumbnail,
+   title, meta, stats, edit/delete actions) rendered completely unstyled:
+   a raw <img>, plain text, and unstyled buttons stacked with no layout.
+   Mirrors .explore-card's glass-panel/hover-lift language for consistency
+   with the rest of the card grids on the site. */
+.course-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px;}
+.course-card{background:var(--panel); border:1px solid var(--border); border-radius:18px; overflow:hidden; transition:all .25s ease;}
+.course-card:hover{border-color:rgba(20,240,180,0.35); box-shadow:var(--shadow-lg); transform:translateY(-3px);}
+.course-card-thumb{aspect-ratio:16/9; background:var(--panel-2); overflow:hidden; display:flex; align-items:center; justify-content:center;}
+.course-card-thumb img{width:100%; height:100%; object-fit:cover;}
+.course-card-thumb .no-video{font-size:12px; color:var(--muted); text-align:center; padding:0 20px;}
+.course-card-body{padding:20px;}
+.course-card-body h3{font-size:15px; margin-bottom:10px;}
+.course-card-meta{display:flex; gap:8px; font-size:11px; color:var(--accent); margin-bottom:10px;}
+.course-card-meta span{background:var(--accent-soft); padding:4px 10px; border-radius:100px; font-weight:700;}
+.course-card-stats{display:flex; gap:16px; font-size:12px; color:var(--muted); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:12px 0; margin-bottom:14px;}
+.course-card-stats b{color:var(--text);}
+.course-card-actions{display:flex; gap:8px; flex-wrap:wrap;}
+.course-card-actions a, .course-card-actions button{flex:1 1 auto; text-align:center; white-space:nowrap;}
+@media (max-width:480px){
+  .course-card-actions{flex-direction:column;}
+}
 .invoice-table{display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden;}
 .invoice-row{display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:12px; padding:14px 20px; align-items:center; font-size:13px; border-bottom:1px solid var(--border);}
 .invoice-row:last-child{border-bottom:none;}

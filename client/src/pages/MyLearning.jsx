@@ -4,6 +4,7 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { useSkillsById, useCategories } from '../lib/skillsApi.js';
 import EmptyState from '../components/EmptyState.jsx';
+import ScrollReveal from '../components/ScrollReveal.jsx';
 
 export default function MyLearning(){
   const { enrolled } = useUser();
@@ -24,7 +25,7 @@ export default function MyLearning(){
           ctaTo="/explore"
         />
       ) : (
-        <div className="my-learning-list">
+        <ScrollReveal as="div" className="my-learning-list" stagger>
           {inProgress.map(e=>{
             const pct = Math.round((e.completedLessons.length / e.skill.lessons.length) * 100);
             const cat = categories.find(c=>c.key===e.skill.category);
@@ -41,7 +42,7 @@ export default function MyLearning(){
               </div>
             );
           })}
-        </div>
+        </ScrollReveal>
       )}
     </DashboardLayout>
   );

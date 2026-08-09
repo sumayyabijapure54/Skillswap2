@@ -19,6 +19,14 @@ export default function CertificateDetail(){
   const [pdfError, setPdfError] = React.useState(null);
   const [visibilitySaving, setVisibilitySaving] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+  const copiedTimer = React.useRef(null);
+
+  // Clears the "copied!" banner's timer if the component unmounts
+  // (navigates away) before the 2s delay finishes, instead of leaving it
+  // to fire against an already-unmounted component.
+  React.useEffect(() => () => {
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+  }, []);
 
   // Every lesson locally shows as complete — ask the backend to issue (or
   // return the existing) certificate. Idempotent: calling this again just
@@ -79,7 +87,7 @@ export default function CertificateDetail(){
   const copyVerifyLink = () => {
     navigator.clipboard?.writeText(verifyUrl).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copiedTimer.current = setTimeout(() => setCopied(false), 2000);
     });
   };
 

@@ -67,7 +67,7 @@ export default function SessionBooking(){
           <div className="col-card" style={{marginBottom:'20px'}}>
             <h3>1. Choose a session type</h3>
             <div className="desc">&nbsp;</div>
-            <div className="role-grid" style={{gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
+            <div className="role-grid role-grid-2up" style={{gap:'12px'}}>
               {SESSION_TYPES.map(t=>(
                 <div key={t.key} className={`role-card ${sessionType===t.key?'selected':''}`} onClick={()=>setSessionType(t.key)} style={{padding:'16px'}}>
                   <b style={{fontSize:'14px'}}>{t.label}</b>

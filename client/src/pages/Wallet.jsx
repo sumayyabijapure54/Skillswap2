@@ -14,11 +14,19 @@ export default function Wallet(){
   const [justAdded, setJustAdded] = React.useState(null);
   const [processing, setProcessing] = React.useState(false);
   const [payError, setPayError] = React.useState('');
+  const justAddedTimer = React.useRef(null);
 
   React.useEffect(()=>{
     api.get('/api/wallet/transactions')
       .then(data => setTransactions(data.transactions || []))
       .catch(()=>{});
+  }, []);
+
+  // Clears the "just added" banner's timer if the component unmounts
+  // (navigates away) before the 2.5s delay finishes, instead of leaving it
+  // to fire against an already-unmounted component.
+  React.useEffect(() => () => {
+    if (justAddedTimer.current) clearTimeout(justAddedTimer.current);
   }, []);
 
   const walletTx = transactions.filter(t=>t.type==='topup' || (t.type==='session_payment' && t.method==='wallet') || (t.type==='refund'));
@@ -50,7 +58,7 @@ export default function Wallet(){
             setTransactions(t => [result.transaction, ...t]);
             setJustAdded(amount);
             setCustom('');
-            setTimeout(()=>setJustAdded(null), 2500);
+            justAddedTimer.current = setTimeout(()=>setJustAdded(null), 2500);
           } catch (err) {
             setPayError(err.message);
           } finally {

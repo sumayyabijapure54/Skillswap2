@@ -88,7 +88,7 @@ export default function Checkout(){
       <div className="two-col-dash" style={{alignItems:'flex-start'}}>
         <form className="col-card" onSubmit={onPay}>
           <h3>Payment method</h3>
-          <div className="role-grid" style={{gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'18px'}}>
+          <div className="role-grid role-grid-2up" style={{gap:'12px', marginBottom:'18px'}}>
             <div className={`role-card ${method==='wallet'?'selected':''}`} onClick={()=>setMethod('wallet')} style={{padding:'16px', opacity: canPayWallet ? 1 : 0.5}}>
               <b style={{fontSize:'14px'}}>Wallet</b>
               <span style={{fontSize:'12px', display:'block'}}>Balance: ${wallet.balance.toFixed(2)}</span>

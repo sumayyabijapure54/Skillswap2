@@ -11,8 +11,77 @@ import { getSocket } from '../lib/socket.js';
 import { Skeleton } from '../components/Skeleton.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import TiltCard from '../components/TiltCard.jsx';
+import { api } from '../lib/api.js';
 
 const WEEK_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DATE_MONTH_LABELS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+// Real upcoming (confirmed, not-yet-happened) 1:1 bookings — pulled from
+// GET /api/bookings and filtered/sorted client-side (there's no
+// `?when=upcoming` filter on this endpoint, unlike the mentor-side one).
+// Distinct from NextLiveSessionWidget above, which covers group live
+// sessions rather than these mentor 1:1 bookings.
+function UpcomingSessionsWidget(){
+  const [bookings, setBookings] = React.useState(undefined); // undefined = loading
+
+  React.useEffect(() => {
+    let alive = true;
+    api.get('/api/bookings')
+      .then(data => {
+        if (!alive) return;
+        const now = Date.now();
+        const upcoming = (data.bookings || [])
+          .filter(b => b.status === 'confirmed' && new Date(b.scheduledAt).getTime() > now)
+          .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt))
+          .slice(0, 3);
+        setBookings(upcoming);
+      })
+      .catch(() => { if (alive) setBookings([]); });
+    return () => { alive = false; };
+  }, []);
+
+  if (bookings === undefined) {
+    return (
+      <div className="col-card">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div className="session-item" key={i}>
+            <Skeleton height="40px" width="40px" radius="10px" />
+            <div style={{ flex: 1 }}>
+              <Skeleton height="12px" width="60%" style={{ marginBottom: '8px' }} />
+              <Skeleton height="10px" width="40%" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (bookings.length === 0) {
+    return (
+      <div className="col-card">
+        <EmptyState icon="📅" title="No sessions booked" text="Book time with a mentor to see it here." ctaLabel="Book a session" ctaTo="/book-session" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="col-card">
+      {bookings.map(b => {
+        const d = new Date(b.scheduledAt);
+        return (
+          <div className="session-item" key={b.id}>
+            <div className="session-date">{d.getDate()}<br />{DATE_MONTH_LABELS[d.getMonth()]}</div>
+            <div className="session-info">
+              <b>{b.sessionType} with {b.mentorName}</b>
+              <span>{d.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit' })}</span>
+            </div>
+            <Link to={`/session/${b.id}`}><button>View</button></Link>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 // Shows the soonest live-or-about-to-start session for a course the
 // student is enrolled in. Pulls straight from the real
@@ -182,11 +251,8 @@ export default function Dashboard(){
 
         <div>
           <NextLiveSessionWidget />
-          <div className="dash-section-head"><h2>Upcoming sessions</h2></div>
-          <div className="col-card">
-            <div className="session-item"><div className="session-date">24<br />MAY</div><div className="session-info"><b>Mastering Python Basics</b><span>John Doe · 7:00 PM IST</span></div><button>Join</button></div>
-            <div className="session-item"><div className="session-date">25<br />MAY</div><div className="session-info"><b>UI/UX Design Workshop</b><span>Sarah Williams · 8:00 PM IST</span></div><button>Join</button></div>
-          </div>
+          <div className="dash-section-head"><h2>Upcoming sessions</h2><Link to="/sessions">View all →</Link></div>
+          <UpcomingSessionsWidget />
         </div>
       </div>
     </DashboardLayout>

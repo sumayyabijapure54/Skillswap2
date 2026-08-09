@@ -5,6 +5,7 @@ import Countdown from '../components/Countdown.jsx';
 import { useUser } from '../context/UserContext.jsx';
 import { api } from '../lib/api.js';
 import { getSocket } from '../lib/socket.js';
+import EmptyState from '../components/EmptyState.jsx';
 import {
   createLiveSession, cancelLiveSession, deleteLiveSession, startLiveSession, endLiveSession,
   myUpcomingLiveSessions, myLiveLiveSessions, myLiveSessionHistory,
@@ -103,7 +104,7 @@ function StudentLiveSessions(){
       {loading ? (
         <div className="dash-empty">Loading live sessions…</div>
       ) : current.length === 0 ? (
-        <div className="dash-empty">No {tab} live sessions right now.</div>
+        <EmptyState icon="🔴" title="Nothing here" text={`No ${tab} live sessions right now.`} />
       ) : (
         <div className="my-learning-list">
           {current.map(s => <StudentSessionCard key={s.id} session={s} onJoin={join} />)}
@@ -298,7 +299,7 @@ function MentorLiveSessions(){
       {loading ? (
         <div className="dash-empty">Loading…</div>
       ) : upcoming.length === 0 ? (
-        <div className="dash-empty">No upcoming live sessions scheduled.</div>
+        <EmptyState icon="📅" title="No sessions scheduled" text="No upcoming live sessions scheduled." />
       ) : (
         <div className="my-learning-list">
           {upcoming.map(s => <MentorSessionRow key={s.id} session={s} onChange={load} />)}
