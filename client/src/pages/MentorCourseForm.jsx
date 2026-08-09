@@ -46,6 +46,7 @@ export default function MentorCourseForm(){
   const [saveError, setSaveError] = React.useState('');
   const { categories } = useCategories();
   const { levels } = useLevels();
+  const [form, setForm] = React.useState(EMPTY_FORM);
 
   // Every lesson the mentor is building/editing. Each lesson owns its own
   // YouTube URL — there is no course-level video and no automatic search;

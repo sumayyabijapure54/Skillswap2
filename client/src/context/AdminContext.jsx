@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
+import { useUser } from './UserContext.jsx';
 
 const AdminContext = createContext(null);
 
@@ -22,6 +23,7 @@ function toDisplayUser(u) {
 }
 
 export function AdminProvider({ children }) {
+  const { authed, isAdmin } = useUser();
   const [state, setState] = useState({
     users: [],
     mentorApplications: [],
@@ -50,7 +52,19 @@ export function AdminProvider({ children }) {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  // This provider wraps the entire app (see main.jsx), but its data is
+  // only ever read by the admin pages (RequireAdmin-gated). Previously
+  // `load()` ran unconditionally on mount, meaning every single visitor —
+  // logged out or a regular learner/mentor — fired three admin-only
+  // requests on every page load and always got 403'd. Only real admins
+  // need this data, so only fetch it for them.
+  useEffect(() => {
+    if (!authed || !isAdmin) {
+      setState(s => ({ ...s, loading: false }));
+      return;
+    }
+    load();
+  }, [authed, isAdmin]);
 
   const suspendUser = async (id) => {
     const data = await api.patch(`/api/admin/users/${id}/suspend`);
