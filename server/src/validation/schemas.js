@@ -240,6 +240,24 @@ export const submitQuizSchema = z.object({
   answers: z.array(quizAnswerSchema).max(30, 'Too many answers submitted').default([])
 });
 
+// --- mentor-authored quiz management ---
+
+const quizQuestionInputSchema = z.object({
+  question: z.string().trim().min(1, 'Question text is required').max(1000),
+  options: z.array(z.string().trim().min(1, 'Option text is required').max(300)).length(4, 'Exactly 4 options are required'),
+  correctOptionIndex: z.number().int().min(0).max(3),
+  explanation: z.string().trim().max(1000).optional().default('')
+});
+
+export const saveQuizSchema = z.object({
+  questions: z.array(quizQuestionInputSchema).max(50, 'A quiz can have at most 50 questions').default([]),
+  passingScore: z.number().int().min(0).max(100).optional()
+});
+
+export const publishQuizSchema = z.object({
+  published: z.boolean()
+});
+
 // --- reports ---
 
 export const createReportSchema = z.object({

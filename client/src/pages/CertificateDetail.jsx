@@ -43,8 +43,8 @@ export default function CertificateDetail(){
       .then((data) => { if (alive) setCertificate(data.certificate); })
       .catch((err) => {
         if (!alive) return;
-        // This course gates its certificate behind the AI quiz — send the
-        // learner there instead of showing a generic error.
+        // This course gates its certificate behind its mentor's quiz —
+        // send the learner there instead of showing a generic error.
         if (err.data?.quizPending) setQuizPending(true);
         else setCertError(err);
       })
@@ -60,8 +60,8 @@ export default function CertificateDetail(){
   if (skill && quizPending) {
     return (
       <ComingSoon
-        title="One more step — the AI quiz"
-        text="You've finished every lesson in this course. Pass the AI-generated quiz to earn your certificate."
+        title="One more step — the quiz"
+        text="You've finished every lesson in this course. Pass the quiz to earn your certificate."
         action={<Link to={`/learn/${skillId}/quiz`} className="btn-primary-lg">Take the quiz →</Link>}
       />
     );

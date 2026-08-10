@@ -2,53 +2,43 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useSkill } from '../lib/skillsApi.js';
 import { useUser } from '../context/UserContext.jsx';
-import { fetchCourseQuiz, submitCourseQuiz, regenerateCourseQuiz } from '../lib/quizApi.js';
-import AiQuiz from '../components/AiQuiz.jsx';
+import { fetchCourseQuiz, submitCourseQuiz } from '../lib/quizApi.js';
+import QuizTaker from '../components/QuizTaker.jsx';
 import ComingSoon from './ComingSoon.jsx';
 
 export default function CourseQuiz() {
   const { id } = useParams();
   const { skill, loading: skillLoading } = useSkill(id);
-  const { profile, isAdmin } = useUser();
+  const { profile } = useUser();
 
-  const [state, setState] = React.useState({ loading: true, quiz: null, error: null, forbidden: null });
+  const [state, setState] = React.useState({ loading: true, quiz: null, error: null, forbidden: null, notPublished: false });
   const [submitting, setSubmitting] = React.useState(false);
-  const [regenerating, setRegenerating] = React.useState(false);
 
   const isOwnerMentor = Boolean(skill?.mentorUser) && skill.mentorUser === profile?.id;
-  const canRegenerate = isOwnerMentor || isAdmin;
-  // Same eligibility check as server's quizController.loadSkillOr404 — a
-  // course with no lessons yet will 400 on every single request, forever,
-  // no matter how many times "Try again" is clicked. Short-circuit instead
-  // of hitting that wall.
-  const hasQuizContent = Boolean(skill) && (skill.lessons?.length || 0) > 0;
 
   const load = React.useCallback(() => {
-    setState((s) => ({ ...s, loading: true, error: null, forbidden: null }));
+    setState((s) => ({ ...s, loading: true, error: null, forbidden: null, notPublished: false }));
     fetchCourseQuiz(id)
       .then((data) => {
-        setState({ loading: false, quiz: data, error: null, forbidden: null });
+        setState({ loading: false, quiz: data, error: null, forbidden: null, notPublished: false });
       })
       .catch((err) => {
         if (err.status === 403) {
-          setState({ loading: false, quiz: null, error: null, forbidden: err.message });
+          setState({ loading: false, quiz: null, error: null, forbidden: err.message, notPublished: false });
+        } else if (err.status === 404) {
+          // No published quiz for this course yet — distinct from a real
+          // failure, so "Try again" isn't the right call to action here.
+          setState({ loading: false, quiz: null, error: null, forbidden: null, notPublished: true });
         } else {
-          setState({ loading: false, quiz: null, error: err.message, forbidden: null });
+          setState({ loading: false, quiz: null, error: err.message, forbidden: null, notPublished: false });
         }
       });
   }, [id]);
 
   React.useEffect(() => {
     if (skillLoading) return;
-    // Don't even ask the server for a quiz this course can never generate —
-    // see hasQuizContent above. Surfacing this locally avoids the endless
-    // "Couldn't load the quiz" / "Try again" loop for these courses.
-    if (!hasQuizContent) {
-      setState({ loading: false, quiz: null, error: null, forbidden: null });
-      return;
-    }
     load();
-  }, [load, skillLoading, hasQuizContent]);
+  }, [load, skillLoading]);
 
   const handleSubmit = async (answers) => {
     setSubmitting(true);
@@ -60,20 +50,8 @@ export default function CourseQuiz() {
     }
   };
 
-  const handleRegenerate = async () => {
-    setRegenerating(true);
-    try {
-      await regenerateCourseQuiz(id);
-      load();
-    } catch (err) {
-      setState((s) => ({ ...s, error: err.message }));
-    } finally {
-      setRegenerating(false);
-    }
-  };
-
   if (skillLoading || state.loading) {
-    return <ComingSoon title="Preparing your quiz…" text="Preparing your course quiz from the lessons you've completed…" />;
+    return <ComingSoon title="Loading your quiz…" text="Just a moment." />;
   }
 
   if (!skill) {
@@ -90,12 +68,20 @@ export default function CourseQuiz() {
     );
   }
 
-  if (!hasQuizContent) {
+  if (state.notPublished) {
     return (
       <ComingSoon
         title="Quiz not available yet"
-        text="This course's mentor hasn't linked a course video or lessons yet, so there's nothing for the AI to build a quiz from. Check back once they add content."
-        action={<Link to={`/learn/${id}`} className="btn-primary-lg">Back to lessons →</Link>}
+        text={
+          isOwnerMentor
+            ? "You haven't published a quiz for this course yet."
+            : "This course's mentor hasn't published a quiz yet. Check back later."
+        }
+        action={
+          isOwnerMentor
+            ? <Link to={`/mentor-courses/${id}/quiz`} className="btn-primary-lg">Manage quiz →</Link>
+            : <Link to={`/learn/${id}`} className="btn-primary-lg">Back to lessons →</Link>
+        }
       />
     );
   }
@@ -104,7 +90,7 @@ export default function CourseQuiz() {
     return (
       <ComingSoon
         title="Couldn't load the quiz"
-        text={state.error || 'Something went wrong generating the quiz — please try again in a moment.'}
+        text={state.error || 'Something went wrong loading the quiz — please try again in a moment.'}
         action={<button className="btn-primary-lg" onClick={load}>Try again</button>}
       />
     );
@@ -117,22 +103,20 @@ export default function CourseQuiz() {
       <div className="crumbs" style={{ marginBottom: '18px' }}>
         <Link to="/">Home</Link><span>/</span>
         <Link to={`/skill/${skill.id}`}>{skill.title}</Link><span>/</span>
-        <span style={{ color: 'var(--text)' }}>AI Quiz</span>
+        <span style={{ color: 'var(--text)' }}>Quiz</span>
       </div>
 
       <div className="col-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '6px' }}>
           <div>
             <div className="completion-pill" style={{ marginBottom: '10px' }}>🎉 Course completed</div>
-            <h2 style={{ marginBottom: '4px' }}>{skill.title} — AI Quiz</h2>
+            <h2 style={{ marginBottom: '4px' }}>{skill.title} — Quiz</h2>
             <div className="desc">
               {quiz.questionCount} questions · pass with {quiz.passingScore}% or higher to earn your certificate.
             </div>
           </div>
-          {canRegenerate && (
-            <button className="btn-outline" onClick={handleRegenerate} disabled={regenerating}>
-              {regenerating ? 'Regenerating…' : '↻ Regenerate AI Quiz'}
-            </button>
+          {isOwnerMentor && (
+            <Link to={`/mentor-courses/${id}/quiz`} className="btn-outline">Manage quiz</Link>
           )}
         </div>
 
@@ -144,7 +128,7 @@ export default function CourseQuiz() {
           </div>
         )}
 
-        <AiQuiz
+        <QuizTaker
           key={quiz.questions.map((q) => q.id).join(',')}
           quiz={quiz}
           onSubmit={handleSubmit}

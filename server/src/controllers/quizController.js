@@ -3,18 +3,14 @@ import Quiz from '../models/Quiz.js';
 import Progress from '../models/Progress.js';
 import Certificate from '../models/Certificate.js';
 import {
-  getOrGenerateQuiz, generateQuiz, sanitizeForAttempt,
+  toStoredQuestions, sanitizeForAttempt, forManage,
   gradeAndRecordAttempt, listMyAttempts
-} from '../services/aiQuizService.js';
+} from '../services/quizService.js';
 import { issueIfEarned } from './certificatesController.js';
 
-// AI-quiz-specific errors (see aiQuizService.js) carry a `.code` — surface
-// those as the { success:false, code, message } envelope the AI Quiz spec
-// requires instead of the plain `{ message }` shape other routes use.
-// Anything without an AI code falls through to the normal error handling.
 function sendQuizError(res, err, next) {
-  if (err?.code?.startsWith('AI_QUIZ_')) {
-    return res.status(err.status || 502).json({ success: false, code: err.code, message: err.message });
+  if (err?.code === 'QUIZ_INVALID_INPUT') {
+    return res.status(err.status || 400).json({ message: err.message });
   }
   if (err.status) return res.status(err.status).json({ message: err.message });
   next(err);
@@ -30,19 +26,127 @@ async function loadSkillOr404(skillId, res) {
     res.status(404).json({ message: 'Course not found' });
     return null;
   }
-  if (!skill.lessons?.length) {
-    res.status(400).json({ message: 'This course has no content yet to generate a quiz from.' });
+  return skill;
+}
+
+// Only the owning mentor may create/edit/delete/publish a course's quiz —
+// enforced identically across every /manage-style route below. No admin
+// override, by design (see PROGRESS_NOTES: "Only the mentor who owns the
+// course can create/edit/delete/publish its quiz").
+async function loadOwnedSkillOr403(skillId, req, res) {
+  const skill = await loadSkillOr404(skillId, res);
+  if (!skill) return null;
+  if (!isMentorOwner(skill, req.user)) {
+    res.status(403).json({ message: "Only this course's mentor can manage its quiz." });
     return null;
   }
   return skill;
 }
 
+// ---------------------------------------------------------------------------
+// MENTOR MANAGEMENT — create/edit/publish. Correct answers ARE included in
+// these responses; never reachable by anyone but the owning mentor.
+// ---------------------------------------------------------------------------
+
+// GET /api/quiz/:skillId/manage  (protected — owning mentor only)
+// Returns the full quiz (with answers) for editing/previewing, or
+// `{ quiz: null }` if this course doesn't have one yet.
+export async function getQuizForManage(req, res, next) {
+  try {
+    const { skillId } = req.params;
+    const skill = await loadOwnedSkillOr403(skillId, req, res);
+    if (!skill) return;
+
+    const quiz = await Quiz.findOne({ skillId });
+    res.json({ quiz: quiz ? forManage(quiz) : null });
+  } catch (err) {
+    sendQuizError(res, err, next);
+  }
+}
+
+// PUT /api/quiz/:skillId  { questions, passingScore }  (protected — owning mentor only)
+// Creates or fully replaces this course's quiz questions — the mentor's UI
+// manages the whole question list client-side (add/edit/delete/reorder)
+// and saves it in one shot, rather than one endpoint per micro-edit.
+// Deliberately does NOT touch `published` — saving edits to an already
+// -published quiz doesn't silently unpublish it; that's an explicit,
+// separate action (see setPublished below).
+export async function saveQuiz(req, res, next) {
+  try {
+    const { skillId } = req.params;
+    const skill = await loadOwnedSkillOr403(skillId, req, res);
+    if (!skill) return;
+
+    const { questions: rawQuestions, passingScore } = req.body;
+    const questions = toStoredQuestions(Array.isArray(rawQuestions) ? rawQuestions : []);
+
+    const quiz = await Quiz.findOneAndUpdate(
+      { skillId },
+      {
+        skillId,
+        createdBy: req.user._id,
+        questions,
+        ...(passingScore != null ? { passingScore } : {})
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    res.json({ quiz: forManage(quiz) });
+  } catch (err) {
+    sendQuizError(res, err, next);
+  }
+}
+
+// PATCH /api/quiz/:skillId/publish  { published: boolean }  (protected — owning mentor only)
+export async function setPublished(req, res, next) {
+  try {
+    const { skillId } = req.params;
+    const skill = await loadOwnedSkillOr403(skillId, req, res);
+    if (!skill) return;
+
+    const { published } = req.body;
+
+    const quiz = await Quiz.findOne({ skillId });
+    if (!quiz) {
+      return res.status(400).json({ message: 'Create at least one question before publishing this quiz.' });
+    }
+    if (published && quiz.questions.length === 0) {
+      return res.status(400).json({ message: 'Add at least one question before publishing this quiz.' });
+    }
+
+    quiz.published = Boolean(published);
+    await quiz.save();
+
+    res.json({ quiz: forManage(quiz) });
+  } catch (err) {
+    sendQuizError(res, err, next);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// LEARNER-FACING — never expose correct answers before submission.
+// ---------------------------------------------------------------------------
+
+// GET /api/quiz/:skillId/status  (protected)
+// Cheap existence check — lets the frontend decide whether to show a
+// "Take Quiz" call-to-action once a learner finishes a course, without
+// needing the full (lesson-completion-gated) quiz payload just to know
+// whether one exists at all.
+export async function getQuizStatus(req, res, next) {
+  try {
+    const { skillId } = req.params;
+    const quiz = await Quiz.findOne({ skillId, published: true }, 'questionCount passingScore').lean();
+    res.json({ published: Boolean(quiz), questionCount: quiz?.questionCount || 0, passingScore: quiz?.passingScore ?? 70 });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // GET /api/quiz/:skillId  (protected)
-// Starts/resumes a quiz attempt: generates the quiz once (cached — see
-// aiQuizService.getOrGenerateQuiz) and returns it with correct answers and
-// explanations stripped out, question + option order randomized. Students
-// must have finished every lesson in the course first; the skill's mentor
-// (or an admin) can always preview it to sanity-check the AI's output.
+// Students must have finished every lesson in the course first; the
+// skill's own mentor can always preview it (their draft/published quiz,
+// via the /manage route, is the real editing surface — this route is kept
+// consistent with the learner view for their own sanity-checking).
 export async function getQuiz(req, res, next) {
   try {
     const { skillId } = req.params;
@@ -60,7 +164,11 @@ export async function getQuiz(req, res, next) {
       }
     }
 
-    const quiz = await getOrGenerateQuiz(skill);
+    const quiz = await Quiz.findOne({ skillId, published: true });
+    if (!quiz) {
+      return res.status(404).json({ message: "This course's mentor hasn't published a quiz yet." });
+    }
+
     const attempts = await listMyAttempts(req.user._id, skillId);
     const alreadyPassed = attempts.some((a) => a.passed);
     const certificate = alreadyPassed
@@ -91,9 +199,9 @@ export async function submitQuiz(req, res, next) {
     const skill = await loadSkillOr404(skillId, res);
     if (!skill) return;
 
-    const quiz = await Quiz.findOne({ skillId });
+    const quiz = await Quiz.findOne({ skillId, published: true });
     if (!quiz) {
-      return res.status(400).json({ message: 'No quiz has been generated for this course yet — open the quiz first.' });
+      return res.status(400).json({ message: 'No published quiz for this course yet.' });
     }
 
     const validIds = new Set(quiz.questions.map((q) => q.id));
@@ -115,27 +223,6 @@ export async function submitQuiz(req, res, next) {
       })),
       certificate
     });
-  } catch (err) {
-    sendQuizError(res, err, next);
-  }
-}
-
-// POST /api/quiz/:skillId/regenerate  (protected — the course's mentor or an admin only)
-// Forces a fresh AI generation even if the cached quiz's content
-// fingerprint still matches — e.g. the mentor just isn't happy with the
-// question quality and wants another pass.
-export async function regenerateQuiz(req, res, next) {
-  try {
-    const { skillId } = req.params;
-    const skill = await loadSkillOr404(skillId, res);
-    if (!skill) return;
-
-    if (!isMentorOwner(skill, req.user) && !req.user.isAdmin) {
-      return res.status(403).json({ message: 'Only this course\'s mentor can regenerate its quiz.' });
-    }
-
-    const quiz = await generateQuiz(skill);
-    res.status(201).json({ quiz: sanitizeForAttempt(quiz) });
   } catch (err) {
     sendQuizError(res, err, next);
   }

@@ -1,9 +1,10 @@
-// Local LLMs (via Ollama) are generally good about returning bare JSON when
-// asked to, but they occasionally wrap it in ```json fences, add a leading
-// "Sure, here's the quiz:" sentence, or add trailing commentary. This helper
-// makes JSON-mode callers (aiQuizService, chatbot quiz/flashcards quick
-// actions) resilient to that without silently displaying broken output to
-// the user — see extractJson's docstring below.
+// AI Mentor quick actions ("Quiz me", "Flashcards") ask the underlying
+// model for bare JSON, but models are generally imprecise about that —
+// they may wrap it in ```json fences, add a leading "Sure, here's the
+// quiz:" sentence, or add trailing commentary. This helper makes JSON-mode
+// callers (chatbotController's quiz/flashcards quick actions) resilient to
+// that without silently displaying broken output to the user — see
+// extractJson's docstring below.
 
 /**
  * Attempts to parse `raw` as JSON. Tries, in order:

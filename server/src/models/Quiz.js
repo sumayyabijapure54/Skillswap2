@@ -23,42 +23,44 @@ const QuizQuestionSchema = new Schema(
       }
     },
     // References an id in `options` above — never sent to students, only
-    // read server-side while grading (see aiQuizService.gradeAttempt).
+    // read server-side while grading (see quizService.gradeAndRecordAttempt)
+    // or to the owning mentor while editing/previewing.
     correctOptionId: { type: String, required: true },
-    explanation: { type: String, default: '', trim: true },
-    difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' }
+    explanation: { type: String, default: '', trim: true }
   },
   { _id: false }
 );
 
+// One quiz document per course (skillId), authored entirely by that
+// course's mentor — there is no AI generation involved. `published`
+// gates both learner visibility (GET /api/quiz/:skillId) and certificate
+// eligibility (see certificatesController.issueIfEarned): a draft in
+// progress must never block a learner who's already finished every lesson.
 const QuizSchema = new Schema(
   {
-    // slug, matches Skill.id — one AI quiz per course, regenerated in place
-    // rather than versioned, so there's always exactly one "current" quiz.
     skillId: { type: String, required: true, unique: true, index: true, trim: true },
-    generatedBy: { type: String, default: 'AI' },
+    // The mentor who created/owns this quiz. Kept distinct from
+    // Skill.mentorUser (the course's own ownership field, which is what
+    // access-control checks actually use) purely as an audit trail —
+    // a course could in principle change hands, and this stays a record
+    // of who actually wrote these questions.
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     questions: { type: [QuizQuestionSchema], default: [] },
     passingScore: { type: Number, default: 70, min: 0, max: 100 },
-
-    // Which YouTube video (if any) and description/title hash the quiz was
-    // built from. Lets us tell a genuinely stale quiz (mentor swapped the
-    // video, or edited the description) apart from "just regenerate it
-    // because I feel like it" — see aiQuizService.contentFingerprint.
-    sourceVideoId: { type: String, default: null },
-    contentFingerprint: { type: String, default: null },
-
-    // Bookkeeping about the generation itself — which free local model
-    // produced these questions and when, plus a denormalized count so the
-    // UI/list views don't need to load the full questions array just to
-    // show "12 questions". `generatedAt` is distinct from `updatedAt`:
-    // this quiz doc is upserted in place on every regeneration, and this
-    // field is set exactly when new questions were written.
-    model: { type: String, default: null },
-    generatedAt: { type: Date, default: null },
+    published: { type: Boolean, default: false, index: true },
+    // Denormalized purely so list/summary views don't need to load the
+    // full questions array just to show a count — kept in sync
+    // automatically on every save (see pre-save hook below) rather than
+    // trusted from controller input.
     questionCount: { type: Number, default: 0 }
   },
   { timestamps: true }
 );
+
+QuizSchema.pre('save', function syncQuestionCount(next) {
+  this.questionCount = this.questions.length;
+  next();
+});
 
 QuizSchema.set('toJSON', {
   transform: (_doc, ret) => {

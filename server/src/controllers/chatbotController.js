@@ -189,7 +189,8 @@ const QUICK_ACTIONS = {
 };
 
 // Which aiService wrapper backs each quick action — purely for readability
-// at the call site; all of them funnel into the same free Ollama provider.
+// at the call site; none of them talk to any AI provider right now — see
+// server/src/lib/aiService.js.
 const QUICK_ACTION_AI_FN = {
   quiz: aiService.generateQuiz,
   flashcards: aiService.generateFlashcards,

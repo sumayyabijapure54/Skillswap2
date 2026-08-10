@@ -7,6 +7,7 @@ import { gsap } from '../lib/gsap.js';
 import Quiz from '../components/Quiz.jsx';
 import YouTubePlayer from '../components/YouTubePlayer.jsx';
 import { PlaylistSkeleton } from '../components/CourseSkeleton.jsx';
+import { fetchQuizStatus } from '../lib/quizApi.js';
 import ComingSoon from './ComingSoon.jsx';
 
 const AUTOPLAY_KEY = 'skillswap_autoplay_next';
@@ -87,6 +88,18 @@ export default function LessonPlayer() {
 
   const item = curriculum[activeIdx];
 
+  // Whether this course actually has a *published* quiz — replaces the old
+  // "has any lessons" guess, which showed a "Take Quiz" button even for
+  // courses with no quiz at all (the button used to trigger on-demand AI
+  // generation; quizzes are now entirely mentor-authored, so there may
+  // simply be none yet). Only fetched once signed in, since the learner
+  // must be authenticated to take the quiz anyway.
+  const [hasPublishedQuiz, setHasPublishedQuiz] = React.useState(false);
+  React.useEffect(() => {
+    if (!authed || !skill?.id) { setHasPublishedQuiz(false); return; }
+    fetchQuizStatus(skill.id).then((data) => setHasPublishedQuiz(Boolean(data.published))).catch(() => setHasPublishedQuiz(false));
+  }, [authed, skill?.id]);
+
   React.useEffect(() => {
     if (!skill) return undefined;
     setPageContext({ skillId: skill.id, skillTitle: skill.title, lessonTitle: item?.title || null });
@@ -104,7 +117,6 @@ export default function LessonPlayer() {
   const completed = authed ? new Set(enrolledEntry?.completedLessons || []) : guestCompleted;
   const progressPct = curriculum.length ? Math.round((completed.size / curriculum.length) * 100) : 0;
   const courseComplete = curriculum.length > 0 && completed.size >= curriculum.length;
-  const hasQuizContent = (skill.lessons?.length || 0) > 0;
 
   const goToIdx = (i) => setActiveIdx(Math.max(0, Math.min(curriculum.length - 1, i)));
 
@@ -289,10 +301,10 @@ export default function LessonPlayer() {
           )}
         </div>
 
-        {courseComplete && authed && hasQuizContent && (
+        {courseComplete && authed && hasPublishedQuiz && (
           <div className="notice-banner" style={{ marginTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-            <span>🎉 Course completed! Pass the AI-generated quiz to earn your certificate.</span>
-            <Link to={`/learn/${skill.id}/quiz`} className="btn-primary-lg">Take AI Quiz →</Link>
+            <span>🎉 Course completed! Pass the quiz to earn your certificate.</span>
+            <Link to={`/learn/${skill.id}/quiz`} className="btn-primary-lg">Take Quiz →</Link>
           </div>
         )}
       </div>

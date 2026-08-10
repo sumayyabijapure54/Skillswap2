@@ -10,10 +10,10 @@
 //    src/config/db.js — not duplicated here.)
 //  - WARN ONLY, and only in production, for variables that already have
 //    working local-dev fallbacks elsewhere in the code (Resend, Cloudinary,
-//    Razorpay, Google/Facebook login, YouTube, Ollama). Those modules
-//    already degrade gracefully by design (e.g. email logs to the console
-//    instead of sending), so failing the whole server over them would be
-//    a behavior change this pass is not supposed to make. The warning just
+//    Razorpay, Google/Facebook login, YouTube). Those modules already
+//    degrade gracefully by design (e.g. email logs to the console instead
+//    of sending), so failing the whole server over them would be a
+//    behavior change this pass is not supposed to make. The warning just
 //    makes it obvious in the Render logs *before* a user hits the feature
 //    and gets a confusing runtime error.
 //

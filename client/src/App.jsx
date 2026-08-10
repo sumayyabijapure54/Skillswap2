@@ -63,6 +63,7 @@ const PublicProfile = lazy(() => import('./pages/PublicProfile.jsx'));
 const MentorDashboard = lazy(() => import('./pages/MentorDashboard.jsx'));
 const MentorCourses = lazy(() => import('./pages/MentorCourses.jsx'));
 const MentorCourseForm = lazy(() => import('./pages/MentorCourseForm.jsx'));
+const MentorQuizManager = lazy(() => import('./pages/MentorQuizManager.jsx'));
 const MentorStudents = lazy(() => import('./pages/MentorStudents.jsx'));
 const MentorAnalytics = lazy(() => import('./pages/MentorAnalytics.jsx'));
 const Recommendations = lazy(() => import('./pages/Recommendations.jsx'));
@@ -192,6 +193,7 @@ export default function App(){
           <Route path="/mentor-courses" element={<RequireAuth><MentorCourses /></RequireAuth>} />
           <Route path="/mentor-courses/new" element={<RequireAuth><MentorCourseForm /></RequireAuth>} />
           <Route path="/mentor-courses/:id/edit" element={<RequireAuth><MentorCourseForm /></RequireAuth>} />
+          <Route path="/mentor-courses/:id/quiz" element={<RequireAuth><MentorQuizManager /></RequireAuth>} />
           <Route path="/mentor-students" element={<RequireAuth><MentorStudents /></RequireAuth>} />
           <Route path="/mentor-analytics" element={<RequireAuth><MentorAnalytics /></RequireAuth>} />
           <Route path="/recommendations" element={<RequireAuth><Recommendations /></RequireAuth>} />

@@ -115,7 +115,7 @@ export default function MentorCourses(){
                 </div>
                 <div className="course-card-actions">
                   <Link to={`/mentor-courses/${c.id}/edit`} className="btn-outline">Edit</Link>
-                  <Link to={`/learn/${c.id}/quiz`} className="btn-outline">AI Quiz</Link>
+                  <Link to={`/mentor-courses/${c.id}/quiz`} className="btn-outline">Manage quiz</Link>
                   {confirmId === c.id ? (
                     <button
                       className="btn-danger-outline"

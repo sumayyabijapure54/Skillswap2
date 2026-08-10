@@ -30,15 +30,17 @@ export async function issueIfEarned(user, skillId) {
   if (!skill || !skill.lessons.length || !progress) return { certificate: null, justIssued: false };
   if (progress.completedLessons.length < skill.lessons.length) return { certificate: null, justIssued: false };
 
-  // If this course has an AI-generated quiz (server/src/services/aiQuizService.js),
+  // If this course's mentor has published a quiz (server/src/models/Quiz.js),
   // finishing every lesson is necessary but no longer sufficient — the
   // student must also have a passing attempt on file before a certificate
-  // can be issued. Courses that never got a quiz generated (e.g. AI quiz
-  // generation is unavailable, or the course predates this feature) fall
-  // straight through to the old lesson-completion-only behavior below, so
-  // completion never gets stuck waiting on a quiz that doesn't exist.
-  const quizExists = await Quiz.exists({ skillId });
-  if (quizExists) {
+  // can be issued. Deliberately checks `published: true`, not just
+  // existence: a mentor's draft-in-progress quiz must never block a
+  // learner who already finished every lesson. Courses with no published
+  // quiz at all fall straight through to the old lesson-completion-only
+  // behavior below, so completion never gets stuck waiting on a quiz that
+  // doesn't exist yet (or ever).
+  const publishedQuizExists = await Quiz.exists({ skillId, published: true });
+  if (publishedQuizExists) {
     const passed = await QuizAttempt.exists({ user: user._id, skillId, passed: true });
     if (!passed) return { certificate: null, justIssued: false };
   }
@@ -97,18 +99,18 @@ export async function issueCertificate(req, res, next) {
     const { certificate, justIssued } = await issueIfEarned(req.user, skillId);
 
     if (!certificate) {
-      const [progress, skill, quizExists] = await Promise.all([
+      const [progress, skill, publishedQuizExists] = await Promise.all([
         Progress.findOne({ user: req.user._id, skillId }),
         Skill.findOne({ id: skillId }, 'lessons').lean(),
-        Quiz.exists({ skillId })
+        Quiz.exists({ skillId, published: true })
       ]);
       const lessonsDone = Boolean(
         skill?.lessons?.length && progress && progress.completedLessons.length >= skill.lessons.length
       );
 
-      if (lessonsDone && quizExists) {
+      if (lessonsDone && publishedQuizExists) {
         return res.status(400).json({
-          message: 'Pass the AI-generated quiz for this course to earn your certificate.',
+          message: 'Pass this course\'s quiz to earn your certificate.',
           quizPending: true
         });
       }
