@@ -4,6 +4,14 @@ export default function Quiz({ quiz, onComplete }){
   const [answers, setAnswers] = React.useState(Array(quiz.length).fill(null));
   const [submitted, setSubmitted] = React.useState(false);
 
+  if (!quiz.length) {
+    return (
+      <div className="quiz-body">
+        <p className="desc" style={{ margin: 0 }}>This checkpoint quiz couldn't load its questions. Please refresh the page.</p>
+      </div>
+    );
+  }
+
   const allAnswered = answers.every(a=>a!==null);
   const score = submitted ? answers.filter((a,i)=>a===quiz[i].correct).length : 0;
 

@@ -546,6 +546,31 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .form-input.err{border-color:var(--danger); box-shadow:0 0 0 3px rgba(255,107,107,0.1);}
 .form-error{color:var(--danger); font-size:12px; margin-top:6px;}
 .form-hint{color:var(--muted); font-size:11.5px; margin-top:6px;}
+
+/* YouTube fetch-video preview card (MentorCourseForm) — the <img> has no
+   intrinsic sizing from the API response (native ~1280x720 thumbnail), so
+   without an explicit width rule here it renders at full pixel size and
+   blows out the sidebar/form column on every screen size. */
+.yt-preview-card{
+  display:flex; gap:12px; align-items:flex-start; margin-top:12px;
+  padding:10px; border:1px solid var(--border); border-radius:12px; background:var(--panel);
+  max-width:100%; overflow:hidden;
+}
+.yt-preview-card img{
+  width:120px; aspect-ratio:16/9; object-fit:cover; border-radius:8px;
+  flex-shrink:0; display:block;
+}
+.yt-preview-info{ min-width:0; display:flex; flex-direction:column; }
+.yt-preview-info b{
+  font-size:13px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;
+}
+.yt-preview-info span{ font-size:11.5px; color:var(--muted); }
+
+@media (max-width:480px){
+  .yt-preview-card{ flex-direction:column; }
+  .yt-preview-card img{ width:100%; aspect-ratio:16/9; }
+}
 .form-toggle-eye{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px;}
 .form-row-between{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; font-size:13px;}
 .form-check{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); cursor:pointer;}

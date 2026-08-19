@@ -214,7 +214,11 @@ export default function App(){
 
       {showFooter && <Footer />}
 
-      {authed && pathname !== '/ai-mentor' && <AiMentorWidget />}
+      {/* Also hidden on /learn/:id/quiz — the fixed bottom-left bubble can
+          sit directly over the quiz's answer options / Previous button on
+          short viewports (e.g. keyboard open, older/smaller phones),
+          blocking taps. Confirmed via mobile-viewport screenshot testing. */}
+      {authed && pathname !== '/ai-mentor' && !/^\/learn\/[^/]+\/quiz$/.test(pathname) && <AiMentorWidget />}
       {authed && <CertificateToast />}
     </div>
   );

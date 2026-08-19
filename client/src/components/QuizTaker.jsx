@@ -94,6 +94,17 @@ export default function QuizTaker({ quiz, onSubmit, onRetake, submitting }) {
     );
   }
 
+  if (!questions.length) {
+    return (
+      <div className="quiz-body">
+        <p className="desc" style={{ margin: 0 }}>
+          This quiz couldn't load its questions. Please refresh the page — if this keeps
+          happening, let your mentor or support know.
+        </p>
+      </div>
+    );
+  }
+
   if (!q) return null;
 
   return (
@@ -124,7 +135,7 @@ export default function QuizTaker({ quiz, onSubmit, onRetake, submitting }) {
 
       {error && <div style={{ color: 'var(--danger)', fontSize: '12.5px', marginBottom: '12px' }}>{error}</div>}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
         <button
           className="btn-ghost-lg"
           disabled={idx === 0}

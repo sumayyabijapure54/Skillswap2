@@ -99,7 +99,7 @@ export default function CourseQuiz() {
   const { quiz, alreadyPassed, certificateAlreadyIssued, bestScore } = state.quiz;
 
   return (
-    <div style={{ maxWidth: '760px', margin: '0 auto', padding: '150px 24px 100px', position: 'relative', zIndex: 1 }}>
+    <div className="detail-wrap" style={{ maxWidth: '760px' }}>
       <div className="crumbs" style={{ marginBottom: '18px' }}>
         <Link to="/">Home</Link><span>/</span>
         <Link to={`/skill/${skill.id}`}>{skill.title}</Link><span>/</span>
@@ -107,7 +107,7 @@ export default function CourseQuiz() {
       </div>
 
       <div className="col-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '6px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '6px', flexWrap: 'wrap' }}>
           <div>
             <div className="completion-pill" style={{ marginBottom: '10px' }}>🎉 Course completed</div>
             <h2 style={{ marginBottom: '4px' }}>{skill.title} — Quiz</h2>
