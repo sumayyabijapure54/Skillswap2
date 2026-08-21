@@ -60,6 +60,17 @@ const UserSchema = new Schema(
     isAdmin: { type: Boolean, default: false },
     status: { type: String, enum: ['active', 'suspended'], default: 'active' },
 
+    // Admin-controlled "Top Mentors" homepage section (replaces the old
+    // automatic rating-based selection — see topMentorsController.js).
+    // Only meaningful for users who actually mentor (have a Skill with
+    // mentorUser === this user), but harmless to leave default/false on
+    // every other account, same as isAdmin above.
+    isTopMentor: { type: Boolean, default: false },
+    // 1-based display position among featured mentors; null while not
+    // featured. Only unique/meaningful among isTopMentor:true users —
+    // enforced in the controller, not at the schema level.
+    topMentorOrder: { type: Number, default: null },
+
     // Wallet balance in whole currency units (dollars). Every new account
     // starts with a $50 welcome credit, matching the frontend mock's seed
     // state — see Transaction for the ledger of how the balance got here.

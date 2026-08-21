@@ -6,6 +6,7 @@ const NAV = [
   { to: '/admin', label: 'Overview', icon: '▦', end: true },
   { to: '/admin/users', label: 'Users', icon: '👥' },
   { to: '/admin/mentor-applications', label: 'Mentor Applications', icon: '🧑‍🏫' },
+  { to: '/admin/mentors', label: 'Top Mentors', icon: '★' },
   { to: '/admin/reports', label: 'Reports & Moderation', icon: '🚩' }
 ];
 

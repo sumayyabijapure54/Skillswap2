@@ -8,7 +8,9 @@ import SplitTextReveal from '../components/SplitTextReveal.jsx';
 import Marquee from '../components/Marquee.jsx';
 import TestimonialCarousel from '../components/TestimonialCarousel.jsx';
 import useParallax from '../hooks/useParallax.js';
-import { useCategories, useSkills } from '../lib/skillsApi.js';
+import { useCategories } from '../lib/skillsApi.js';
+import { useTopMentors } from '../lib/topMentorsApi.js';
+import { SkeletonSkillCard } from '../components/Skeleton.jsx';
 
 const communityTestimonials = [
   { author: 'Rohan Mehta', rating: 5, text: 'SkillSwap helped me learn React in just 2 weeks! The community is amazing and so supportive.' },
@@ -20,20 +22,7 @@ const communityTestimonials = [
 export default function Home(){
   const navigate = useNavigate();
   const { categories } = useCategories();
-  const { skills } = useSkills();
-
-  const topMentors = React.useMemo(() => {
-    const seen = new Set();
-    const out = [];
-    for (const s of [...skills].sort((a,b)=> (b.mentor?.rating||0) - (a.mentor?.rating||0))){
-      const m = s.mentor;
-      if (!m?.id || seen.has(m.id)) continue;
-      seen.add(m.id);
-      out.push({ ...m, skillId: s.id });
-      if (out.length >= 4) break;
-    }
-    return out;
-  }, [skills]);
+  const { mentors: topMentors, loading: mentorsLoading, error: mentorsError } = useTopMentors();
   const [query, setQuery] = React.useState('');
   const orbParallaxRef = useParallax(0.08);
 
@@ -66,7 +55,7 @@ export default function Home(){
 
           <div className="cta-row">
             <Link to="/explore" className="btn-primary-lg">Start Learning →</Link>
-            <Link to="/help" className="btn-ghost-lg">Become a Mentor</Link>
+            <Link to="/become-mentor" className="btn-ghost-lg">Become a Mentor</Link>
           </div>
 
           <div className="avatars-row">
@@ -104,20 +93,32 @@ export default function Home(){
       </section>
 
       <section id="mentors">
-        <div className="section-head"><h2>Top Rated Mentors</h2><Link to="/explore">View all mentors →</Link></div>
-        <ScrollReveal className="mentor-grid" as="div" stagger>
-          {topMentors.map(m=>(
-            <TiltCard as={Link} to={`/mentor/${m.skillId}`} className="mentor-card" key={m.id} style={{textDecoration:'none', color:'inherit'}}>
-              <div className="mentor-top"><div className="mentor-badge">Top Mentor</div><div className="mentor-avatar">{m.initials}</div></div>
-              <div className="mentor-body">
-                <b>{m.name}</b>
-                <div className="role">{m.role}</div>
-                <div className="rating">★ {m.rating} ({m.reviews})</div>
-                <div className="mentor-avail">Available</div>
-              </div>
-            </TiltCard>
-          ))}
-        </ScrollReveal>
+        <div className="section-head"><h2>Top Mentors</h2><Link to="/explore">View all mentors →</Link></div>
+        {mentorsLoading ? (
+          <div className="mentor-grid">
+            <SkeletonSkillCard /><SkeletonSkillCard /><SkeletonSkillCard /><SkeletonSkillCard />
+          </div>
+        ) : mentorsError ? (
+          <div className="explore-empty">Couldn't load Top Mentors right now — please try again shortly.</div>
+        ) : topMentors.length === 0 ? (
+          <div className="explore-empty">
+            <b>No Top Mentors Selected</b>
+            <p style={{margin:'8px 0 0'}}>Feature mentors from the Admin Dashboard to display them here.</p>
+          </div>
+        ) : (
+          <ScrollReveal className="mentor-grid" as="div" stagger>
+            {topMentors.map(m=>(
+              <TiltCard as={Link} to={`/mentor/${m.skillId}`} className="mentor-card" key={m.id} style={{textDecoration:'none', color:'inherit'}}>
+                <div className="mentor-top"><div className="mentor-badge">Top Mentor</div><div className="mentor-avatar">{m.initials}</div></div>
+                <div className="mentor-body">
+                  <b>{m.name}</b>
+                  <div className="role">{m.mainSkill || m.role}</div>
+                  <div className="rating">★ {m.rating} ({m.reviews})</div>
+                </div>
+              </TiltCard>
+            ))}
+          </ScrollReveal>
+        )}
       </section>
 
       <section id="how">

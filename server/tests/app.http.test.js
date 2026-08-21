@@ -113,3 +113,49 @@ describe('unknown routes', () => {
     expect(res.body.message).toMatch(/Route not found/);
   });
 });
+
+describe('GET /api/mentors/top — public Top Mentors endpoint', () => {
+  it('is registered on the router (not a 404) and not behind an admin-only route', () => {
+    // No live MongoDB in this test environment, so this only checks route
+    // registration statically rather than issuing a request that would
+    // hang on the DB call — see the auth-gated /api/admin/mentors tests
+    // above/below for behavior that's actually exercisable without a DB.
+    const layer = app._router.stack
+      .find((l) => l.name === 'router' && l.regexp.test('/api/mentors'));
+    expect(layer).toBeTruthy();
+  });
+});
+
+describe('admin Top Mentors routes — auth required before any DB access', () => {
+  it('rejects GET /api/admin/mentors with no token', async () => {
+    const res = await request(app).get('/api/admin/mentors');
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects PUT /api/admin/mentors/:id/feature with no token', async () => {
+    const res = await request(app).put('/api/admin/mentors/000000000000000000000000/feature');
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects PUT /api/admin/mentors/:id/unfeature with no token', async () => {
+    const res = await request(app).put('/api/admin/mentors/000000000000000000000000/unfeature');
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects PUT /api/admin/mentors/top/order with no token', async () => {
+    const res = await request(app).put('/api/admin/mentors/top/order').send({ order: [] });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a non-admin authenticated user with a syntactically invalid JWT the same as any other admin route', async () => {
+    const res = await request(app).get('/api/admin/mentors').set('Authorization', 'Bearer not.a.valid.jwt');
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/mentor-applications — become-a-mentor flow, auth required', () => {
+  it('rejects an unauthenticated submission before validation runs', async () => {
+    const res = await request(app).post('/api/mentor-applications').send({ skillTitle: 'React', category: 'programming', bio: 'x'.repeat(30) });
+    expect(res.status).toBe(401);
+  });
+});

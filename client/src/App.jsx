@@ -43,6 +43,7 @@ const Wishlist = lazy(() => import('./pages/Wishlist.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 const Notifications = lazy(() => import('./pages/Notifications.jsx'));
 const MentorProfile = lazy(() => import('./pages/MentorProfile.jsx'));
+const MentorApply = lazy(() => import('./pages/MentorApply.jsx'));
 const PostSkill = lazy(() => import('./pages/PostSkill.jsx'));
 const Community = lazy(() => import('./pages/Community.jsx'));
 const Messages = lazy(() => import('./pages/Messages.jsx'));
@@ -74,6 +75,7 @@ import RequireAdmin from './components/RequireAdmin.jsx';
 const AdminOverview = lazy(() => import('./pages/admin/AdminOverview.jsx'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers.jsx'));
 const AdminMentorApplications = lazy(() => import('./pages/admin/AdminMentorApplications.jsx'));
+const AdminMentors = lazy(() => import('./pages/admin/AdminMentors.jsx'));
 const AdminReports = lazy(() => import('./pages/admin/AdminReports.jsx'));
 const ComingSoon = lazy(() => import('./pages/ComingSoon.jsx'));
 
@@ -83,7 +85,7 @@ const ComingSoon = lazy(() => import('./pages/ComingSoon.jsx'));
 const NO_FOOTER_EXACT = [
   '/signup', '/login', '/forgot-password', '/reset-password', '/verify-email', '/onboarding',
   '/dashboard', '/my-learning', '/learning-history', '/wishlist', '/profile', '/notifications',
-  '/post-skill', '/community', '/messages', '/book-session', '/sessions', '/live-sessions', '/reviews',
+  '/post-skill', '/become-mentor', '/community', '/messages', '/book-session', '/sessions', '/live-sessions', '/reviews',
   '/checkout', '/wallet', '/payments', '/certificates', '/mentor-dashboard', '/recommendations', '/achievements',
   '/account-settings', '/mentor-courses', '/mentor-courses/new', '/mentor-students', '/mentor-analytics'
 ];
@@ -175,6 +177,7 @@ export default function App(){
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
           <Route path="/post-skill" element={<RequireAuth><PostSkill /></RequireAuth>} />
+          <Route path="/become-mentor" element={<RequireAuth><MentorApply /></RequireAuth>} />
           <Route path="/community" element={<RequireAuth><Community /></RequireAuth>} />
           <Route path="/messages" element={<RequireAuth><Messages /></RequireAuth>} />
           <Route path="/book-session" element={<RequireAuth><BookSession /></RequireAuth>} />
@@ -204,6 +207,7 @@ export default function App(){
           <Route path="/admin" element={<RequireAdmin><AdminOverview /></RequireAdmin>} />
           <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
           <Route path="/admin/mentor-applications" element={<RequireAdmin><AdminMentorApplications /></RequireAdmin>} />
+          <Route path="/admin/mentors" element={<RequireAdmin><AdminMentors /></RequireAdmin>} />
           <Route path="/admin/reports" element={<RequireAdmin><AdminReports /></RequireAdmin>} />
 
           <Route path="*" element={<ComingSoon />} />

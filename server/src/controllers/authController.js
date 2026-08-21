@@ -90,6 +90,10 @@ export async function login(req, res, next) {
       return res.status(403).json({ message: 'This account has been suspended' });
     }
 
+    if (!user.verified) {
+      await issueAndSendOTP(user);
+    }
+
     const token = signToken(user);
     const refreshToken = await issueRefreshToken(user);
     user.password = undefined;

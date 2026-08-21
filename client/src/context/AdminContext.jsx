@@ -28,6 +28,9 @@ export function AdminProvider({ children }) {
     users: [],
     mentorApplications: [],
     reports: [],
+    mentors: [],
+    mentorsError: null,
+    mentorsLoading: true,
     loading: true,
     error: null
   });
@@ -40,16 +43,45 @@ export function AdminProvider({ children }) {
         api.get('/api/mentor-applications'),
         api.get('/api/reports')
       ]);
-      setState({
+      setState(s => ({
+        ...s,
         users: (usersData.users || []).map(toDisplayUser),
         mentorApplications: appsData.applications || [],
         reports: reportsData.reports || [],
         loading: false,
         error: null
-      });
+      }));
     } catch (err) {
       setState(s => ({ ...s, loading: false, error: err.message }));
     }
+    // Loaded independently so a Top Mentors failure never blocks the rest
+    // of the admin dashboard (users/applications/reports) from working.
+    refreshMentors();
+  };
+
+  const refreshMentors = async () => {
+    setState(s => ({ ...s, mentorsLoading: true }));
+    try {
+      const data = await api.get('/api/admin/mentors');
+      setState(s => ({ ...s, mentors: data.mentors || [], mentorsError: null, mentorsLoading: false }));
+    } catch (err) {
+      setState(s => ({ ...s, mentorsError: err.message, mentorsLoading: false }));
+    }
+  };
+
+  const featureMentor = async (id) => {
+    await api.put(`/api/admin/mentors/${id}/feature`);
+    await refreshMentors();
+  };
+
+  const unfeatureMentor = async (id) => {
+    await api.put(`/api/admin/mentors/${id}/unfeature`);
+    await refreshMentors();
+  };
+
+  const reorderTopMentors = async (order) => {
+    await api.put('/api/admin/mentors/top/order', { order });
+    await refreshMentors();
   };
 
   // This provider wraps the entire app (see main.jsx), but its data is
@@ -110,7 +142,8 @@ export function AdminProvider({ children }) {
     suspendUser, reinstateUser,
     makeAdmin, revokeAdmin,
     approveMentorApplication, rejectMentorApplication,
-    resolveReport
+    resolveReport,
+    refreshMentors, featureMentor, unfeatureMentor, reorderTopMentors
   };
 
   return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;

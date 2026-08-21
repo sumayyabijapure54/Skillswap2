@@ -458,6 +458,7 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .help-categories{max-width:1100px; margin:0 auto 80px; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; padding:0 48px; position:relative; z-index:1;}
 .help-cat-card{background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; cursor:pointer; transition:all .2s;}
 .help-cat-card:hover{border-color:rgba(20,240,180,0.35); transform:translateY(-2px);}
+.help-cat-card.active{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), var(--shadow-glow); background:var(--accent-soft);}
 .help-cat-card .ic{width:40px; height:40px; border-radius:10px; background:var(--panel-2); display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:14px;}
 .help-cat-card b{display:block; font-size:14.5px; margin-bottom:4px;}
 .help-cat-card span{font-size:12px; color:var(--muted);}
@@ -545,6 +546,32 @@ footer{background:#08090c; border-top:1px solid var(--border); padding:80px 48px
 .form-input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(20,240,180,0.12);}
 .form-input.err{border-color:var(--danger); box-shadow:0 0 0 3px rgba(255,107,107,0.1);}
 .form-error{color:var(--danger); font-size:12px; margin-top:6px;}
+
+.yt-preview-card{
+  display:flex; align-items:flex-start; gap:12px;
+  margin-top:10px; padding:10px;
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+}
+.yt-preview-card img{
+  width:120px; aspect-ratio:16/9; object-fit:cover;
+  border-radius:8px; flex-shrink:0; background:var(--panel-2);
+}
+.yt-preview-info{
+  display:flex; flex-direction:column; gap:4px; min-width:0; flex:1;
+}
+.yt-preview-info b{
+  font-size:13px; line-height:1.35;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.yt-preview-info span{
+  font-size:11.5px; color:var(--muted);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+@media (max-width:600px){
+  .yt-preview-card{ flex-direction:column; }
+  .yt-preview-card img{ width:100%; aspect-ratio:16/9; }
+}
 .form-hint{color:var(--muted); font-size:11.5px; margin-top:6px;}
 
 /* YouTube fetch-video preview card (MentorCourseForm) — the <img> has no
